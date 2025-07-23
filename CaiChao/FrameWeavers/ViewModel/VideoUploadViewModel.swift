@@ -37,6 +37,9 @@ class VideoUploadViewModel: ObservableObject {
         uploadStatus = .uploading
         uploadProgress = 0
         
+        // 先清理之前的cancellables
+        cancellables.removeAll()
+        
         // 模拟上传过程
         Timer.publish(every: 0.1, on: .main, in: .common)
             .autoconnect()
@@ -46,6 +49,8 @@ class VideoUploadViewModel: ObservableObject {
                 self.uploadProgress += 0.05
                 
                 if self.uploadProgress >= 1.0 {
+                    // 立即取消Timer
+                    self.cancellables.removeAll()
                     self.uploadStatus = .processing
                     self.simulateProcessing()
                 }
