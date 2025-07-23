@@ -1,0 +1,51 @@
+---
+description: iOS和macOS应用MVVM前端设计核心指南，聚焦View和ViewModel层、SwiftUI开发、平台适配与性能优化。
+globs: 
+alwaysApply: false
+---
+# iOS & macOS MVVM 前端设计核心指南
+
+本指南适用于iOS17与macOS14，采用MVVM架构，强调前端（View+ViewModel）与后端（Model）解耦，支持双平台高质量前端实现。
+
+## 架构与通用原则
+
+- MVVM架构，前后端分离，模块化组织
+- SwiftUI声明式开发，响应式数据流（Combine）
+- 遵循Apple HIG，界面直观易用，适配iOS与macOS
+- 代码规范、类型安全、健壮性、详细注释
+- 我需要提醒你的是，**在增加函数func前先看看其他文件是否已有相关实现**
+
+## View层（视图）
+
+- 纯UI展示，无业务逻辑
+- SwiftUI开发，@ObservedObject/@StateObject绑定ViewModel
+- 组件化、可复用、条件渲染（加载/错误/空数据）
+- 平台适配（iOS/macOS）、暗黑模式、主题切换
+- 支持菜单栏（macOS）、快捷键
+
+## ViewModel层（视图模型）
+
+- 状态管理与UI逻辑，处理用户交互
+- 数据绑定，向View提供格式化数据
+- 调用Model执行业务操作，订阅数据变化（Combine）
+- 错误与加载状态统一处理
+
+## 跨平台实现要点
+
+- 抽象通用ViewModel，核心逻辑共享
+- 平台特定UI分离，条件编译/平台检测
+- 设备特性适配（iPhone/iPad/Mac）
+
+## 性能优化建议
+
+- 细粒度绑定，避免多余视图刷新
+- 延迟加载/分页处理大数据
+- 合理使用异步与线程，优化渲染
+- 懒加载减少启动时间，高效列表展示
+
+## 参考资料
+
+- [Apple Human Interface Guidelines](mdc:https:/developer.apple.com/design/human-interface-guidelines)
+- [SwiftUI 官方文档](mdc:https:/developer.apple.com/documentation/swiftui)
+- [Combine 官方文档](mdc:https:/developer.apple.com/documentation/combine)
+- [Speech 官方文档](mdc:https:/developer.apple.com/documentation/speech)

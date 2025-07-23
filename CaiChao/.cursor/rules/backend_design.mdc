@@ -1,0 +1,82 @@
+---
+description: iOS和macOS应用开发的MVVM后端设计指南，聚焦于Model层、数据持久化、业务逻辑、Repository、Service、后端性能优化，适用于需要高质量后端实现的跨平台项目。
+globs: 
+alwaysApply: false
+---
+# iOS & macOS MVVM 后端设计指南
+
+本规则适用于使用 Swift 6.0+ 开发 iOS 17/18 与 macOS 14/15 应用的后端（Model/Service/Repository）设计，强调 MVVM 架构下的高质量、可维护、跨平台后端实现。
+
+## 1. 架构核心理念
+
+- **MVVM分层**：后端（Model/Service/Repository）与前端（View/ViewModel）彻底解耦。
+- **平台兼容**：核心后端逻辑最大化复用，支持 iOS 与 macOS。
+- **数据驱动**：本地持久化（SwiftData），可选 iCloudKit 云同步。
+
+## 2. 后端设计原则
+
+- 以业务为中心，先建数据模型再实现逻辑。
+- 类型安全、注释详尽、错误处理健全。
+- 关注内存管理与性能，避免泄漏与冗余。
+- 日志记录与调试信息完善。
+- 我需要提醒你的是，**在增加函数func前先看看其他文件是否已有相关实现**
+
+## 3. MVVM 后端实现要点
+
+### 3.1 数据模型（Model）
+- 仅负责数据结构、业务规则、验证逻辑。
+- 独立于UI，便于测试与复用。
+- 支持本地持久化（SwiftData）。
+
+### 3.2 仓储模式（Repository）
+
+- 封装数据访问，统一对外接口。
+- 支持本地与云端数据源切换。
+- 便于Mock与单元测试。
+
+### 3.3 业务服务（Service）
+
+- 处理核心业务流程与复杂逻辑。
+- 通过依赖注入（DI）解耦依赖。
+- 负责领域事件、通知系统状态变化。
+
+### 3.4 响应式数据流
+
+- 使用 Combine 框架实现数据流与状态同步。
+- 单一真实数据源（Single Source of Truth），单向数据流。
+
+## 4. 跨平台与模块化
+
+- 共享核心 Model/Service/Repository 代码。
+- 平台特定实现用条件编译（#if os(iOS)/os(macOS)）。
+- Swift Package Manager 管理模块。
+
+## 5. 性能优化与最佳实践
+
+- 合理使用异步与多线程，避免主线程阻塞。
+- 缓存策略减少重复计算与IO。
+- 懒加载与分页处理大数据。
+- 事件驱动与响应式编程范式。
+- 统一错误处理与日志。
+
+## 6. 项目总结与反思
+
+- 定期回顾架构可扩展性与可维护性。
+- 评估MVVM后端分层的优缺点。
+- 保持代码遵循SOLID原则与设计模式。
+- 前后端协作与一体化持续优化。
+
+## 7. 推荐技术栈
+
+- **SwiftUI**：跨平台UI（配合ViewModel）
+- **SwiftData**：本地数据持久化
+- **Combine**：响应式数据流
+- **Swift Package Manager**：依赖与模块管理
+- **Contacts/UniformTypeIdentifiers**：系统集成
+
+## 8. 参考资料
+
+- [Apple Human Interface Guidelines](mdc:https:/developer.apple.com/design/human-interface-guidelines)
+- [SwiftData 官方文档](mdc:https:/developer.apple.com/documentation/swiftdata)
+- [Combine 官方文档](mdc:https:/developer.apple.com/documentation/combine)
+- [Swift Package Manager](mdc:https:/developer.apple.com/documentation/swift_packages)
