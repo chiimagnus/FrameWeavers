@@ -3,49 +3,91 @@ description: iOS和macOS应用MVVM前端设计核心指南，聚焦View和ViewMo
 globs: 
 alwaysApply: false
 ---
-# iOS & macOS MVVM 前端设计核心指南
+# iOS MVVM 前端设计核心指南
 
-本指南适用于iOS17与macOS14，采用MVVM架构，强调前端（View+ViewModel）与后端（Model）解耦，支持双平台高质量前端实现。
+本指南适用于iOS17与iOS18，采用MVVM架构，强调前端（View+ViewModel）与后端（Model）解耦，专注于视频上传和连环画生成功能。
 
 ## 架构与通用原则
 
 - MVVM架构，前后端分离，模块化组织
 - SwiftUI声明式开发，响应式数据流（Combine）
-- 遵循Apple HIG，界面直观易用，适配iOS与macOS
+- 遵循Apple HIG，界面直观易用，专注iOS体验
 - 代码规范、类型安全、健壮性、详细注释
-- 我需要提醒你的是，**在增加函数func前先看看其他文件是否已有相关实现**
+- **在增加函数func前先看看其他文件是否已有相关实现**
 
 ## View层（视图）
 
 - 纯UI展示，无业务逻辑
 - SwiftUI开发，@ObservedObject/@StateObject绑定ViewModel
 - 组件化、可复用、条件渲染（加载/错误/空数据）
-- 平台适配（iOS/macOS）、暗黑模式、主题切换
-- 支持菜单栏（macOS）、快捷键
+- iOS设备适配（iPhone/iPad）、暗黑模式、主题切换
+- 支持视频选择器、权限请求、上传进度展示
 
 ## ViewModel层（视图模型）
 
 - 状态管理与UI逻辑，处理用户交互
+- 视频选择、验证、上传状态管理
 - 数据绑定，向View提供格式化数据
 - 调用Model执行业务操作，订阅数据变化（Combine）
 - 错误与加载状态统一处理
 
-## 跨平台实现要点
+## 视频上传流程设计
 
-- 抽象通用ViewModel，核心逻辑共享
-- 平台特定UI分离，条件编译/平台检测
-- 设备特性适配（iPhone/iPad/Mac）
+### 1. 权限请求流程
+- 相册访问权限请求
+- 相机权限（如需要）
+- 网络权限状态检查
+
+### 2. 视频选择界面
+- 系统照片选择器（PhotosUI）
+- 视频时长验证（5-30分钟）
+- 实时预览和确认
+
+### 3. 上传状态管理
+- 上传进度实时显示
+- 网络错误处理
+- 取消上传功能
+- 后台上传支持
+
+### 4. 结果展示
+- 连环画阅读界面
+- 图片懒加载
+- 交互问题展示
+
+## iOS实现要点
+
+- 充分利用iOS系统组件（PhotosPicker、ProgressView）
+- 适配不同屏幕尺寸（iPhone SE到iPad Pro）
+- 支持横竖屏切换
+- 集成系统分享功能
 
 ## 性能优化建议
 
 - 细粒度绑定，避免多余视图刷新
-- 延迟加载/分页处理大数据
+- 视频文件预处理（压缩、格式检查）
 - 合理使用异步与线程，优化渲染
 - 懒加载减少启动时间，高效列表展示
+- 内存警告处理
+
+## 用户交互设计
+
+- 直观的操作流程：选择→验证→上传→等待→查看
+- 清晰的视觉反馈：进度条、状态提示、错误处理
+- 流畅的动画过渡
+- 无障碍功能支持
+
+## 技术栈
+
+- **SwiftUI**：iOS UI开发
+- **Combine**：响应式数据流
+- **PhotosUI**：系统照片选择器
+- **AVFoundation**：视频时长和格式检查
+- **Network**：网络状态监控
 
 ## 参考资料
 
 - [Apple Human Interface Guidelines](mdc:https:/developer.apple.com/design/human-interface-guidelines)
 - [SwiftUI 官方文档](mdc:https:/developer.apple.com/documentation/swiftui)
 - [Combine 官方文档](mdc:https:/developer.apple.com/documentation/combine)
-- [Speech 官方文档](mdc:https:/developer.apple.com/documentation/speech)
+- [PhotosUI 官方文档](mdc:https:/developer.apple.com/documentation/photosui)
+- [AVFoundation 官方文档](mdc:https:/developer.apple.com/documentation/avfoundation)
