@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 enum UploadStatus: String {
     case pending = "待上传"
@@ -8,6 +9,96 @@ enum UploadStatus: String {
     case failed = "失败"
 }
 
+// MARK: - 上传模式
+enum UploadMode {
+    case mock      // Mock模式，模拟上传
+    case real      // 真实上传模式
+}
+
+// MARK: - 设备信息
+struct DeviceInfo: Codable {
+    let model: String
+    let osVersion: String
+    let appVersion: String
+}
+
+// MARK: - 视频元数据
+struct VideoMetadata: Codable {
+    let originalFilename: String
+    let fileSize: Int64
+    let duration: Double
+    let mimeType: String
+    let mediaType: String
+    let deviceId: String
+    let deviceInfo: DeviceInfo
+    let uploadedAt: String
+}
+
+// MARK: - 上传请求
+struct VideoUploadRequest {
+    let videoURL: URL
+    let metadata: VideoMetadata
+}
+
+// MARK: - API响应模型
+struct UploadResponse: Codable {
+    let success: Bool
+    let data: UploadData?
+    let error: APIError?
+    let message: String?
+}
+
+struct UploadData: Codable {
+    let mediaId: String
+    let mediaType: String
+    let uploadStatus: String
+    let processingEstimate: String?
+    let fileInfo: FileInfo
+    let deviceId: String
+    let uploadedAt: String
+}
+
+struct FileInfo: Codable {
+    let originalFilename: String
+    let fileSize: Int64
+    let duration: Double
+    let format: String
+}
+
+struct APIError: Codable {
+    let code: String
+    let message: String
+    let details: [String: Any]?
+
+    enum CodingKeys: String, CodingKey {
+        case code, message, details
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        code = try container.decode(String.self, forKey: .code)
+        message = try container.decode(String.self, forKey: .message)
+        details = try? container.decode([String: Any].self, forKey: .details)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(code, forKey: .code)
+        try container.encode(message, forKey: .message)
+        // details 编码暂时跳过，因为 [String: Any] 不直接支持 Codable
+    }
+}
+
+// MARK: - 上传进度
+struct UploadProgress {
+    let percentage: Double
+    let uploadedBytes: Int64
+    let totalBytes: Int64
+    let speed: String?
+    let estimatedTimeRemaining: String?
+}
+
+// MARK: - 连环画结果
 struct ComicResult: Codable {
     let comicId: String
     let deviceId: String
@@ -23,8 +114,25 @@ struct ComicPanel: Codable, Identifiable {
     let panelNumber: Int
     let imageUrl: String
     let narration: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case panelNumber, imageUrl, narration
+    }
+}
+
+// MARK: - 设备ID生成器
+class DeviceIDGenerator {
+    static func generateDeviceID() -> String {
+        let deviceModel = UIDevice.current.model.replacingOccurrences(of: " ", with: "_")
+        let idfv = UIDevice.current.identifierForVendor?.uuidString.prefix(12) ?? "UNKNOWN"
+        return "\(deviceModel)_\(idfv)"
+    }
+
+    static func getDeviceInfo() -> DeviceInfo {
+        return DeviceInfo(
+            model: UIDevice.current.model,
+            osVersion: UIDevice.current.systemVersion,
+            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        )
     }
 }
