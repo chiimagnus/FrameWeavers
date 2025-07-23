@@ -1,6 +1,6 @@
 # iOS mockdata
 
-现在你是否能够基于 @frontend_design.mdc ，做出最简单的demo，只验证流程能跑通即可。由于目前并没有拿到http链接来调用后端大模型，因此就先弄成mockdata。
+现在你是否能够基于 @frontend_design.mdc 和 @backend_design.mdc ，做出最简单的demo，只验证流程能跑通即可。由于目前并没有拿到http链接来调用后端大模型，因此就先弄成mockdata。
 
 ## 连环画生成模块请求示例
 
