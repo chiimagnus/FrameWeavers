@@ -22,11 +22,8 @@ class VideoUploadViewModel: ObservableObject {
         let asset = AVAsset(url: url)
         let duration = asset.duration.seconds
         
-        if duration < 300 { // 5分钟
-            errorMessage = "视频时长不足5分钟"
-            uploadStatus = .failed
-        } else if duration > 1800 { // 30分钟
-            errorMessage = "视频时长超过30分钟"
+        if duration > 300 { // 5分钟
+            errorMessage = "视频时长超过5分钟"
             uploadStatus = .failed
         } else {
             errorMessage = nil

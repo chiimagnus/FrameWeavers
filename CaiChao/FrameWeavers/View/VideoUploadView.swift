@@ -20,7 +20,7 @@ struct VideoUploadView: View {
                                 .font(.system(size: 60))
                             Text("选择视频")
                                 .font(.title2)
-                            Text("时长需在5-30分钟之间")
+                            Text("时长需不超过5分钟")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
