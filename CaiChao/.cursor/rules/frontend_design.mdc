@@ -1,6 +1,5 @@
 ---
 description: iOS和macOS应用MVVM前端设计核心指南，聚焦View和ViewModel层、SwiftUI开发、平台适配与性能优化。
-globs: 
 alwaysApply: false
 ---
 # iOS MVVM 前端设计核心指南
