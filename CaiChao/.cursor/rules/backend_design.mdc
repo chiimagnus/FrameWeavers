@@ -4,7 +4,7 @@ alwaysApply: false
 ---
 # iOS MVVM App端后端设计指南
 
-**重要声明：我们只负责iOS App端逻辑，AI大模型后端由合作方负责**
+**重要声明：我们只负责iOS App端逻辑，AI大模型后端由合作方负责**。
 
 ## 我们的职责范围（App端）
 
