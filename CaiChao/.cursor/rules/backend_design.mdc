@@ -1,95 +1,99 @@
 ---
-description: iOS和macOS应用开发的MVVM后端设计指南，聚焦于Model层、数据持久化、业务逻辑、Repository、Service、后端性能优化，适用于需要高质量后端实现的跨平台项目。
-globs: 
+description: iOS app的数据库存储后端，只专注于视频上传和连环画生成功能，不涉及AI大模型后端
 alwaysApply: false
 ---
-# iOS MVVM 后端设计指南
+# iOS MVVM App端后端设计指南
 
-本规则适用于使用 Swift 6.0+ 开发 iOS 17/18 应用的后端（Model/Service/Repository）设计，专注于视频上传和连环画生成功能。
+**重要声明：我们只负责iOS App端逻辑，AI大模型后端由合作方负责**
 
-## 1. 架构核心理念
+## 我们的职责范围（App端）
 
-- **MVVM分层**：后端（Model/Service/Repository）与前端（View/ViewModel）彻底解耦
-- **iOS专属**：仅支持iOS平台，充分利用iOS系统特性
-- **视频处理**：专注于视频文件的上传和处理流程
-- **数据驱动**：本地持久化（SwiftData）存储任务状态
+### ✅ 负责的部分：
+- 视频文件选择和验证（5-30分钟限制）
+- 设备ID生成（UIDevice.current.identifierForVendor）
+- 视频上传到合作方提供的API
+- 接收和解析合作方返回的JSON数据
+- 本地数据存储和状态管理
 
-## 2. 后端设计原则
+### ❌ 不负责的部分：
+- AI大模型视频分析
+- 图像处理和风格化
+- 剧本和问题生成
+- 服务器端业务逻辑
 
-- 以视频处理业务为中心，先建数据模型再实现逻辑
-- 类型安全、注释详尽、错误处理健全
-- 关注内存管理与性能，避免泄漏与冗余
-- 完善的视频上传状态管理和错误恢复
-- **在增加函数func前先看看其他文件是否已有相关实现**
+## App端核心组件
 
-## 3. MVVM 后端实现要点
+### 1. 数据模型
+- 视频文件信息（时长、大小验证）
+- 上传任务状态管理
+- API响应数据结构
 
-### 3.1 数据模型（Model）
-- 负责视频文件信息、上传任务状态、连环画数据结构
-- 独立于UI，便于测试与复用
-- 支持本地持久化（SwiftData）存储任务历史
-- 包含视频时长验证（5-30分钟限制）
+### 2. 网络层
+- 与合作方API的HTTP通信
+- multipart/form-data上传格式
+- 上传进度跟踪
 
-### 3.2 仓储模式（Repository）
-- 封装视频上传API调用，统一对外接口
-- 管理上传任务状态（待上传、上传中、已完成、失败）
-- 支持断点续传和失败重试
-- 便于Mock与单元测试
+### 3. 本地存储
+- SwiftData持久化任务历史
+- 缓存生成的连环画数据
 
-### 3.3 业务服务（Service）
-- 处理视频选择、验证、上传完整流程
-- 通过依赖注入（DI）解耦依赖
-- 负责与后端API通信，获取连环画生成结果
-- 管理轮询任务状态
+## API使用规范
 
-### 3.4 响应式数据流
-- 使用 Combine 框架实现上传进度和状态同步
-- 单一真实数据源（Single Source of Truth）
-- 支持实时上传进度更新
+- **上传端点**: 使用合作方提供的URL
+- **必需参数**: videoFile + deviceId
+- **响应格式**: 遵循README_iOS.md中的JSON结构
 
-## 4. API集成规范
+## 技术栈
+- SwiftUI + Combine + SwiftData + URLSession + PhotosUI
 
-### 4.1 视频上传API
+- [SwiftData 官方文档](mdc:https:/developer.apple.com/documentation/swiftdata)
+- [Combine 官方文档](mdc:https:/developer.apple.com/documentation/combine)
+- [PhotosUI 官方文档](mdc:https:/developer.apple.com/documentation/photosui)
+- [Swift Package Manager](mdc:https:/developer.apple.com/documentation/swift_packages)
+# iOS MVVM App端后端设计指南
 
-- **Endpoint**: POST /v1/comics/create
-- **Content-Type**: multipart/form-data
-- **必需参数**:
-  - videoFile: 视频文件（5-30分钟限制）
-  - deviceId: 设备唯一标识符（UIDevice.current.identifierForVendor?.uuidString）
+**重要声明：我们只负责iOS App端逻辑，AI大模型后端由合作方负责**
 
-### 4.2 响应处理
+## 我们的职责范围（App端）
 
-- 解析连环画JSON数据结构
-- 存储生成的图片URL和叙述文本
-- 处理AI互动问题列表
+### ✅ 负责的部分：
+- 视频文件选择和验证（5-30分钟限制）
+- 设备ID生成（UIDevice.current.identifierForVendor）
+- 视频上传到合作方提供的API
+- 接收和解析合作方返回的JSON数据
+- 本地数据存储和状态管理
 
-## 5. 性能优化与最佳实践
+### ❌ 不负责的部分：
+- AI大模型视频分析
+- 图像处理和风格化
+- 剧本和问题生成
+- 服务器端业务逻辑
 
-- 后台上传，避免阻塞主线程
-- 上传进度实时反馈
-- 合理的重试机制和错误处理
-- 内存管理：大文件分片上传
-- 本地缓存策略减少重复上传
+## App端核心组件
 
-## 6. 项目总结与反思
+### 1. 数据模型
+- 视频文件信息（时长、大小验证）
+- 上传任务状态管理
+- API响应数据结构
 
-- 定期回顾视频处理流程的稳定性
-- 评估上传成功率和用户体验
-- 保持代码遵循SOLID原则
-- 前后端协作优化上传体验
+### 2. 网络层
+- 与合作方API的HTTP通信
+- multipart/form-data上传格式
+- 上传进度跟踪
 
-## 7. 推荐技术栈
+### 3. 本地存储
+- SwiftData持久化任务历史
+- 缓存生成的连环画数据
 
-- **SwiftUI**：iOS UI开发
-- **SwiftData**：本地数据持久化
-- **Combine**：响应式数据流
-- **URLSession**：网络请求
-- **PhotosUI**：相册访问
-- **UniformTypeIdentifiers**：文件类型处理
+## API使用规范
 
-## 8. 参考资料
+- **上传端点**: 使用合作方提供的URL
+- **必需参数**: videoFile + deviceId
+- **响应格式**: 遵循README_iOS.md中的JSON结构
 
-- [Apple Human Interface Guidelines](mdc:https:/developer.apple.com/design/human-interface-guidelines)
+## 技术栈
+- SwiftUI + Combine + SwiftData + URLSession + PhotosUI
+
 - [SwiftData 官方文档](mdc:https:/developer.apple.com/documentation/swiftdata)
 - [Combine 官方文档](mdc:https:/developer.apple.com/documentation/combine)
 - [PhotosUI 官方文档](mdc:https:/developer.apple.com/documentation/photosui)
