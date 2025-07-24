@@ -43,8 +43,27 @@ struct VideoMetadata: Codable {
 // MARK: - 真实API响应模型
 struct RealUploadResponse: Codable {
     let success: Bool
+    let message: String
     let task_id: String?
-    let message: String?
+    let uploaded_files: Int?
+    let invalid_files: [String]?
+}
+
+// MARK: - 任务状态查询响应
+struct TaskStatusResponse: Codable {
+    let success: Bool
+    let task_id: String
+    let status: String
+    let message: String
+    let progress: Int
+    let files: [String]?
+    let created_at: String
+}
+
+// MARK: - 任务取消响应
+struct TaskCancelResponse: Codable {
+    let success: Bool
+    let message: String
 }
 
 // MARK: - Mock API响应模型（保持兼容）
