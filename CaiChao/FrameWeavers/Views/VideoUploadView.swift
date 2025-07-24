@@ -157,7 +157,7 @@ struct VideoUploadView: View {
                 }
             }
             .padding()
-            .navigationTitle("视频转连环画")
+            // .navigationTitle("视频转连环画")
             }
             .background(Color.clear) // 确保背景透明
         }
