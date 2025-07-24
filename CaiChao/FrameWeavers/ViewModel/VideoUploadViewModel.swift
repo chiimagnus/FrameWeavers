@@ -89,16 +89,18 @@ class VideoUploadViewModel: ObservableObject {
     }
 
     private func createUploadRequest(videoURL: URL) -> URLRequest? {
-        // 简化的上传请求创建
-        guard let url = URL(string: "https://api.example.com/api/v1/media/upload") else {
-            return nil
-        }
-
+        // 使用NetworkConfig统一管理网络配置
+        let url = NetworkConfig.Endpoint.uploadVideo.url
+        
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("multipart/form-data", forHTTPHeaderField: "Content-Type")
-        request.setValue(DeviceIDGenerator.generateDeviceID(), forHTTPHeaderField: "X-Device-ID")
-
+        request.httpMethod = NetworkConfig.HTTPMethod.POST.rawValue
+        
+        // 使用NetworkConfig的默认请求头
+        let headers = NetworkConfig.defaultHeaders()
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        
         return request
     }
 
