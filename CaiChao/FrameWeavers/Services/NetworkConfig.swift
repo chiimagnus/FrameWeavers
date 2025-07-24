@@ -3,7 +3,7 @@ import Foundation
 // MARK: - 网络配置
 struct NetworkConfig {
     // 基础URL配置 - 使用实际的API地址
-    static let baseURL = "https://video-api.zeabur.app"
+    static let baseURL = "http://127.0.0.1:5001" // https://video-api.zeabur.app
 
     // API端点
     enum Endpoint {
