@@ -27,8 +27,10 @@ struct WelcomeView: View {
             让回忆再次发生。
             """)
                 .font(.custom("Kaiti SC", size: 16))
+                .fontWeight(.bold)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
+                .lineSpacing(15)
 
             PhotosPicker(
                 selection: $selectedItems,
@@ -43,8 +45,9 @@ struct WelcomeView: View {
                         .frame(width: 250, height: 44)
                     
                     Text("开启一段故事织造")
-                        .font(.custom("Kaiti SC", size: 16))
-                        .foregroundColor(.white)
+                        .font(.custom("Kaiti SC", size: 24))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "#855C23"))
                 }
             }
 
@@ -53,9 +56,11 @@ struct WelcomeView: View {
             选择有故事的片段效果更佳
             """)
                 .font(.custom("Kaiti SC", size: 12))
+                .fontWeight(.bold)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
                 .tracking(1.2)
+                .lineSpacing(10)
         }
         .padding()
     }
