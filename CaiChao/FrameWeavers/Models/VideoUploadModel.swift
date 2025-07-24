@@ -9,11 +9,7 @@ enum UploadStatus: String {
     case failed = "失败"
 }
 
-// MARK: - 上传模式
-enum UploadMode {
-    case mock      // Mock模式，模拟上传
-    case real      // 真实上传模式
-}
+// UploadMode 枚举已删除，仅保留真实上传模式
 
 // MARK: - 设备信息
 struct DeviceInfo: Codable {

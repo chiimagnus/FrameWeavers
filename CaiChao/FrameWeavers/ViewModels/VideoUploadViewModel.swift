@@ -10,7 +10,6 @@ class VideoUploadViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var comicResult: ComicResult?
     @Published var isShowingPicker = false
-    @Published var uploadMode: UploadMode = .mock
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
@@ -73,34 +72,7 @@ class VideoUploadViewModel: ObservableObject {
         uploadProgress = 0
         errorMessage = nil
 
-        if uploadMode == .mock {
-            uploadVideoMock(videoURL: selectedVideos.first!)  // Mock模式只用第一个视频
-        } else {
-            uploadVideosReal(videoURLs: selectedVideos)  // 真实模式支持多视频
-        }
-    }
-
-    // MARK: - Mock上传
-    private func uploadVideoMock(videoURL: URL) {
-        // 先清理之前的cancellables
-        cancellables.removeAll()
-
-        // 模拟上传过程
-        Timer.publish(every: 0.1, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self = self else { return }
-
-                self.uploadProgress += 0.05
-
-                if self.uploadProgress >= 1.0 {
-                    // 立即取消Timer
-                    self.cancellables.removeAll()
-                    self.uploadStatus = .processing
-                    self.simulateProcessing()
-                }
-            }
-            .store(in: &cancellables)
+        uploadVideosReal(videoURLs: selectedVideos)  // 仅使用真实上传模式
     }
 
     // MARK: - 真实HTTP上传（支持多视频）
@@ -341,10 +313,7 @@ class VideoUploadViewModel: ObservableObject {
         )
     }
     
-    // MARK: - 控制方法
-    func toggleUploadMode() {
-        uploadMode = uploadMode == .mock ? .real : .mock
-    }
+    // 上传模式切换方法已删除
 
     func cancelUpload() {
         // 取消上传任务

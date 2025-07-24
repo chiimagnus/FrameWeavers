@@ -15,20 +15,7 @@ struct VideoUploadView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 20) {
-                    // 简单的模式切换
-                    HStack {
-                        Text("模式:")
-                            .font(.caption)
-
-                        Picker("上传模式", selection: $viewModel.uploadMode) {
-                            Text("Mock").tag(UploadMode.mock)
-                            Text("真实").tag(UploadMode.real)
-                        }
-                        .pickerStyle(.segmented)
-
-                        Spacer()
-                    }
-                    .padding(.horizontal)
+                    // 模式切换UI已删除，仅使用真实上传模式
 
                 if viewModel.selectedVideos.isEmpty {
                     // 选择视频界面
