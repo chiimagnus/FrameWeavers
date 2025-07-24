@@ -101,10 +101,13 @@ struct VideoUploadView: View {
                         }
                         
                         if viewModel.uploadStatus == .completed {
-                            NavigationLink("查看结果") {
-                                ComicResultView(comicResult: viewModel.comicResult!)
+                            Button("查看结果") {
+                               viewModel.showComicResult = true
                             }
                             .buttonStyle(.borderedProminent)
+                            .fullScreenCover(isPresented: $viewModel.showComicResult) {
+                                ComicResultView(comicResult: viewModel.comicResult!)
+                            }
                         }
                         
                         Button("重新选择") {
