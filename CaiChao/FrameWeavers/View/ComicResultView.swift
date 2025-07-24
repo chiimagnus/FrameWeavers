@@ -9,19 +9,19 @@ struct ComicResultView: View {
             ZStack {
                 VStack(spacing: 0) {
                     // 页面指示器 - 保持在顶部
-                    HStack {
-                        Spacer()
-                        Text("\(currentPage + 1)/\(comicResult.panels.count)")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.black.opacity(0.7))
-                            .cornerRadius(20)
-                            .padding(.top, 8)
-                        Spacer()
-                    }
-                    .padding(.top, geometry.safeAreaInsets.top + 10)
+                    // HStack {
+                    //     Spacer()
+                    //     Text("\(currentPage + 1)/\(comicResult.panels.count)")
+                    //         .font(.headline)
+                    //         .foregroundColor(.white)
+                    //         .padding(.horizontal, 16)
+                    //         .padding(.vertical, 8)
+                    //         .background(Color.black.opacity(0.7))
+                    //         .cornerRadius(20)
+                    //         .padding(.top, 8)
+                    //     Spacer()
+                    // }
+                    // .padding(.top, geometry.safeAreaInsets.top + 10)
                     
                     // 分页内容 - 横向布局
                     TabView(selection: $currentPage) {
@@ -55,9 +55,8 @@ struct ComicResultView: View {
                 }
             }
         }
-        .navigationTitle("连环画结果")
-        .navigationBarTitleDisplayMode(.inline)
-        
+        // .navigationTitle("连环画结果")
+        // .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // 强制横屏
             if #available(iOS 16.0, *) {
