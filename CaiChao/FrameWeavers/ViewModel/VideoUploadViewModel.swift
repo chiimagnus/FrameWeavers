@@ -11,7 +11,6 @@ class VideoUploadViewModel: ObservableObject {
     @Published var comicResult: ComicResult?
     @Published var isShowingPicker = false
     @Published var uploadMode: UploadMode = .mock
-    @Published var showComicResult = false
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?

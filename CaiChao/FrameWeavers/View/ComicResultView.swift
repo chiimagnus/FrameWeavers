@@ -97,6 +97,9 @@ struct ComicResultView: View {
                     }
             )
         }
+        .navigationTitle("连环画结果")
+        .navigationBarTitleDisplayMode(.inline)
+        
         .onAppear {
             // 强制横屏
             if #available(iOS 16.0, *) {
