@@ -7,21 +7,28 @@ struct VideoUploadView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                // 简单的模式切换
-                HStack {
-                    Text("模式:")
-                        .font(.caption)
+            ZStack {
+                // 背景图片
+                Image("背景")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    // 简单的模式切换
+                    HStack {
+                        Text("模式:")
+                            .font(.caption)
 
-                    Picker("上传模式", selection: $viewModel.uploadMode) {
-                        Text("Mock").tag(UploadMode.mock)
-                        Text("真实").tag(UploadMode.real)
+                        Picker("上传模式", selection: $viewModel.uploadMode) {
+                            Text("Mock").tag(UploadMode.mock)
+                            Text("真实").tag(UploadMode.real)
+                        }
+                        .pickerStyle(.segmented)
+
+                        Spacer()
                     }
-                    .pickerStyle(.segmented)
-
-                    Spacer()
-                }
-                .padding(.horizontal)
+                    .padding(.horizontal)
 
                 if viewModel.selectedVideos.isEmpty {
                     // 选择视频界面
@@ -151,6 +158,8 @@ struct VideoUploadView: View {
             }
             .padding()
             .navigationTitle("视频转连环画")
+            }
+            .background(Color.clear) // 确保背景透明
         }
     }
     
