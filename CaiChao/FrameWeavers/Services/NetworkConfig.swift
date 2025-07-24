@@ -7,18 +7,18 @@ struct NetworkConfig {
 
     // API端点
     enum Endpoint {
-        case uploadVideos  // 支持多视频上传
-        case uploadProgress(taskId: String)
-        case validateVideo
+        case uploadVideos           // 上传视频
+        case taskStatus(taskId: String)  // 查询任务状态
+        case taskCancel(taskId: String)  // 取消任务
 
         var path: String {
             switch self {
             case .uploadVideos:
                 return "/api/upload/videos"
-            case .uploadProgress(let taskId):
-                return "/api/upload/progress/\(taskId)"
-            case .validateVideo:
-                return "/api/validate/video"
+            case .taskStatus(let taskId):
+                return "/api/task/status/\(taskId)"
+            case .taskCancel(let taskId):
+                return "/api/task/cancel/\(taskId)"
             }
         }
 
