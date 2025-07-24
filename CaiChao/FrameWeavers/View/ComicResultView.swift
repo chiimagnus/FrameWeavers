@@ -6,70 +6,60 @@ struct ComicResultView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // 页面指示器
-                HStack {
-                    Spacer()
-                    Text("\(currentPage + 1)/\(comicResult.panels.count)")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.black.opacity(0.7))
-                        .cornerRadius(20)
-                        .padding(.top, 8)
-                    Spacer()
-                }
+            ZStack {
+                Color.black.edgesIgnoringSafeArea(.all)
                 
-                // 分页内容
-                TabView(selection: $currentPage) {
-                    ForEach(0..<comicResult.panels.count, id: \.self) { index in
-                        let panel = comicResult.panels[index]
-                        VStack(spacing: 20) {
-                            AsyncImage(url: URL(string: panel.imageUrl)) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                            } placeholder: {
-                                ProgressView()
-                                    .frame(height: geometry.size.height * 0.6)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: geometry.size.height * 0.7)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(8)
-                            
-                            if let narration = panel.narration {
-                                Text(narration)
-                                    .font(.body)
-                                    .padding(.horizontal)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                        }
-                        .tag(index)
-                    }
-                }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .never))
-                
-                // 互动问题区域
-                if currentPage == comicResult.panels.count - 1 {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("互动问题")
+                VStack(spacing: 0) {
+                    // 页面指示器 - 保持在顶部
+                    HStack {
+                        Spacer()
+                        Text("\(currentPage + 1)/\(comicResult.panels.count)")
                             .font(.headline)
-                        
-                        ForEach(comicResult.finalQuestions, id: \.self) { question in
-                            Text("• \(question)")
-                                .font(.body)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(20)
+                            .padding(.top, 8)
+                        Spacer()
+                    }
+                    .padding(.top, geometry.safeAreaInsets.top + 10)
+                    
+                    // 分页内容 - 横向布局
+                    TabView(selection: $currentPage) {
+                        ForEach(0..<comicResult.panels.count, id: \.self) { index in
+                            let panel = comicResult.panels[index]
+                            ComicPanelView(panel: panel, geometry: geometry)
+                                .tag(index)
                         }
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color(UIColor.systemBackground))
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                    .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .never))
+                    
+                    // 互动问题区域 - 仅在最后一页显示
+                    if currentPage == comicResult.panels.count - 1 {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("互动问题")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            
+                            ForEach(comicResult.finalQuestions, id: \.self) { question in
+                                Text("• \(question)")
+                                    .font(.body)
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.3))
+                        .padding(.bottom, geometry.safeAreaInsets.bottom + 10)
+                    }
                 }
             }
         }
         .navigationTitle("连环画结果")
         .navigationBarTitleDisplayMode(.inline)
+        
         .onAppear {
             // 强制横屏
             if #available(iOS 16.0, *) {
@@ -92,5 +82,93 @@ struct ComicResultView: View {
                 UINavigationController.attemptRotationToDeviceOrientation()
             }
         }
+    }
+}
+
+// 单独的漫画页面视图组件
+struct ComicPanelView: View {
+    let panel: ComicPanel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            // 左侧图片区域 - 占据约60%宽度
+            AsyncImage(url: URL(string: panel.imageUrl)) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(
+                            width: geometry.size.width * 0.6,
+                            height: geometry.size.height * 0.75
+                        )
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(12)
+                        .clipped()
+                    
+                case .failure(_):
+                    VStack {
+                        Image(systemName: "photo")
+                            .font(.largeTitle)
+                            .foregroundColor(.gray)
+                        Text("图片加载失败")
+                            .foregroundColor(.gray)
+                    }
+                    .frame(
+                        width: geometry.size.width * 0.6,
+                        height: geometry.size.height * 0.75
+                    )
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    
+                case .empty:
+                    ProgressView()
+                        .frame(
+                            width: geometry.size.width * 0.6,
+                            height: geometry.size.height * 0.75
+                        )
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(12)
+                @unknown default:
+                    EmptyView()
+                }
+            }
+            
+            // 右侧文本区域 - 占据约35%宽度
+            if let narration = panel.narration {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("故事叙述")
+                            .font(.title3.bold())
+                            .foregroundColor(.white)
+                        
+                        Text(narration)
+                            .font(.body)
+                            .foregroundColor(.white.opacity(0.9))
+                            .lineSpacing(6)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(width: geometry.size.width * 0.35)
+                .background(Color.black.opacity(0.2))
+                .cornerRadius(12)
+            } else {
+                // 如果没有叙述文本，显示占位符
+                VStack {
+                    Image(systemName: "text.bubble")
+                        .font(.largeTitle)
+                        .foregroundColor(.gray.opacity(0.5))
+                    Text("暂无文本描述")
+                        .foregroundColor(.gray.opacity(0.5))
+                }
+                .frame(width: geometry.size.width * 0.35)
+                .background(Color.black.opacity(0.2))
+                .cornerRadius(12)
+            }
+        }
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
