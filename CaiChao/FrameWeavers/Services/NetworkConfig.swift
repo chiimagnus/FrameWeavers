@@ -2,28 +2,31 @@ import Foundation
 
 // MARK: - 网络配置
 struct NetworkConfig {
-    // 基础URL配置
-    static let baseURL = "https://api.example.com"  // 替换为实际的API地址
-    
+    // 基础URL配置 - 使用实际的API地址
+    static let baseURL = "https://video-api.zeabur.app"
+
     // API端点
     enum Endpoint {
-        case uploadVideo
-        case uploadProgress(mediaId: String)
+        case uploadVideos  // 支持多视频上传
+        case uploadProgress(taskId: String)
         case validateVideo
-        
+
         var path: String {
             switch self {
-            case .uploadVideo:
-                return "/api/v1/media/upload"
-            case .uploadProgress(let mediaId):
-                return "/api/v1/media/upload/\(mediaId)/progress"
+            case .uploadVideos:
+                return "/api/upload/videos"
+            case .uploadProgress(let taskId):
+                return "/api/upload/progress/\(taskId)"
             case .validateVideo:
-                return "/api/v1/media/validate"
+                return "/api/validate/video"
             }
         }
-        
+
         var url: URL {
-            return URL(string: NetworkConfig.baseURL + path)!
+            guard let url = URL(string: NetworkConfig.baseURL + path) else {
+                fatalError("无效的URL: \(NetworkConfig.baseURL + path)")
+            }
+            return url
         }
     }
     
