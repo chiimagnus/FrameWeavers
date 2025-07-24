@@ -36,20 +36,16 @@ struct WelcomeView: View {
                 matching: .videos,
                 photoLibrary: .shared()
             ) {
-                Text("开启一段故事织造")
-                    .font(.custom("WSQuanXing", size: 24))
-                    .foregroundColor(Color(hex: "#855C24"))
-                    .padding()
-                    .frame(width: 250, height: 44)
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.1)]), startPoint: .top, endPoint: .bottom)
-                    )
-                    .cornerRadius(22)
-                    .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 2)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22)
-                            .stroke(Color.white, lineWidth: 0.2)
-                    )
+                ZStack {
+                    Image("button-import")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 250, height: 44)
+                    
+                    Text("开启一段故事织造")
+                        .font(.custom("Kaiti SC", size: 16))
+                        .foregroundColor(.white)
+                }
             }
 
             Text("""
