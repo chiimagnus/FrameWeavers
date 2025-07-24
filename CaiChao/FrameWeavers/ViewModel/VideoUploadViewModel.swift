@@ -10,8 +10,10 @@ class VideoUploadViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var comicResult: ComicResult?
     @Published var isShowingPicker = false
-    
+    @Published var uploadMode: UploadMode = .mock
+
     private var cancellables = Set<AnyCancellable>()
+    private var uploadTask: URLSessionUploadTask?
     
     func selectVideo(_ url: URL) {
         selectedVideo = url
@@ -33,21 +35,31 @@ class VideoUploadViewModel: ObservableObject {
     
     func uploadVideo() {
         guard let videoURL = selectedVideo else { return }
-        
+
         uploadStatus = .uploading
         uploadProgress = 0
-        
+        errorMessage = nil
+
+        if uploadMode == .mock {
+            uploadVideoMock(videoURL: videoURL)
+        } else {
+            uploadVideoReal(videoURL: videoURL)
+        }
+    }
+
+    // MARK: - Mock上传
+    private func uploadVideoMock(videoURL: URL) {
         // 先清理之前的cancellables
         cancellables.removeAll()
-        
+
         // 模拟上传过程
         Timer.publish(every: 0.1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 guard let self = self else { return }
-                
+
                 self.uploadProgress += 0.05
-                
+
                 if self.uploadProgress >= 1.0 {
                     // 立即取消Timer
                     self.cancellables.removeAll()
@@ -56,6 +68,57 @@ class VideoUploadViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - 真实HTTP上传
+    private func uploadVideoReal(videoURL: URL) {
+        guard let request = createUploadRequest(videoURL: videoURL) else {
+            errorMessage = "创建上传请求失败"
+            uploadStatus = .failed
+            return
+        }
+
+        let session = URLSession.shared
+        uploadTask = session.uploadTask(with: request, fromFile: videoURL) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                self?.handleUploadResponse(data: data, response: response, error: error)
+            }
+        }
+
+        uploadTask?.resume()
+    }
+
+    private func createUploadRequest(videoURL: URL) -> URLRequest? {
+        // 简化的上传请求创建
+        guard let url = URL(string: "https://api.example.com/api/v1/media/upload") else {
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data", forHTTPHeaderField: "Content-Type")
+        request.setValue(DeviceIDGenerator.generateDeviceID(), forHTTPHeaderField: "X-Device-ID")
+
+        return request
+    }
+
+    private func handleUploadResponse(data: Data?, response: URLResponse?, error: Error?) {
+        if let error = error {
+            errorMessage = "上传失败: \(error.localizedDescription)"
+            uploadStatus = .failed
+            return
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            errorMessage = "服务器响应错误"
+            uploadStatus = .failed
+            return
+        }
+
+        // 上传成功，开始处理
+        uploadStatus = .processing
+        simulateProcessing()
     }
     
     private func simulateProcessing() {
@@ -86,6 +149,20 @@ class VideoUploadViewModel: ObservableObject {
         )
     }
     
+    // MARK: - 控制方法
+    func toggleUploadMode() {
+        uploadMode = uploadMode == .mock ? .real : .mock
+    }
+
+    func cancelUpload() {
+        uploadTask?.cancel()
+        uploadTask = nil
+        cancellables.removeAll()
+        uploadStatus = .pending
+        uploadProgress = 0
+        errorMessage = nil
+    }
+
     func reset() {
         selectedVideo = nil
         uploadStatus = .pending
@@ -93,5 +170,7 @@ class VideoUploadViewModel: ObservableObject {
         errorMessage = nil
         comicResult = nil
         cancellables.removeAll()
+        uploadTask?.cancel()
+        uploadTask = nil
     }
 }
