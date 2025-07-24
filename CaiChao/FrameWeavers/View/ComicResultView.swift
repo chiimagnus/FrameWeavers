@@ -7,8 +7,6 @@ struct ComicResultView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                Color.black.edgesIgnoringSafeArea(.all)
-                
                 VStack(spacing: 0) {
                     // 页面指示器 - 保持在顶部
                     HStack {
