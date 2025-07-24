@@ -4,7 +4,7 @@ import AVFoundation
 import Combine
 
 class VideoUploadViewModel: ObservableObject {
-    @Published var selectedVideo: URL?
+    @Published var selectedVideos: [URL] = []  // 支持多视频
     @Published var uploadStatus: UploadStatus = .pending
     @Published var uploadProgress: Double = 0
     @Published var errorMessage: String?
@@ -14,36 +14,67 @@ class VideoUploadViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
-    
-    func selectVideo(_ url: URL) {
-        selectedVideo = url
-        validateVideo(url)
+
+    // 兼容性属性，返回第一个选中的视频
+    var selectedVideo: URL? {
+        return selectedVideos.first
     }
     
-    private func validateVideo(_ url: URL) {
-        let asset = AVAsset(url: url)
-        let duration = asset.duration.seconds
-        
-        if duration > 300 { // 5分钟
-            errorMessage = "视频时长超过5分钟"
-            uploadStatus = .failed
-        } else {
+    func selectVideo(_ url: URL) {
+        selectedVideos = [url]  // 单视频选择
+        validateVideos()
+    }
+
+    func selectVideos(_ urls: [URL]) {
+        selectedVideos = urls  // 多视频选择
+        validateVideos()
+    }
+
+    func addVideo(_ url: URL) {
+        selectedVideos.append(url)
+        validateVideos()
+    }
+
+    func removeVideo(at index: Int) {
+        guard index < selectedVideos.count else { return }
+        selectedVideos.remove(at: index)
+        validateVideos()
+    }
+
+    private func validateVideos() {
+        guard !selectedVideos.isEmpty else {
             errorMessage = nil
             uploadStatus = .pending
+            return
         }
+
+        // 验证每个视频
+        for (index, url) in selectedVideos.enumerated() {
+            let asset = AVAsset(url: url)
+            let duration = asset.duration.seconds
+
+            if duration > 300 { // 5分钟
+                errorMessage = "视频\(index + 1)时长超过5分钟"
+                uploadStatus = .failed
+                return
+            }
+        }
+
+        errorMessage = nil
+        uploadStatus = .pending
     }
     
     func uploadVideo() {
-        guard let videoURL = selectedVideo else { return }
+        guard !selectedVideos.isEmpty else { return }
 
         uploadStatus = .uploading
         uploadProgress = 0
         errorMessage = nil
 
         if uploadMode == .mock {
-            uploadVideoMock(videoURL: videoURL)
+            uploadVideoMock(videoURL: selectedVideos.first!)  // Mock模式只用第一个视频
         } else {
-            uploadVideoReal(videoURL: videoURL)
+            uploadVideosReal(videoURLs: selectedVideos)  // 真实模式支持多视频
         }
     }
 
@@ -70,57 +101,99 @@ class VideoUploadViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    // MARK: - 真实HTTP上传
-    private func uploadVideoReal(videoURL: URL) {
-        guard let request = createUploadRequest(videoURL: videoURL) else {
-            errorMessage = "创建上传请求失败"
-            uploadStatus = .failed
-            return
-        }
+    // MARK: - 真实HTTP上传（支持多视频）
+    private func uploadVideosReal(videoURLs: [URL]) {
+        let url = NetworkConfig.Endpoint.uploadVideos.url
 
-        let session = URLSession.shared
-        uploadTask = session.uploadTask(with: request, fromFile: videoURL) { [weak self] data, response, error in
-            DispatchQueue.main.async {
-                self?.handleUploadResponse(data: data, response: response, error: error)
-            }
-        }
-
-        uploadTask?.resume()
-    }
-
-    private func createUploadRequest(videoURL: URL) -> URLRequest? {
-        // 使用NetworkConfig统一管理网络配置
-        let url = NetworkConfig.Endpoint.uploadVideo.url
-        
+        // 创建multipart/form-data请求
         var request = URLRequest(url: url)
-        request.httpMethod = NetworkConfig.HTTPMethod.POST.rawValue
-        
-        // 使用NetworkConfig的默认请求头
-        let headers = NetworkConfig.defaultHeaders()
-        for (key, value) in headers {
-            request.setValue(value, forHTTPHeaderField: key)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        do {
+            let httpBody = try createMultipartBody(videoURLs: videoURLs, boundary: boundary)
+
+            let session = URLSession.shared
+            uploadTask = session.uploadTask(with: request, from: httpBody) { [weak self] data, response, error in
+                DispatchQueue.main.async {
+                    self?.handleRealUploadResponse(data: data, response: response, error: error)
+                }
+            }
+
+            uploadTask?.resume()
+
+        } catch {
+            errorMessage = "创建上传请求失败: \(error.localizedDescription)"
+            uploadStatus = .failed
         }
-        
-        return request
     }
 
-    private func handleUploadResponse(data: Data?, response: URLResponse?, error: Error?) {
+    private func createMultipartBody(videoURLs: [URL], boundary: String) throws -> Data {
+        var body = Data()
+
+        // 添加device_id字段
+        let deviceId = DeviceIDGenerator.generateDeviceID()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"device_id\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(deviceId)\r\n".data(using: .utf8)!)
+
+        // 添加多个视频文件
+        for videoURL in videoURLs {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"videos\"; filename=\"\(videoURL.lastPathComponent)\"\r\n".data(using: .utf8)!)
+            body.append("Content-Type: video/mp4\r\n\r\n".data(using: .utf8)!)
+
+            let videoData = try Data(contentsOf: videoURL)
+            body.append(videoData)
+            body.append("\r\n".data(using: .utf8)!)
+        }
+
+        // 结束边界
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        return body
+    }
+
+    private func handleRealUploadResponse(data: Data?, response: URLResponse?, error: Error?) {
         if let error = error {
             errorMessage = "上传失败: \(error.localizedDescription)"
             uploadStatus = .failed
             return
         }
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
-            errorMessage = "服务器响应错误"
+        guard let httpResponse = response as? HTTPURLResponse else {
+            errorMessage = "无效的服务器响应"
             uploadStatus = .failed
             return
         }
 
-        // 上传成功，开始处理
-        uploadStatus = .processing
-        simulateProcessing()
+        guard let data = data else {
+            errorMessage = "没有收到响应数据"
+            uploadStatus = .failed
+            return
+        }
+
+        if httpResponse.statusCode == 200 {
+            do {
+                let response = try JSONDecoder().decode(RealUploadResponse.self, from: data)
+                if response.success, let taskId = response.task_id {
+                    print("上传成功，任务ID: \(taskId)")
+                    uploadStatus = .processing
+                    simulateProcessing() // 暂时还是用模拟处理
+                } else {
+                    errorMessage = response.message ?? "上传失败"
+                    uploadStatus = .failed
+                }
+            } catch {
+                errorMessage = "解析响应失败: \(error.localizedDescription)"
+                uploadStatus = .failed
+            }
+        } else {
+            errorMessage = "服务器错误 (\(httpResponse.statusCode))"
+            uploadStatus = .failed
+        }
     }
     
     private func simulateProcessing() {
@@ -131,10 +204,12 @@ class VideoUploadViewModel: ObservableObject {
     }
     
     private func createMockComicResult() -> ComicResult {
+        let videoTitle = selectedVideos.isEmpty ? "测试视频.mp4" : selectedVideos.map { $0.lastPathComponent }.joined(separator: ", ")
+
         return ComicResult(
             comicId: "mock-comic-123",
             deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "mock-device",
-            originalVideoTitle: selectedVideo?.lastPathComponent ?? "测试视频.mp4",
+            originalVideoTitle: videoTitle,
             creationDate: ISO8601DateFormatter().string(from: Date()),
             panelCount: 4,
             panels: [
@@ -166,7 +241,7 @@ class VideoUploadViewModel: ObservableObject {
     }
 
     func reset() {
-        selectedVideo = nil
+        selectedVideos = []
         uploadStatus = .pending
         uploadProgress = 0
         errorMessage = nil
