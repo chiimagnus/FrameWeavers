@@ -3,7 +3,7 @@ import PhotosUI
 
 struct VideoUploadView: View {
     @StateObject private var viewModel = VideoUploadViewModel()
-    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedItems: [PhotosPickerItem] = []
     
     var body: some View {
         NavigationStack {
@@ -23,10 +23,11 @@ struct VideoUploadView: View {
                 }
                 .padding(.horizontal)
 
-                if viewModel.selectedVideo == nil {
+                if viewModel.selectedVideos.isEmpty {
                     // 选择视频界面
                     PhotosPicker(
-                        selection: $selectedItem,
+                        selection: $selectedItems,
+                        maxSelectionCount: 5,  // 最多选择5个视频
                         matching: .videos,
                         photoLibrary: .shared()
                     ) {
@@ -35,32 +36,58 @@ struct VideoUploadView: View {
                                 .font(.system(size: 60))
                             Text("选择视频")
                                 .font(.title2)
-                            Text("时长需不超过5分钟")
+                            Text("最多选择5个视频，每个时长不超过5分钟")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(12)
                     }
-                    .onChange(of: selectedItem) { newItem in
+                    .onChange(of: selectedItems) { newItems in
                         Task {
-                            if let data = try? await newItem?.loadTransferable(type: Data.self),
-                               let url = saveVideoData(data) {
-                                await MainActor.run {
-                                    viewModel.selectVideo(url)
+                            var videoURLs: [URL] = []
+
+                            for item in newItems {
+                                if let data = try? await item.loadTransferable(type: Data.self),
+                                   let url = saveVideoData(data) {
+                                    videoURLs.append(url)
                                 }
+                            }
+
+                            await MainActor.run {
+                                viewModel.selectVideos(videoURLs)
                             }
                         }
                     }
                 } else {
                     // 已选择视频界面
                     VStack(spacing: 20) {
-                        VStack(spacing: 12) {
-                            Image(systemName: "video.fill")
-                                .font(.system(size: 40))
-                            Text(viewModel.selectedVideo?.lastPathComponent ?? "")
-                                .font(.headline)
+                        // 显示选中的视频列表
+                        VStack(spacing: 8) {
+                            HStack {
+                                Image(systemName: "video.fill")
+                                    .font(.system(size: 20))
+                                Text("已选择 \(viewModel.selectedVideos.count) 个视频")
+                                    .font(.headline)
+                                Spacer()
+                            }
+
+                            ForEach(Array(viewModel.selectedVideos.enumerated()), id: \.offset) { index, url in
+                                HStack {
+                                    Text("\(index + 1). \(url.lastPathComponent)")
+                                        .font(.caption)
+                                        .lineLimit(1)
+                                    Spacer()
+                                    Button("删除") {
+                                        viewModel.removeVideo(at: index)
+                                    }
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                }
+                                .padding(.horizontal, 8)
+                            }
                         }
                         .padding()
                         .background(Color.blue.opacity(0.1))
@@ -109,7 +136,7 @@ struct VideoUploadView: View {
                         
                         Button("重新选择") {
                             viewModel.reset()
-                            selectedItem = nil
+                            selectedItems = []
                         }
                         .foregroundColor(.red)
                     }
