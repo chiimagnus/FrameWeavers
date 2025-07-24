@@ -68,25 +68,7 @@ struct FileInfo: Codable {
 struct APIError: Codable {
     let code: String
     let message: String
-    let details: [String: Any]?
-
-    enum CodingKeys: String, CodingKey {
-        case code, message, details
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        code = try container.decode(String.self, forKey: .code)
-        message = try container.decode(String.self, forKey: .message)
-        details = try? container.decode([String: Any].self, forKey: .details)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(code, forKey: .code)
-        try container.encode(message, forKey: .message)
-        // details 编码暂时跳过，因为 [String: Any] 不直接支持 Codable
-    }
+    let details: [String: String]?  // 简化为 String 类型
 }
 
 // MARK: - 上传进度
