@@ -135,7 +135,13 @@ class VideoUploadViewModel: ObservableObject {
     private func createMultipartBody(videoURLs: [URL], boundary: String) throws -> Data {
         var body = Data()
 
-        // 根据API文档，只需要添加视频文件，不需要device_id
+        // 添加必需的device_id参数
+        let deviceId = DeviceIDGenerator.generateDeviceID()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"device_id\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(deviceId)\r\n".data(using: .utf8)!)
+
+        // 添加视频文件
         for videoURL in videoURLs {
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
             body.append("Content-Disposition: form-data; name=\"videos\"; filename=\"\(videoURL.lastPathComponent)\"\r\n".data(using: .utf8)!)
@@ -196,6 +202,12 @@ class VideoUploadViewModel: ObservableObject {
             return
         }
 
+        // 添加调试信息
+        print("HTTP状态码: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("服务器响应内容: \(responseString)")
+        }
+
         if httpResponse.statusCode == 200 {
             do {
                 let response = try JSONDecoder().decode(RealUploadResponse.self, from: data)
@@ -214,6 +226,10 @@ class VideoUploadViewModel: ObservableObject {
                     uploadStatus = .failed
                 }
             } catch {
+                print("JSON解析错误详情: \(error)")
+                if let decodingError = error as? DecodingError {
+                    print("解码错误详情: \(decodingError)")
+                }
                 errorMessage = "解析响应失败: \(error.localizedDescription)"
                 uploadStatus = .failed
             }
@@ -255,37 +271,41 @@ class VideoUploadViewModel: ObservableObject {
             return
         }
 
+        // 打印响应内容以便调试
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("任务状态响应: \(responseString)")
+        }
+
         do {
-            let statusResponse = try JSONDecoder().decode(TaskStatusResponse.self, from: data)
+            // 尝试解析为通用JSON对象
+            if let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                // 提取关键字段
+                let success = jsonObject["success"] as? Bool ?? false
+                let status = jsonObject["status"] as? String ?? ""
+                let progress = jsonObject["progress"] as? Int ?? 0
+                let message = jsonObject["message"] as? String ?? ""
 
-            // 更新进度
-            uploadProgress = Double(statusResponse.progress) / 100.0
+                // 更新进度
+                uploadProgress = Double(progress) / 100.0
 
-            switch statusResponse.status {
-            case "uploaded":
-                uploadStatus = .processing
-            case "processing":
-                uploadStatus = .processing
-            case "completed":
-                uploadStatus = .completed
-                progressTimer?.invalidate()
-                progressTimer = nil
-                // 这里可以处理完成后的结果
-                comicResult = createMockComicResult()  // 暂时用Mock结果
-            case "error":
-                uploadStatus = .failed
-                errorMessage = statusResponse.message
-                progressTimer?.invalidate()
-                progressTimer = nil
-            case "cancelled":
-                uploadStatus = .failed
-                errorMessage = "任务已取消"
-                progressTimer?.invalidate()
-                progressTimer = nil
-            default:
-                break
+                print("任务状态: \(status), 进度: \(progress)%")
+
+                if status == "completed" {
+                    uploadStatus = .completed
+                    progressTimer?.invalidate()
+                    progressTimer = nil
+                    // 使用Mock结果
+                    comicResult = createMockComicResult()
+                } else if status == "error" || status == "cancelled" {
+                    uploadStatus = .failed
+                    errorMessage = message
+                    progressTimer?.invalidate()
+                    progressTimer = nil
+                } else {
+                    // 处理中或上传完成等待处理
+                    uploadStatus = .processing
+                }
             }
-
         } catch {
             print("解析状态响应失败: \(error)")
         }
