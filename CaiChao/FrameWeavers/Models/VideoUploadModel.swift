@@ -34,13 +34,20 @@ struct VideoMetadata: Codable {
     let uploadedAt: String
 }
 
-// MARK: - 上传请求
-struct VideoUploadRequest {
-    let videoURL: URL
-    let metadata: VideoMetadata
+// // MARK: - 上传请求
+// struct VideoUploadRequest {
+//     let videoURL: URL
+//     let metadata: VideoMetadata
+// }
+
+// MARK: - 真实API响应模型
+struct RealUploadResponse: Codable {
+    let success: Bool
+    let task_id: String?
+    let message: String?
 }
 
-// MARK: - API响应模型
+// MARK: - Mock API响应模型（保持兼容）
 struct UploadResponse: Codable {
     let success: Bool
     let data: UploadData?
@@ -63,6 +70,12 @@ struct FileInfo: Codable {
     let fileSize: Int64
     let duration: Double
     let format: String
+}
+
+// MARK: - 多视频上传请求
+struct MultiVideoUploadRequest {
+    let videoURLs: [URL]
+    let deviceId: String
 }
 
 struct APIError: Codable {
