@@ -200,7 +200,7 @@ struct VideoUploadView: View {
                             
                             if viewModel.uploadStatus == .completed {
                                 NavigationLink("查看结果") {
-                                    ComicResultView(comicResult: viewModel.comicResult!)
+                                    OpenResultsView(comicResult: viewModel.comicResult!)
                                 }
                                 .buttonStyle(.borderedProminent)
                             }
