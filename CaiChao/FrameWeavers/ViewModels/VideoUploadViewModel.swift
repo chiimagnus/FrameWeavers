@@ -14,6 +14,8 @@ class VideoUploadViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
+    private var currentTaskId: String?  // 当前任务ID
+    private var progressTimer: Timer?   // 进度查询定时器
 
     // 兼容性属性，返回第一个选中的视频
     var selectedVideo: URL? {
@@ -133,17 +135,14 @@ class VideoUploadViewModel: ObservableObject {
     private func createMultipartBody(videoURLs: [URL], boundary: String) throws -> Data {
         var body = Data()
 
-        // 添加device_id字段
-        let deviceId = DeviceIDGenerator.generateDeviceID()
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"device_id\"\r\n\r\n".data(using: .utf8)!)
-        body.append("\(deviceId)\r\n".data(using: .utf8)!)
-
-        // 添加多个视频文件
+        // 根据API文档，只需要添加视频文件，不需要device_id
         for videoURL in videoURLs {
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
             body.append("Content-Disposition: form-data; name=\"videos\"; filename=\"\(videoURL.lastPathComponent)\"\r\n".data(using: .utf8)!)
-            body.append("Content-Type: video/mp4\r\n\r\n".data(using: .utf8)!)
+
+            // 根据文件扩展名设置正确的Content-Type
+            let mimeType = getMimeType(for: videoURL)
+            body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
 
             let videoData = try Data(contentsOf: videoURL)
             body.append(videoData)
@@ -154,6 +153,28 @@ class VideoUploadViewModel: ObservableObject {
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         return body
+    }
+
+    private func getMimeType(for url: URL) -> String {
+        let fileExtension = url.pathExtension.lowercased()
+        switch fileExtension {
+        case "mp4":
+            return "video/mp4"
+        case "mov":
+            return "video/quicktime"
+        case "avi":
+            return "video/x-msvideo"
+        case "mkv":
+            return "video/x-matroska"
+        case "wmv":
+            return "video/x-ms-wmv"
+        case "flv":
+            return "video/x-flv"
+        case "3gp":
+            return "video/3gpp"
+        default:
+            return "video/mp4"  // 默认
+        }
     }
 
     private func handleRealUploadResponse(data: Data?, response: URLResponse?, error: Error?) {
@@ -180,10 +201,16 @@ class VideoUploadViewModel: ObservableObject {
                 let response = try JSONDecoder().decode(RealUploadResponse.self, from: data)
                 if response.success, let taskId = response.task_id {
                     print("上传成功，任务ID: \(taskId)")
+                    print("上传文件数: \(response.uploaded_files ?? 0)")
+                    if let invalidFiles = response.invalid_files, !invalidFiles.isEmpty {
+                        print("无效文件: \(invalidFiles)")
+                    }
+
+                    currentTaskId = taskId
                     uploadStatus = .processing
-                    simulateProcessing() // 暂时还是用模拟处理
+                    startProgressPolling(taskId: taskId)  // 开始轮询进度
                 } else {
-                    errorMessage = response.message ?? "上传失败"
+                    errorMessage = response.message
                     uploadStatus = .failed
                 }
             } catch {
@@ -191,11 +218,79 @@ class VideoUploadViewModel: ObservableObject {
                 uploadStatus = .failed
             }
         } else {
-            errorMessage = "服务器错误 (\(httpResponse.statusCode))"
+            // 处理错误响应
+            do {
+                let errorResponse = try JSONDecoder().decode(RealUploadResponse.self, from: data)
+                errorMessage = errorResponse.message
+            } catch {
+                errorMessage = "服务器错误 (\(httpResponse.statusCode))"
+            }
             uploadStatus = .failed
         }
     }
     
+    // MARK: - 进度轮询
+    private func startProgressPolling(taskId: String) {
+        progressTimer?.invalidate()
+
+        progressTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            self?.checkTaskStatus(taskId: taskId)
+        }
+    }
+
+    private func checkTaskStatus(taskId: String) {
+        let url = NetworkConfig.Endpoint.taskStatus(taskId: taskId).url
+
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                self?.handleTaskStatusResponse(data: data, response: response, error: error)
+            }
+        }.resume()
+    }
+
+    private func handleTaskStatusResponse(data: Data?, response: URLResponse?, error: Error?) {
+        guard let data = data,
+              let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            return
+        }
+
+        do {
+            let statusResponse = try JSONDecoder().decode(TaskStatusResponse.self, from: data)
+
+            // 更新进度
+            uploadProgress = Double(statusResponse.progress) / 100.0
+
+            switch statusResponse.status {
+            case "uploaded":
+                uploadStatus = .processing
+            case "processing":
+                uploadStatus = .processing
+            case "completed":
+                uploadStatus = .completed
+                progressTimer?.invalidate()
+                progressTimer = nil
+                // 这里可以处理完成后的结果
+                comicResult = createMockComicResult()  // 暂时用Mock结果
+            case "error":
+                uploadStatus = .failed
+                errorMessage = statusResponse.message
+                progressTimer?.invalidate()
+                progressTimer = nil
+            case "cancelled":
+                uploadStatus = .failed
+                errorMessage = "任务已取消"
+                progressTimer?.invalidate()
+                progressTimer = nil
+            default:
+                break
+            }
+
+        } catch {
+            print("解析状态响应失败: \(error)")
+        }
+    }
+
     private func simulateProcessing() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.comicResult = self.createMockComicResult()
@@ -232,12 +327,43 @@ class VideoUploadViewModel: ObservableObject {
     }
 
     func cancelUpload() {
+        // 取消上传任务
         uploadTask?.cancel()
         uploadTask = nil
+
+        // 停止进度轮询
+        progressTimer?.invalidate()
+        progressTimer = nil
+
+        // 如果有任务ID，尝试取消后端任务
+        if let taskId = currentTaskId {
+            cancelBackendTask(taskId: taskId)
+        }
+
         cancellables.removeAll()
         uploadStatus = .pending
         uploadProgress = 0
         errorMessage = nil
+        currentTaskId = nil
+    }
+
+    private func cancelBackendTask(taskId: String) {
+        let url = NetworkConfig.Endpoint.taskCancel(taskId: taskId).url
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let data = data,
+               let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                do {
+                    let cancelResponse = try JSONDecoder().decode(TaskCancelResponse.self, from: data)
+                    print("任务取消结果: \(cancelResponse.message)")
+                } catch {
+                    print("解析取消响应失败: \(error)")
+                }
+            }
+        }.resume()
     }
 
     func reset() {
@@ -249,5 +375,8 @@ class VideoUploadViewModel: ObservableObject {
         cancellables.removeAll()
         uploadTask?.cancel()
         uploadTask = nil
+        progressTimer?.invalidate()
+        progressTimer = nil
+        currentTaskId = nil
     }
 }
