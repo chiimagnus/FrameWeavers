@@ -119,11 +119,17 @@ struct VideoUploadView: View {
                                 .font(.caption)
                             }
                         }
-                        
+
                         if viewModel.uploadStatus == .processing {
                             VStack(spacing: 12) {
-                                ProgressView()
-                                Text("AI处理中，请稍候...")
+                                ProgressView(value: viewModel.uploadProgress)
+                                Text("AI处理中... \(Int(viewModel.uploadProgress * 100))%")
+
+                                Button("取消处理") {
+                                    viewModel.cancelUpload()
+                                }
+                                .foregroundColor(.red)
+                                .font(.caption)
                             }
                         }
                         
