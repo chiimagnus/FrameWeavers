@@ -8,6 +8,21 @@ struct VideoUploadView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+                // 简单的模式切换
+                HStack {
+                    Text("模式:")
+                        .font(.caption)
+
+                    Picker("上传模式", selection: $viewModel.uploadMode) {
+                        Text("Mock").tag(UploadMode.mock)
+                        Text("真实").tag(UploadMode.real)
+                    }
+                    .pickerStyle(.segmented)
+
+                    Spacer()
+                }
+                .padding(.horizontal)
+
                 if viewModel.selectedVideo == nil {
                     // 选择视频界面
                     PhotosPicker(
@@ -69,6 +84,12 @@ struct VideoUploadView: View {
                             VStack(spacing: 12) {
                                 ProgressView(value: viewModel.uploadProgress)
                                 Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
+
+                                Button("取消上传") {
+                                    viewModel.cancelUpload()
+                                }
+                                .foregroundColor(.red)
+                                .font(.caption)
                             }
                         }
                         
