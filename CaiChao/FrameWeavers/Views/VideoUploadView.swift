@@ -17,136 +17,135 @@ struct VideoUploadView: View {
                 VStack(spacing: 20) {
                     // 模式切换UI已删除，仅使用真实上传模式
 
-                if viewModel.selectedVideos.isEmpty {
-                    // 选择视频界面
-                    PhotosPicker(
-                        selection: $selectedItems,
-                        maxSelectionCount: 5,  // 最多选择5个视频
-                        matching: .videos,
-                        photoLibrary: .shared()
-                    ) {
-                        VStack(spacing: 12) {
-                            Image(systemName: "video.badge.plus")
-                                .font(.system(size: 60))
-                            Text("选择视频")
-                                .font(.title2)
-                            Text("最多选择5个视频，每个时长不超过5分钟")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
-                    }
-                    .onChange(of: selectedItems) { newItems in
-                        Task {
-                            var videoURLs: [URL] = []
-
-                            for item in newItems {
-                                if let data = try? await item.loadTransferable(type: Data.self),
-                                   let url = saveVideoData(data) {
-                                    videoURLs.append(url)
-                                }
-                            }
-
-                            await MainActor.run {
-                                viewModel.selectVideos(videoURLs)
-                            }
-                        }
-                    }
-                } else {
-                    // 已选择视频界面
-                    VStack(spacing: 20) {
-                        // 显示选中的视频列表
-                        VStack(spacing: 8) {
-                            HStack {
-                                Image(systemName: "video.fill")
-                                    .font(.system(size: 20))
-                                Text("已选择 \(viewModel.selectedVideos.count) 个视频")
-                                    .font(.headline)
-                                Spacer()
-                            }
-
-                            ForEach(Array(viewModel.selectedVideos.enumerated()), id: \.offset) { index, url in
-                                HStack {
-                                    Text("\(index + 1). \(url.lastPathComponent)")
-                                        .font(.caption)
-                                        .lineLimit(1)
-                                    Spacer()
-                                    Button("删除") {
-                                        viewModel.removeVideo(at: index)
-                                    }
+                    if viewModel.selectedVideos.isEmpty {
+                        // 选择视频界面
+                        PhotosPicker(
+                            selection: $selectedItems,
+                            maxSelectionCount: 5,  // 最多选择5个视频
+                            matching: .videos,
+                            photoLibrary: .shared()
+                        ) {
+                            VStack(spacing: 12) {
+                                Image(systemName: "video.badge.plus")
+                                    .font(.system(size: 60))
+                                Text("选择视频")
+                                    .font(.title2)
+                                Text("最多选择5个视频，每个时长不超过5分钟")
                                     .font(.caption)
-                                    .foregroundColor(.red)
-                                }
-                                .padding(.horizontal, 8)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
                             }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                        }
+                        .onChange(of: selectedItems) { newItems in
+                            Task {
+                                var videoURLs: [URL] = []
+
+                                for item in newItems {
+                                    if let data = try? await item.loadTransferable(type: Data.self),
+                                    let url = saveVideoData(data) {
+                                        videoURLs.append(url)
+                                    }
+                                }
+
+                                await MainActor.run {
+                                    viewModel.selectVideos(videoURLs)
+                                }
+                            }
+                        }
+                    } else {
+                        // 已选择视频界面
+                        VStack(spacing: 20) {
+                            // 显示选中的视频列表
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Image(systemName: "video.fill")
+                                        .font(.system(size: 20))
+                                    Text("已选择 \(viewModel.selectedVideos.count) 个视频")
+                                        .font(.headline)
+                                    Spacer()
+                                }
+
+                                ForEach(Array(viewModel.selectedVideos.enumerated()), id: \.offset) { index, url in
+                                    HStack {
+                                        Text("\(index + 1). \(url.lastPathComponent)")
+                                            .font(.caption)
+                                            .lineLimit(1)
+                                        Spacer()
+                                        Button("删除") {
+                                            viewModel.removeVideo(at: index)
+                                        }
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                    }
+                                    .padding(.horizontal, 8)
+                                }
+                            }
+                            .padding()
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(12)
+                            
+                            if let error = viewModel.errorMessage {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                    .font(.callout)
+                            }
+                            
+                            if viewModel.uploadStatus == .pending {
+                                Button("开始上传") {
+                                    viewModel.uploadVideo()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(viewModel.errorMessage != nil)
+                            }
+                            
+                            if viewModel.uploadStatus == .uploading {
+                                VStack(spacing: 12) {
+                                    ProgressView(value: viewModel.uploadProgress)
+                                    Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
+
+                                    Button("取消上传") {
+                                        viewModel.cancelUpload()
+                                    }
+                                    .foregroundColor(.red)
+                                    .font(.caption)
+                                }
+                            }
+
+                            if viewModel.uploadStatus == .processing {
+                                VStack(spacing: 12) {
+                                    ProgressView(value: viewModel.uploadProgress)
+                                    Text("AI处理中... \(Int(viewModel.uploadProgress * 100))%")
+
+                                    Button("取消处理") {
+                                        viewModel.cancelUpload()
+                                    }
+                                    .foregroundColor(.red)
+                                    .font(.caption)
+                                }
+                            }
+                            
+                            if viewModel.uploadStatus == .completed {
+                                NavigationLink("查看结果") {
+                                    ComicResultView(comicResult: viewModel.comicResult!)
+                                }
+                                .buttonStyle(.borderedProminent)
+                            }
+                            
+                            Button("重新选择") {
+                                viewModel.reset()
+                                selectedItems = []
+                            }
+                            .foregroundColor(.red)
                         }
                         .padding()
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(12)
-                        
-                        if let error = viewModel.errorMessage {
-                            Text(error)
-                                .foregroundColor(.red)
-                                .font(.callout)
-                        }
-                        
-                        if viewModel.uploadStatus == .pending {
-                            Button("开始上传") {
-                                viewModel.uploadVideo()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(viewModel.errorMessage != nil)
-                        }
-                        
-                        if viewModel.uploadStatus == .uploading {
-                            VStack(spacing: 12) {
-                                ProgressView(value: viewModel.uploadProgress)
-                                Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
-
-                                Button("取消上传") {
-                                    viewModel.cancelUpload()
-                                }
-                                .foregroundColor(.red)
-                                .font(.caption)
-                            }
-                        }
-
-                        if viewModel.uploadStatus == .processing {
-                            VStack(spacing: 12) {
-                                ProgressView(value: viewModel.uploadProgress)
-                                Text("AI处理中... \(Int(viewModel.uploadProgress * 100))%")
-
-                                Button("取消处理") {
-                                    viewModel.cancelUpload()
-                                }
-                                .foregroundColor(.red)
-                                .font(.caption)
-                            }
-                        }
-                        
-                        if viewModel.uploadStatus == .completed {
-                            NavigationLink("查看结果") {
-                                ComicResultView(comicResult: viewModel.comicResult!)
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
-                        
-                        Button("重新选择") {
-                            viewModel.reset()
-                            selectedItems = []
-                        }
-                        .foregroundColor(.red)
                     }
-                    .padding()
                 }
+                .padding()
             }
-            .padding()
-            // .navigationTitle("视频转连环画")
-            }
-            .background(Color.clear) // 确保背景透明
+            .background(Color(red: 0.81, green: 0.74, blue: 0.66))
         }
     }
     
