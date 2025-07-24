@@ -95,6 +95,7 @@ extension Color {
 struct VideoUploadView: View {
     @StateObject private var viewModel = VideoUploadViewModel()
     @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var navigateToResults = false
     
     var body: some View {
         NavigationStack {
@@ -199,15 +200,15 @@ struct VideoUploadView: View {
                             }
                             
                             if viewModel.uploadStatus == .completed {
-                                NavigationLink("查看结果") {
-                                    OpenResultsView(comicResult: viewModel.comicResult!)
+                                NavigationLink(destination: OpenResultsView(comicResult: viewModel.comicResult!), isActive: $navigateToResults) {
+                                    EmptyView()
                                 }
-                                .buttonStyle(.borderedProminent)
                             }
                             
                             Button("重新选择") {
                                 viewModel.reset()
                                 selectedItems = []
+                                navigateToResults = false
                             }
                             .foregroundColor(.red)
                         }
@@ -217,6 +218,11 @@ struct VideoUploadView: View {
                 .padding()
             }
             .background(Color(red: 0.81, green: 0.74, blue: 0.66))
+            .onChange(of: viewModel.uploadStatus) { newStatus in
+                if newStatus == .completed {
+                    navigateToResults = true
+                }
+            }
         }
     }
     
