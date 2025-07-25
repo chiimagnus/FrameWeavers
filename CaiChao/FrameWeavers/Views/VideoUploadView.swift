@@ -72,7 +72,6 @@ struct WelcomeView: View {
 struct VideoUploadView: View {
     @StateObject private var viewModel = VideoUploadViewModel()
     @State private var selectedItems: [PhotosPickerItem] = []
-    @State private var navigateToResults = false
     @State private var navigateToStyleSelection = false
     
     var body: some View {
@@ -85,8 +84,6 @@ struct VideoUploadView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 20) {
-                    // 模式切换UI已删除，仅使用真实上传模式
-
                     if viewModel.selectedVideos.isEmpty {
                         WelcomeView(selectedItems: $selectedItems)
                             .onChange(of: selectedItems) { _, newItems in
@@ -102,6 +99,10 @@ struct VideoUploadView: View {
 
                                     await MainActor.run {
                                         viewModel.selectVideos(videoURLs)
+                                        // 选择视频后自动跳转到选择风格界面
+                                        if !videoURLs.isEmpty {
+                                            navigateToStyleSelection = true
+                                        }
                                     }
                                 }
                             }
@@ -143,55 +144,24 @@ struct VideoUploadView: View {
                                     .font(.callout)
                             }
                             
-                            if viewModel.uploadStatus == .pending {
-                                Button("开始上传") {
-                                    viewModel.uploadVideo()
-                                    navigateToStyleSelection = true
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .disabled(viewModel.errorMessage != nil)
+                            // 继续按钮
+                            Button("继续") {
+                                navigateToStyleSelection = true
                             }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(viewModel.selectedVideos.isEmpty)
                             
-                            if viewModel.uploadStatus == .uploading {
-                                VStack(spacing: 12) {
-                                    ProgressView(value: viewModel.uploadProgress)
-                                    Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
-
-                                    Button("取消上传") {
-                                        viewModel.cancelUpload()
-                                    }
-                                    .foregroundColor(.red)
-                                    .font(.caption)
-                                }
-                            }
-
-                            if viewModel.uploadStatus == .processing {
-                                VStack(spacing: 12) {
-                                    ProgressView(value: viewModel.uploadProgress)
-                                    Text("AI处理中... \(Int(viewModel.uploadProgress * 100))%")
-
-                                    Button("取消处理") {
-                                        viewModel.cancelUpload()
-                                    }
-                                    .foregroundColor(.red)
-                                    .font(.caption)
-                                }
-                            }
-                            
-                            if viewModel.uploadStatus == .completed {
-                                NavigationLink(destination: OpenResultsView(comicResult: viewModel.comicResult!), isActive: $navigateToResults) {
-                                    EmptyView()
-                                }
-                            }
-                            
-                            NavigationLink(destination: SelectStyleView(), isActive: $navigateToStyleSelection) {
+                            // 导航到选择风格界面，传递视频URL
+                            NavigationLink(
+                                destination: SelectStyleView(selectedVideos: viewModel.selectedVideos),
+                                isActive: $navigateToStyleSelection
+                            ) {
                                 EmptyView()
                             }
                             
                             Button("重新选择") {
                                 viewModel.reset()
                                 selectedItems = []
-                                navigateToResults = false
                             }
                             .foregroundColor(.red)
                         }
@@ -201,11 +171,6 @@ struct VideoUploadView: View {
                 .padding()
             }
             .background(Color(red: 0.81, green: 0.74, blue: 0.66))
-            .onChange(of: viewModel.uploadStatus) { _, newStatus in
-                if newStatus == .completed {
-                    navigateToResults = true
-                }
-            }
         }
     }
     
