@@ -44,28 +44,6 @@ struct ComicResultView: View {
                 }
             }
         }
-        .onAppear {
-            // 强制横屏
-            if #available(iOS 16.0, *) {
-                let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
-            } else {
-                // Fallback for earlier versions
-                UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
-                UINavigationController.attemptRotationToDeviceOrientation()
-            }
-        }
-        .onDisappear {
-            // 恢复竖屏
-            if #available(iOS 16.0, *) {
-                let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
-            } else {
-                // Fallback for earlier versions
-                UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-                UINavigationController.attemptRotationToDeviceOrientation()
-            }
-        }
     }
 }
 
@@ -261,12 +239,28 @@ extension Notification.Name {
     static let comicPagePrevious = Notification.Name("comicPagePrevious")
 }
 
-// 单独的漫画页面视图组件 - 保持不变
+// 单独的漫画页面视图组件 - 支持横竖屏自适应布局
 struct ComicPanelView: View {
     let panel: ComicPanel
     let geometry: GeometryProxy
-    
+
+    // 判断是否为横屏
+    private var isLandscape: Bool {
+        geometry.size.width > geometry.size.height
+    }
+
     var body: some View {
+        if isLandscape {
+            // 横屏布局：图片在左，文本在右
+            landscapeLayout
+        } else {
+            // 竖屏布局：图片在上，文本在下
+            portraitLayout
+        }
+    }
+
+    // 横屏布局
+    private var landscapeLayout: some View {
         HStack(spacing: 20) {
             // 左侧图片区域 - 占据约60%宽度
             Image(panel.imageUrl)
@@ -276,18 +270,49 @@ struct ComicPanelView: View {
                     width: geometry.size.width * 0.6,
                     height: geometry.size.height * 0.75
                 )
-                .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
                 .clipped()
-            
+
             // 右侧文本区域 - 占据约35%宽度
+            textContent
+                .frame(width: geometry.size.width * 0.35)
+        }
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // 竖屏布局
+    private var portraitLayout: some View {
+        VStack(spacing: 20) {
+            // 上方图片区域 - 占据约60%高度
+            Image(panel.imageUrl)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(
+                    width: geometry.size.width * 0.8,
+                    height: geometry.size.height * 0.6
+                )
+                .cornerRadius(12)
+                .clipped()
+
+            // 下方文本区域 - 占据约35%高度
+            textContent
+                .frame(height: geometry.size.height * 0.35)
+        }
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // 文本内容组件
+    private var textContent: some View {
+        Group {
             if let narration = panel.narration {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("故事叙述")
                             .font(.title3.bold())
                             .foregroundColor(.white)
-                        
+
                         Text(narration)
                             .font(.body)
                             .foregroundColor(.white.opacity(0.9))
@@ -296,8 +321,7 @@ struct ComicPanelView: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(width: geometry.size.width * 0.35)
-                .background(Color.black.opacity(0.2))
+                .background(Color.clear) // 透明背景
                 .cornerRadius(12)
             } else {
                 // 如果没有叙述文本，显示占位符
@@ -308,12 +332,9 @@ struct ComicPanelView: View {
                     Text("暂无文本描述")
                         .foregroundColor(.gray.opacity(0.5))
                 }
-                .frame(width: geometry.size.width * 0.35)
-                .background(Color.black.opacity(0.2))
+                .background(Color.clear) // 透明背景
                 .cornerRadius(12)
             }
         }
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
