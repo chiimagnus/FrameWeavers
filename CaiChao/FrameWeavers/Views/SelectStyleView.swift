@@ -15,6 +15,12 @@ struct SelectStyleView: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#2F2617"))
                 
+                Image("四象限")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 400, height: 400)
+                    .padding(.horizontal)
+
                 ZStack{
                     Image("翻开画册")
                         .resizable()
