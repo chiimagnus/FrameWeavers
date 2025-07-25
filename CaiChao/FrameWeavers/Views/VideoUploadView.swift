@@ -11,26 +11,29 @@ struct WelcomeView: View {
                 .frame(width: 100, height: 100)
                 .shadow(radius: 10)
 
-            Text("""
-            有些记忆，
-            沉在手机深处，
-            无人翻阅，也无人倾听。
-            我们捡起那些画面，
-            像织布的人，
-            一帧帧织成故事。
-            不必剪辑，
-            也无需文字，
-            只要一段视频，
-            我便替你开口。
+            TypewriterView(
+                text: """
+                有些记忆，
+                沉在手机深处，
+                无人翻阅，也无人倾听。
+                我们捡起那些画面，
+                像织布的人，
+                一帧帧织成故事。
+                不必剪辑，
+                也无需文字，
+                只要一段视频，
+                我便替你开口。
 
-            帧织者，
-            让回忆再次发生。
-            """)
-                .font(.custom("Kaiti SC", size: 16))
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-                .foregroundColor(Color(hex: "#2F2617"))
-                .lineSpacing(15)
+                帧织者，
+                让回忆再次发生。
+                """,
+                typeSpeed: 0.08
+            )
+            .font(.custom("Kaiti SC", size: 16))
+            .fontWeight(.bold)
+            .multilineTextAlignment(.center)
+            .foregroundColor(Color(hex: "#2F2617"))
+            .lineSpacing(15)
 
             PhotosPicker(
                 selection: $selectedItems,
@@ -240,4 +243,3 @@ struct VideoUploadView: View {
         }
     }
 }
-
