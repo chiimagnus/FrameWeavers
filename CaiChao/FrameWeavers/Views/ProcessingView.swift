@@ -189,8 +189,8 @@ struct ProcessingView: View {
             } else if viewModel.uploadStatus == .completed {
                 VStack {
                     Text("处理完成！")
-                    if let result = viewModel.comicResult {
-                        NavigationLink("查看结果", destination: OpenResultsView(comicResult: result))
+                    Button("查看结果") {
+                        navigateToResults = true
                     }
                 }
             } else if viewModel.uploadStatus == .failed {
