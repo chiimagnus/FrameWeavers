@@ -114,7 +114,7 @@ struct VideoUploadView: View {
 
                     if viewModel.selectedVideos.isEmpty {
                         WelcomeView(selectedItems: $selectedItems)
-                            .onChange(of: selectedItems) { newItems in
+                            .onChange(of: selectedItems) { _, newItems in
                                 Task {
                                     var videoURLs: [URL] = []
 
@@ -221,7 +221,7 @@ struct VideoUploadView: View {
                 .padding()
             }
             .background(Color(red: 0.81, green: 0.74, blue: 0.66))
-            .onChange(of: viewModel.uploadStatus) { newStatus in
+            .onChange(of: viewModel.uploadStatus) { _, newStatus in
                 if newStatus == .completed {
                     navigateToResults = true
                 }
