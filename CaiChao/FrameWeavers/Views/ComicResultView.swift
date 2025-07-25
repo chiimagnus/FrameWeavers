@@ -258,21 +258,6 @@ class QuestionsViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 设置背景为"背景单色"
-        let backgroundImageView = UIImageView(image: UIImage(named: "背景单色"))
-        backgroundImageView.contentMode = .scaleAspectFill
-        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(backgroundImageView)
-        
-        NSLayoutConstraint.activate([
-            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
-        view.sendSubviewToBack(backgroundImageView)
-
         // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
             rootView: QuestionsView(questions: questions, geometry: geometry)
