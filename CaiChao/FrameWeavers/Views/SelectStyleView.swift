@@ -14,6 +14,19 @@ struct SelectStyleView: View {
                     .font(.custom("Kaiti SC", size: 28))
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#2F2617"))
+                
+                ZStack{
+                    Image("翻开画册")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 250, height: 44)
+                        
+                    Text("开始生成")
+                        .font(.custom("Kaiti SC", size: 24))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "#855C23"))
+
+                }
             }
         }
         .ignoresSafeArea()
