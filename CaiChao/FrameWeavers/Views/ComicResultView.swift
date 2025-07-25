@@ -26,12 +26,12 @@ struct ComicResultView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("互动问题")
                                 .font(.headline)
-                                .foregroundColor(.white)
+                                // .foregroundColor(.white)
                             
                             ForEach(comicResult.finalQuestions, id: \.self) { question in
                                 Text("• \(question)")
                                     .font(.body)
-                                    .foregroundColor(.white.opacity(0.9))
+                                    // .foregroundColor(.white.opacity(0.9))
                             }
                         }
                         .padding()
@@ -184,6 +184,9 @@ class ComicPanelViewController: UIViewController {
     }
     
     private func setupView() {
+        // 设置透明背景
+        view.backgroundColor = UIColor.clear
+
         // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
             rootView: ComicPanelView(
@@ -191,7 +194,10 @@ class ComicPanelViewController: UIViewController {
                 geometry: geometry
             )
         )
-        
+
+        // 设置 hostingController 透明背景
+        hostingController.view.backgroundColor = UIColor.clear
+
         addChild(hostingController)
         view.addSubview(hostingController.view)
         hostingController.didMove(toParent: self)
@@ -270,6 +276,7 @@ struct ComicPanelView: View {
                     width: geometry.size.width * 0.6,
                     height: geometry.size.height * 0.75
                 )
+                .background(Color.clear) // 确保图片背景透明
                 .cornerRadius(12)
                 .clipped()
 
@@ -292,6 +299,7 @@ struct ComicPanelView: View {
                     width: geometry.size.width * 0.8,
                     height: geometry.size.height * 0.6
                 )
+                .background(Color.clear) // 确保图片背景透明
                 .cornerRadius(12)
                 .clipped()
 
@@ -311,11 +319,11 @@ struct ComicPanelView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("故事叙述")
                             .font(.title3.bold())
-                            .foregroundColor(.white)
+                            // .foregroundColor(.white)
 
                         Text(narration)
                             .font(.body)
-                            .foregroundColor(.white.opacity(0.9))
+                            // .foregroundColor(.white.opacity(0.9))
                             .lineSpacing(6)
                     }
                     .padding()
