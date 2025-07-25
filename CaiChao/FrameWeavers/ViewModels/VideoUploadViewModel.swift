@@ -300,10 +300,10 @@ class VideoUploadViewModel: ObservableObject {
             creationDate: ISO8601DateFormatter().string(from: Date()),
             panelCount: 4,
             panels: [
-                ComicPanel(panelNumber: 1, imageUrl: "https://picsum.photos/300/400?random=1", narration: "故事从宁静的沙滩开始"),
-                ComicPanel(panelNumber: 2, imageUrl: "https://picsum.photos/300/400?random=2", narration: "一个小小身影闯入画面"),
-                ComicPanel(panelNumber: 3, imageUrl: "https://picsum.photos/300/400?random=3", narration: "阳光洒在海面上"),
-                ComicPanel(panelNumber: 4, imageUrl: "https://picsum.photos/300/400?random=4", narration: "一家人的笑声比阳光还灿烂")
+                ComicPanel(panelNumber: 1, imageUrl: "Image1", narration: "故事从宁静的沙滩开始"),
+                ComicPanel(panelNumber: 2, imageUrl: "Image2", narration: "一个小小身影闯入画面"),
+                ComicPanel(panelNumber: 3, imageUrl: "Image3", narration: "阳光洒在海面上"),
+                ComicPanel(panelNumber: 4, imageUrl: "Image4", narration: "一家人的笑声比阳光还灿烂")
             ],
             finalQuestions: [
                 "你还记得那天沙子的温度吗？",

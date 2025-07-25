@@ -269,47 +269,16 @@ struct ComicPanelView: View {
     var body: some View {
         HStack(spacing: 20) {
             // 左侧图片区域 - 占据约60%宽度
-            AsyncImage(url: URL(string: panel.imageUrl)) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(
-                            width: geometry.size.width * 0.6,
-                            height: geometry.size.height * 0.75
-                        )
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
-                        .clipped()
-                    
-                case .failure(_):
-                    VStack {
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundColor(.gray)
-                        Text("图片加载失败")
-                            .foregroundColor(.gray)
-                    }
-                    .frame(
-                        width: geometry.size.width * 0.6,
-                        height: geometry.size.height * 0.75
-                    )
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                    
-                case .empty:
-                    ProgressView()
-                        .frame(
-                            width: geometry.size.width * 0.6,
-                            height: geometry.size.height * 0.75
-                        )
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
-                @unknown default:
-                    EmptyView()
-                }
-            }
+            Image(panel.imageUrl)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(
+                    width: geometry.size.width * 0.6,
+                    height: geometry.size.height * 0.75
+                )
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(12)
+                .clipped()
             
             // 右侧文本区域 - 占据约35%宽度
             if let narration = panel.narration {
