@@ -104,6 +104,11 @@ struct SelectStyleView: View {
                     Text("已选择 \(selectedVideos.count) 个视频")
                         .font(.custom("Kaiti SC", size: 14))
                         .foregroundColor(Color(hex: "#2F2617"))
+                    
+                    // 调试信息
+                    Text("状态: \(viewModel.uploadStatus.rawValue)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                 }
             }
             .navigationDestination(isPresented: $navigateToProcessing) {
@@ -113,14 +118,21 @@ struct SelectStyleView: View {
         .onAppear {
             // 初始化ViewModel的视频数据
             viewModel.selectVideos(selectedVideos)
+            print("SelectStyleView: 已选择 \(selectedVideos.count) 个视频")
+            print("SelectStyleView: 初始状态 \(viewModel.uploadStatus.rawValue)")
         }
     }
     
     private func startGeneration() {
         guard !selectedStyle.isEmpty else { return }
         
-        // 设置风格参数（这里可以扩展为发送到服务器）
-        print("选择的故事风格: \(selectedStyle)")
+        print("开始生成按钮被点击")
+        print("当前状态: \(viewModel.uploadStatus.rawValue)")
+        print("视频数量: \(viewModel.selectedVideos.count)")
+        
+        // 确保状态正确
+        viewModel.uploadStatus = .pending
+        viewModel.uploadProgress = 0
         
         // 触发上传和处理流程
         viewModel.uploadVideo()
