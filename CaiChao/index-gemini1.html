@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回忆画册生成动画</title>
+<style>
+    :root {
+        --bg-color: #e8e0d4; /* 纸张背景色 */
+        --film-strip-bg: #333; /* 胶片背景色 */
+        --text-color: #5a5a5a; /* 文字颜色 */
+        --progress-bar-bg: #c0b8ac; /* 进度条背景色 */
+        --progress-bar-fill: #8a8175; /* 进度条填充色 */
+    }
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--bg-color);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 450px;
+        height: 100%;
+        max-height: 800px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+        position: relative;
+    }
+
+    /* 顶部照片堆栈 */
+    .photo-stack-wrapper {
+        position: relative;
+        width: 320px;
+        height: 210px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 50px;
+    }
+
+    .photo-stack-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 100px;
+        height: 25px;
+        background-color: rgba(255, 255, 255, 0.4);
+        top: -15px;
+        transform: rotate(-4deg);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        z-index: 10;
+        border-left: 1px solid rgba(0,0,0,0.05);
+        border-right: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .photo-card {
+        position: absolute;
+        width: 300px;
+        height: 200px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.5s ease-in-out;
+        overflow: hidden;
+    }
+
+    .photo-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    #main-photo {
+        z-index: 3;
+        transform: rotate(1deg) translateY(0px);
+    }
+    .photo-card.back-1 {
+        z-index: 2;
+        transform: rotate(-4deg) translateY(5px);
+        background-color: #f0f0f0;
+    }
+    .photo-card.back-2 {
+        z-index: 1;
+        transform: rotate(5deg) translateY(8px) translateX(5px);
+        background-color: #e0e0e0;
+    }
+
+    /* 电影胶片 */
+    .filmstrip-container {
+        width: 100%;
+        height: 100px;
+        background-color: var(--film-strip-bg);
+        margin: 40px 0;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .filmstrip-container::before,
+    .filmstrip-container::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background-image: radial-gradient(circle at center, transparent 3px, var(--film-strip-bg) 3px);
+        background-size: 20px 10px;
+        background-repeat: repeat-x;
+        z-index: 2;
+    }
+    .filmstrip-container::before { top: 0; }
+    .filmstrip-container::after { bottom: 0; }
+
+    .filmstrip-wrapper {
+        display: flex;
+        height: 100%;
+        /* 动画会让它动起来 */
+        animation: scroll 40s linear infinite;
+    }
+
+    .filmstrip-frame {
+        flex-shrink: 0;
+        width: 120px;
+        height: 80px;
+        margin: 10px;
+        background-color: #555;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+    
+    .filmstrip-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* 加载信息 */
+    .loading-info {
+        text-align: center;
+    }
+
+    .loading-text {
+        color: var(--text-color);
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .progress-bar {
+        width: 200px;
+        height: 6px;
+        background-color: var(--progress-bar-bg);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        width: 0%;
+        height: 100%;
+        background-color: var(--progress-bar-fill);
+        border-radius: 3px;
+        transition: width 0.5s ease-in-out;
+    }
+
+    /* 滚动动画 */
+    @keyframes scroll {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-2000px); /* 这个值要足够大 */
+        }
+    }
+    
+    /* 图片跳跃动画 */
+    .flying-image {
+        position: fixed; /* 使用fixed定位以在整个视口中移动 */
+        width: var(--source-width);
+        height: var(--source-height);
+        left: var(--source-x);
+        top: var(--source-y);
+        z-index: 100;
+        border-radius: 4px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        object-fit: cover;
+        animation: jump-to-stack 1.2s ease-in-out forwards;
+    }
+
+    @keyframes jump-to-stack {
+        0% {
+            transform: translate(0, 0) scale(1) rotate(0deg);
+            opacity: 0.8;
+            filter: brightness(1);
+        }
+        45% {
+            /* 向上跳跃到最高点，稍微放大和旋转 */
+            transform: translate(calc(var(--target-x) - var(--source-x)), -250px) scale(1.2) rotate(5deg);
+            opacity: 1;
+            animation-timing-function: cubic-bezier(0.3, 0, 0.7, 1);
+        }
+        100% {
+            /* 最终落在目标位置，变成目标的尺寸和旋转角度 */
+            transform: translate(
+                calc(var(--target-x) - var(--source-x)),
+                calc(var(--target-y) - var(--source-y))
+            ) scale(var(--target-scale)) rotate(var(--target-rotation));
+            opacity: 1;
+            filter: brightness(1.05);
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="photo-stack-wrapper" id="photo-stack-target">
+        <div class="photo-card back-2"></div>
+        <div class="photo-card back-1"></div>
+        <div class="photo-card" id="main-photo">
+            <img id="main-photo-img" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&h=200&fit=crop" alt="Main Photo">
+        </div>
+    </div>
+
+    <div class="filmstrip-container">
+        <div class="filmstrip-wrapper" id="filmstrip">
+            </div>
+    </div>
+
+    <div class="loading-info">
+        <div class="loading-text">正在生成你的回忆画册...</div>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="loading-text" id="progress-percent" style="margin-top: 10px; font-size: 14px;">0%</div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- 配置 ---
+    const imageUrls = [
+        "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1505144808419-1957a94ca61e?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1511576661531-b34d7da5d0bb?w=120&h=80&fit=crop",
+    ];
+
+    const JUMP_INTERVAL = 4000; // 4秒触发一次动画
+    let currentImageIndex = 0;
+    
+    // --- DOM 元素获取 ---
+    const filmstrip = document.getElementById('filmstrip');
+    const mainPhotoImg = document.getElementById('main-photo-img');
+    const mainPhotoCard = document.getElementById('main-photo');
+    const targetContainer = document.getElementById('photo-stack-target');
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercent = document.getElementById('progress-percent');
+
+    // --- 初始化 ---
+
+    // 1. 填充电影胶片（复制多份以实现无缝滚动）
+    const filmstripContent = [...imageUrls, ...imageUrls, ...imageUrls].map((url, index) => `
+        <div class="filmstrip-frame">
+            <img src="${url}" alt="Filmstrip image ${index + 1}" data-index="${index % imageUrls.length}">
+        </div>
+    `).join('');
+    filmstrip.innerHTML = filmstripContent;
+    const filmstripImages = filmstrip.querySelectorAll('img');
+
+    // 2. 初始化主图片
+    mainPhotoImg.src = imageUrls[0].replace('w=120&h=80', 'w=300&h=200');
+
+    // --- 动画逻辑 ---
+    function triggerJumpAnimation() {
+        currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
+        
+        // 找到下一个要跳跃的图片元素
+        // 我们从第二组图片中寻找，确保它在屏幕上可见
+        const sourceImageElement = document.querySelector(`.filmstrip-frame img[data-index="${currentImageIndex}"]`);
+        if (!sourceImageElement) return;
+
+        // 获取起始和目标位置信息
+        const sourceRect = sourceImageElement.getBoundingClientRect();
+        const targetRect = mainPhotoCard.getBoundingClientRect();
+        const containerRect = targetContainer.getBoundingClientRect();
+
+        // 创建克隆体
+        const flyingImage = new Image();
+        flyingImage.src = sourceImageElement.src;
+        flyingImage.className = 'flying-image';
+
+        // 设置动画所需的 CSS 自定义属性
+        flyingImage.style.setProperty('--source-x', `${sourceRect.left}px`);
+        flyingImage.style.setProperty('--source-y', `${sourceRect.top}px`);
+        flyingImage.style.setProperty('--source-width', `${sourceRect.width}px`);
+        flyingImage.style.setProperty('--source-height', `${sourceRect.height}px`);
+
+        // 计算目标位置相对于起始位置的偏移
+        const targetX = containerRect.left + (containerRect.width - targetRect.width) / 2;
+        const targetY = containerRect.top + (containerRect.height - targetRect.height) / 2;
+        flyingImage.style.setProperty('--target-x', `${targetX}px`);
+        flyingImage.style.setProperty('--target-y', `${targetY}px`);
+
+        // 计算目标的缩放比例和旋转角度
+        const targetScale = targetRect.width / sourceRect.width;
+        const targetRotation = '1deg'; // 与 #main-photo 的旋转一致
+        flyingImage.style.setProperty('--target-scale', targetScale);
+        flyingImage.style.setProperty('--target-rotation', targetRotation);
+
+        // 将克隆体添加到页面并开始动画
+        document.body.appendChild(flyingImage);
+
+        // 动画结束后更新主图并移除克隆体
+        flyingImage.addEventListener('animationend', () => {
+            const newSrc = imageUrls[currentImageIndex].replace('w=120&h=80', 'w=300&h=200');
+            mainPhotoImg.src = newSrc;
+            
+            // 添加一个小的视觉反馈
+            mainPhotoCard.style.transform = 'rotate(1deg) scale(1.05)';
+            setTimeout(() => {
+                mainPhotoCard.style.transform = 'rotate(1deg) scale(1)';
+            }, 150);
+
+            document.body.removeChild(flyingImage);
+        }, { once: true });
+    }
+
+    // --- 进度条模拟 ---
+    let progress = 0;
+    function updateProgress() {
+        progress += 1;
+        if (progress > 100) progress = 100;
+        
+        progressFill.style.width = `${progress}%`;
+        progressPercent.textContent = `${progress}%`;
+
+        if (progress < 100) {
+            setTimeout(updateProgress, JUMP_INTERVAL / 25); // 让进度条在动画间隔内跑完
+        }
+    }
+
+    // --- 启动 ---
+    setInterval(triggerJumpAnimation, JUMP_INTERVAL);
+    setTimeout(updateProgress, 500);
+});
+</script>
+
+</body>
+</html>
