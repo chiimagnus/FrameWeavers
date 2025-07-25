@@ -1,0 +1,59 @@
+---
+type: "agent_requested"
+---
+
+# iOS MVVM App端后端设计指南
+
+**重要声明：我们只负责iOS App端逻辑，AI大模型后端由合作方负责**。
+
+## 我们的职责范围（App端）
+
+### ✅ 负责的部分：
+
+- 视频文件选择和验证（5-30分钟限制）
+- 设备ID生成（UIDevice.current.identifierForVendor）
+- 视频上传到合作方提供的API
+- 接收和解析合作方返回的JSON数据
+- 本地数据存储和状态管理
+
+### ❌ 不负责的部分：
+
+- AI大模型视频分析
+- 图像处理和风格化
+- 剧本和问题生成
+- 服务器端业务逻辑
+
+## App端核心组件
+
+### 1. 数据模型
+
+- 视频文件信息（时长、大小验证）
+- 上传任务状态管理
+- API响应数据结构
+
+### 2. 网络层
+
+- 与合作方API的HTTP通信
+- multipart/form-data上传格式
+- 上传进度跟踪
+
+### 3. 本地存储
+
+- SwiftData持久化任务历史
+- 缓存生成的连环画数据
+
+## API使用规范
+
+- **上传端点**: 使用合作方提供的URL
+- **必需参数**: videoFile + deviceId
+- **响应格式**: 遵循README_iOS.md中的JSON结构
+
+## 技术栈
+
+- SwiftUI + Combine + SwiftData + URLSession + PhotosUI
+
+- [SwiftData 官方文档](mdc:https:/developer.apple.com/documentation/swiftdata)
+- [Combine 官方文档](mdc:https:/developer.apple.com/documentation/combine)
+- [PhotosUI 官方文档](mdc:https:/developer.apple.com/documentation/photosui)
+- [Swift Package Manager](mdc:https:/developer.apple.com/documentation/swift_packages)
+- [URLSession 官方文档](mdc:https:/developer.apple.com/documentation/foundation/urlsession)
