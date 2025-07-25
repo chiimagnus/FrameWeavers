@@ -14,6 +14,7 @@ struct SelectStyleView: View {
                     .font(.custom("Kaiti SC", size: 16))
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#2F2617"))
+                    .padding(.bottom, 50)
                 
                 ZStack {
                     Image("四象限")
@@ -70,6 +71,7 @@ struct SelectStyleView: View {
                 }
                 .frame(width: 400, height: 400)
                 .padding(.horizontal)
+                .padding(.bottom, 100)
 
                 ZStack{
                     Image("翻开画册")
@@ -81,7 +83,6 @@ struct SelectStyleView: View {
                         .font(.custom("Kaiti SC", size: 24))
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))
-
                 }
             }
         }
