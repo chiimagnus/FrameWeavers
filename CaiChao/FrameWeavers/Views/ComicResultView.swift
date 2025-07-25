@@ -10,7 +10,6 @@ struct ComicResultView: View {
                 Image("背景单色")
                     .resizable()
                     .scaledToFill()
-                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     // 3D翻页内容区域
@@ -23,6 +22,7 @@ struct ComicResultView: View {
                 }
             }
         }
+        .ignoresSafeArea()
     }
 }
 
