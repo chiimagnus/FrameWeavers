@@ -84,88 +84,34 @@ struct VideoUploadView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 20) {
-                    if viewModel.selectedVideos.isEmpty {
-                        WelcomeView(selectedItems: $selectedItems)
-                            .onChange(of: selectedItems) { _, newItems in
-                                Task {
-                                    var videoURLs: [URL] = []
+                    WelcomeView(selectedItems: $selectedItems)
+                        .onChange(of: selectedItems) { _, newItems in
+                            Task {
+                                var videoURLs: [URL] = []
 
-                                    for item in newItems {
-                                        if let data = try? await item.loadTransferable(type: Data.self),
-                                        let url = saveVideoData(data) {
-                                            videoURLs.append(url)
-                                        }
+                                for item in newItems {
+                                    if let data = try? await item.loadTransferable(type: Data.self),
+                                    let url = saveVideoData(data) {
+                                        videoURLs.append(url)
                                     }
+                                }
 
-                                    await MainActor.run {
-                                        viewModel.selectVideos(videoURLs)
-                                        // 选择视频后自动跳转到选择风格界面
-                                        if !videoURLs.isEmpty {
-                                            navigateToStyleSelection = true
-                                        }
+                                await MainActor.run {
+                                    viewModel.selectVideos(videoURLs)
+                                    // 选择视频后自动跳转到选择风格界面
+                                    if !videoURLs.isEmpty {
+                                        navigateToStyleSelection = true
                                     }
                                 }
                             }
-                    } else {
-                        // 已选择视频界面
-                        VStack(spacing: 20) {
-                            // 显示选中的视频列表
-                            VStack(spacing: 8) {
-                                HStack {
-                                    Image(systemName: "video.fill")
-                                        .font(.system(size: 20))
-                                    Text("已选择 \(viewModel.selectedVideos.count) 个视频")
-                                        .font(.headline)
-                                    Spacer()
-                                }
-
-                                ForEach(Array(viewModel.selectedVideos.enumerated()), id: \.offset) { index, url in
-                                    HStack {
-                                        Text("\(index + 1). \(url.lastPathComponent)")
-                                            .font(.caption)
-                                            .lineLimit(1)
-                                        Spacer()
-                                        Button("删除") {
-                                            viewModel.removeVideo(at: index)
-                                        }
-                                        .font(.caption)
-                                        .foregroundColor(.red)
-                                    }
-                                    .padding(.horizontal, 8)
-                                }
-                            }
-                            .padding()
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(12)
-                            
-                            if let error = viewModel.errorMessage {
-                                Text(error)
-                                    .foregroundColor(.red)
-                                    .font(.callout)
-                            }
-                            
-                            // 继续按钮
-                            Button("继续") {
-                                navigateToStyleSelection = true
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(viewModel.selectedVideos.isEmpty)
-                            
-                            // 导航到选择风格界面，传递视频URL
-                            NavigationLink(
-                                destination: SelectStyleView(selectedVideos: viewModel.selectedVideos),
-                                isActive: $navigateToStyleSelection
-                            ) {
-                                EmptyView()
-                            }
-                            
-                            Button("重新选择") {
-                                viewModel.reset()
-                                selectedItems = []
-                            }
-                            .foregroundColor(.red)
                         }
-                        .padding()
+                    
+                    // 导航到选择风格界面，传递视频URL
+                    NavigationLink(
+                        destination: SelectStyleView(selectedVideos: viewModel.selectedVideos),
+                        isActive: $navigateToStyleSelection
+                    ) {
+                        EmptyView()
                     }
                 }
                 .padding()
