@@ -7,6 +7,11 @@ struct ComicResultView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                Image("背景单色")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+
                 VStack(spacing: 0) {
                     // 3D翻页内容区域
                     ComicPageViewController(
