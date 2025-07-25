@@ -20,27 +20,6 @@ struct ComicResultView: View {
                         geometry: geometry
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
-                    // 互动问题区域 - 仅在最后一页显示
-                    if currentPage == comicResult.panels.count - 1 {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("互动问题")
-                                .font(.headline)
-                                // .foregroundColor(.white)
-                            
-                            ForEach(comicResult.finalQuestions, id: \.self) { question in
-                                Text("• \(question)")
-                                    .font(.body)
-                                    // .foregroundColor(.white.opacity(0.9))
-                            }
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black.opacity(0.3))
-                        .cornerRadius(12)
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 10)
-                        .padding(.horizontal, 20)
-                    }
                 }
             }
         }
@@ -53,6 +32,11 @@ struct ComicPageViewController: UIViewControllerRepresentable {
     @Binding var currentPage: Int
     let geometry: GeometryProxy
     
+    // 计算总页数
+    private var totalPages: Int {
+        comicResult.panels.count + (comicResult.finalQuestions.isEmpty ? 0 : 1)
+    }
+    
     func makeUIViewController(context: Context) -> UIPageViewController {
         let pageViewController = UIPageViewController(
             transitionStyle: .pageCurl,
@@ -64,39 +48,29 @@ struct ComicPageViewController: UIViewControllerRepresentable {
         pageViewController.delegate = context.coordinator
         
         // 设置初始页面
-        if let initialViewController = context.coordinator.createComicPanelViewController(
-            panel: comicResult.panels[0],
-            index: 0,
-            geometry: geometry
-        ) {
-            pageViewController.setViewControllers(
-                [initialViewController],
-                direction: .forward,
-                animated: false
-            )
-        }
+        let initialViewController = context.coordinator.createViewController(for: 0)
+        pageViewController.setViewControllers(
+            [initialViewController],
+            direction: .forward,
+            animated: false
+        )
         
         return pageViewController
     }
     
     func updateUIViewController(_ pageViewController: UIPageViewController, context: Context) {
         // 处理页面更新
-        if let currentVC = pageViewController.viewControllers?.first as? ComicPanelViewController,
+        if let currentVC = pageViewController.viewControllers?.first as? ComicBaseViewController,
            currentVC.pageIndex != currentPage {
             
             let direction: UIPageViewController.NavigationDirection = currentVC.pageIndex < currentPage ? .forward : .reverse
+            let newVC = context.coordinator.createViewController(for: currentPage)
             
-            if let newVC = context.coordinator.createComicPanelViewController(
-                panel: comicResult.panels[currentPage],
-                index: currentPage,
-                geometry: geometry
-            ) {
-                pageViewController.setViewControllers(
-                    [newVC],
-                    direction: direction,
-                    animated: true
-                )
-            }
+            pageViewController.setViewControllers(
+                [newVC],
+                direction: direction,
+                animated: true
+            )
         }
     }
     
@@ -111,67 +85,81 @@ struct ComicPageViewController: UIViewControllerRepresentable {
             self.parent = parent
         }
         
-        // 创建漫画页面视图控制器
-        func createComicPanelViewController(panel: ComicPanel, index: Int, geometry: GeometryProxy) -> ComicPanelViewController? {
-            return ComicPanelViewController(
-                panel: panel,
-                pageIndex: index,
-                geometry: geometry
-            )
+        // 创建视图控制器
+        func createViewController(for index: Int) -> ComicBaseViewController {
+            if index < parent.comicResult.panels.count {
+                // 漫画页面
+                return ComicPanelViewController(
+                    panel: parent.comicResult.panels[index],
+                    pageIndex: index,
+                    geometry: parent.geometry
+                )
+            } else {
+                // 互动问题页面
+                return QuestionsViewController(
+                    questions: parent.comicResult.finalQuestions,
+                    pageIndex: index,
+                    geometry: parent.geometry
+                )
+            }
         }
         
         // MARK: - UIPageViewControllerDataSource
         
         func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-            guard let currentVC = viewController as? ComicPanelViewController,
+            guard let currentVC = viewController as? ComicBaseViewController,
                   currentVC.pageIndex > 0 else {
                 return nil
             }
             
             let previousIndex = currentVC.pageIndex - 1
-            return createComicPanelViewController(
-                panel: parent.comicResult.panels[previousIndex],
-                index: previousIndex,
-                geometry: parent.geometry
-            )
+            return createViewController(for: previousIndex)
         }
         
         func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-            guard let currentVC = viewController as? ComicPanelViewController,
-                  currentVC.pageIndex < parent.comicResult.panels.count - 1 else {
+            guard let currentVC = viewController as? ComicBaseViewController,
+                  currentVC.pageIndex < parent.totalPages - 1 else {
                 return nil
             }
             
             let nextIndex = currentVC.pageIndex + 1
-            return createComicPanelViewController(
-                panel: parent.comicResult.panels[nextIndex],
-                index: nextIndex,
-                geometry: parent.geometry
-            )
+            return createViewController(for: nextIndex)
         }
         
         // MARK: - UIPageViewControllerDelegate
         
         func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
             if completed,
-               let currentVC = pageViewController.viewControllers?.first as? ComicPanelViewController {
+               let currentVC = pageViewController.viewControllers?.first as? ComicBaseViewController {
                 parent.currentPage = currentVC.pageIndex
             }
         }
     }
 }
 
-// 单个漫画页面视图控制器
-class ComicPanelViewController: UIViewController {
-    let panel: ComicPanel
+// 基础视图控制器
+class ComicBaseViewController: UIViewController {
     let pageIndex: Int
     let geometry: GeometryProxy
     
-    init(panel: ComicPanel, pageIndex: Int, geometry: GeometryProxy) {
-        self.panel = panel
+    init(pageIndex: Int, geometry: GeometryProxy) {
         self.pageIndex = pageIndex
         self.geometry = geometry
         super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+// 单个漫画页面视图控制器
+class ComicPanelViewController: ComicBaseViewController {
+    let panel: ComicPanel
+    
+    init(panel: ComicPanel, pageIndex: Int, geometry: GeometryProxy) {
+        self.panel = panel
+        super.init(pageIndex: pageIndex, geometry: geometry)
     }
     
     required init?(coder: NSCoder) {
@@ -205,6 +193,89 @@ class ComicPanelViewController: UIViewController {
                 panel: panel,
                 geometry: geometry
             )
+        )
+
+        // 设置 hostingController 透明背景
+        hostingController.view.backgroundColor = UIColor.clear
+
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
+        
+        // 设置约束
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        // 添加点击手势识别器用于翻页
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: view)
+        let viewWidth = view.bounds.width
+        
+        // 点击左侧区域 - 向前翻页
+        if location.x < viewWidth * 0.3 {
+            NotificationCenter.default.post(
+                name: .comicPagePrevious,
+                object: nil,
+                userInfo: ["pageIndex": pageIndex]
+            )
+        }
+        // 点击右侧区域 - 向后翻页
+        else if location.x > viewWidth * 0.7 {
+            NotificationCenter.default.post(
+                name: .comicPageNext,
+                object: nil,
+                userInfo: ["pageIndex": pageIndex]
+            )
+        }
+    }
+}
+
+// 互动问题页面视图控制器
+class QuestionsViewController: ComicBaseViewController {
+    let questions: [String]
+    
+    init(questions: [String], pageIndex: Int, geometry: GeometryProxy) {
+        self.questions = questions
+        super.init(pageIndex: pageIndex, geometry: geometry)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupView()
+    }
+    
+    private func setupView() {
+        // 设置背景为"背景单色"
+        let backgroundImageView = UIImageView(image: UIImage(named: "背景单色"))
+        backgroundImageView.contentMode = .scaleAspectFill
+        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backgroundImageView)
+        
+        NSLayoutConstraint.activate([
+            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        view.sendSubviewToBack(backgroundImageView)
+
+        // 创建SwiftUI视图并包装
+        let hostingController = UIHostingController(
+            rootView: QuestionsView(questions: questions, geometry: geometry)
         )
 
         // 设置 hostingController 透明背景
@@ -363,6 +434,107 @@ struct ComicPanelView: View {
                 .background(Color.clear) // 透明背景
                 .cornerRadius(12)
             }
+        }
+    }
+}
+
+// 互动问题页面视图
+struct QuestionsView: View {
+    let questions: [String]
+    let geometry: GeometryProxy
+    
+    // 判断是否为横屏
+    private var isLandscape: Bool {
+        geometry.size.width > geometry.size.height
+    }
+    
+    var body: some View {
+        ZStack {
+            // 背景使用"背景单色"
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+            
+            if isLandscape {
+                // 横屏布局
+                landscapeLayout
+            } else {
+                // 竖屏布局
+                portraitLayout
+            }
+        }
+    }
+    
+    // 横屏布局
+    private var landscapeLayout: some View {
+        HStack {
+            Spacer()
+            
+            VStack(spacing: 30) {
+                Text("互动问题")
+                    .font(.largeTitle.bold())
+                    .foregroundColor(.primary)
+                
+                VStack(alignment: .leading, spacing: 20) {
+                    ForEach(questions, id: \.self) { question in
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                            
+                            Text(question)
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .lineSpacing(4)
+                        }
+                        .padding()
+                        .background(Color(.systemBackground).opacity(0.8))
+                        .cornerRadius(12)
+                        .shadow(radius: 2)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .frame(maxWidth: geometry.size.width * 0.7)
+            
+            Spacer()
+        }
+    }
+    
+    // 竖屏布局
+    private var portraitLayout: some View {
+        VStack {
+            Spacer()
+            
+            VStack(spacing: 30) {
+                Text("互动问题")
+                    .font(.largeTitle.bold())
+                    .foregroundColor(.primary)
+                
+                VStack(alignment: .leading, spacing: 20) {
+                    ForEach(questions, id: \.self) { question in
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                            
+                            Text(question)
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .lineSpacing(4)
+                        }
+                        .padding()
+                        .background(Color(.systemBackground).opacity(0.8))
+                        .cornerRadius(12)
+                        .shadow(radius: 2)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .frame(maxWidth: geometry.size.width * 0.9)
+            
+            Spacer()
         }
     }
 }
