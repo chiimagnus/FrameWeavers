@@ -106,9 +106,9 @@ struct VideoUploadView: View {
                             }
                         }
                     
-                    // 导航到选择风格界面，传递视频URL
+                    // 导航到选择风格界面，传递共享的ViewModel实例
                     NavigationLink(
-                        destination: SelectStyleView(selectedVideos: viewModel.selectedVideos),
+                        destination: SelectStyleView(viewModel: viewModel),
                         isActive: $navigateToStyleSelection
                     ) {
                         EmptyView()

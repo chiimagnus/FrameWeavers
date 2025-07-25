@@ -2,8 +2,7 @@ import SwiftUI
 
 struct SelectStyleView: View {
     @Environment(\.dismiss) private var dismiss
-    let selectedVideos: [URL]
-    @StateObject private var viewModel = VideoUploadViewModel()
+    @ObservedObject var viewModel: VideoUploadViewModel
     @State private var selectedStyle: String = ""
     @State private var navigateToProcessing = false
     
@@ -91,8 +90,8 @@ struct SelectStyleView: View {
                                 .font(.custom("Kaiti SC", size: 24))
                                 .fontWeight(.bold)
                                 .foregroundColor(
-                                    selectedStyle.isEmpty ? 
-                                        Color(hex: "#CCCCCC") : 
+                                    selectedStyle.isEmpty ?
+                                        Color(hex: "#CCCCCC") :
                                         Color(hex: "#855C23")
                                 )
                         }
@@ -101,7 +100,7 @@ struct SelectStyleView: View {
                     .opacity(selectedStyle.isEmpty ? 0.6 : 1.0)
                     
                     // 显示已选择的视频数量
-                    Text("已选择 \(selectedVideos.count) 个视频")
+                    Text("已选择 \(viewModel.selectedVideos.count) 个视频")
                         .font(.custom("Kaiti SC", size: 14))
                         .foregroundColor(Color(hex: "#2F2617"))
                     
@@ -116,9 +115,7 @@ struct SelectStyleView: View {
             }
         }
         .onAppear {
-            // 初始化ViewModel的视频数据
-            viewModel.selectVideos(selectedVideos)
-            print("SelectStyleView: 已选择 \(selectedVideos.count) 个视频")
+            print("SelectStyleView: 已选择 \(viewModel.selectedVideos.count) 个视频")
             print("SelectStyleView: 初始状态 \(viewModel.uploadStatus.rawValue)")
         }
     }
@@ -145,10 +142,11 @@ struct SelectStyleView: View {
 // MARK: - SwiftUI Preview
 struct SelectStyleView_Previews: PreviewProvider {
     static var previews: some View {
-        let mockVideos = [
+        let viewModel = VideoUploadViewModel()
+        viewModel.selectVideos([
             URL(string: "file:///mock/video1.mp4")!,
             URL(string: "file:///mock/video2.mp4")!
-        ]
-        return SelectStyleView(selectedVideos: mockVideos)
+        ])
+        return SelectStyleView(viewModel: viewModel)
     }
 }
