@@ -25,7 +25,7 @@ struct SelectStyleView: View {
                     Image("图钉")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 30, height: 30)
+                        .frame(width: 60, height: 60)
                         .position(x: 370, y: 30)
                     
                     // 第一象限 - 文艺哲学 (左上)
