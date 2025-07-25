@@ -99,6 +99,7 @@ struct VideoUploadView: View {
     @StateObject private var viewModel = VideoUploadViewModel()
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var navigateToResults = false
+    @State private var navigateToStyleSelection = false
     
     var body: some View {
         NavigationStack {
@@ -171,6 +172,7 @@ struct VideoUploadView: View {
                             if viewModel.uploadStatus == .pending {
                                 Button("开始上传") {
                                     viewModel.uploadVideo()
+                                    navigateToStyleSelection = true
                                 }
                                 .buttonStyle(.borderedProminent)
                                 .disabled(viewModel.errorMessage != nil)
@@ -206,6 +208,10 @@ struct VideoUploadView: View {
                                 NavigationLink(destination: OpenResultsView(comicResult: viewModel.comicResult!), isActive: $navigateToResults) {
                                     EmptyView()
                                 }
+                            }
+                            
+                            NavigationLink(destination: SelectStyleView(), isActive: $navigateToStyleSelection) {
+                                EmptyView()
                             }
                             
                             Button("重新选择") {
