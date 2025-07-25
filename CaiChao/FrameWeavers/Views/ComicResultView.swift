@@ -184,8 +184,20 @@ class ComicPanelViewController: UIViewController {
     }
     
     private func setupView() {
-        // 设置透明背景
-        view.backgroundColor = UIColor.clear
+        // 设置背景为"背景单色"
+        let backgroundImageView = UIImageView(image: UIImage(named: "背景单色"))
+        backgroundImageView.contentMode = .scaleAspectFill
+        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backgroundImageView)
+        
+        NSLayoutConstraint.activate([
+            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        view.sendSubviewToBack(backgroundImageView)
 
         // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
@@ -256,12 +268,20 @@ struct ComicPanelView: View {
     }
 
     var body: some View {
-        if isLandscape {
-            // 横屏布局：图片在左，文本在右
-            landscapeLayout
-        } else {
-            // 竖屏布局：图片在上，文本在下
-            portraitLayout
+        ZStack {
+            // 背景使用"背景单色"
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+            
+            if isLandscape {
+                // 横屏布局：图片在左，文本在右
+                landscapeLayout
+            } else {
+                // 竖屏布局：图片在上，文本在下
+                portraitLayout
+            }
         }
     }
 
