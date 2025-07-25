@@ -8,21 +8,6 @@ struct ComicResultView: View {
         GeometryReader { geometry in
             ZStack {
                 VStack(spacing: 0) {
-                    // 页面指示器 - 保持在顶部
-                    HStack {
-                        Spacer()
-                        Text("\(currentPage + 1)/\(comicResult.panels.count)")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.black.opacity(0.7))
-                            .cornerRadius(20)
-                            .padding(.top, 8)
-                        Spacer()
-                    }
-                    .padding(.top, geometry.safeAreaInsets.top + 10)
-                    
                     // 3D翻页内容区域
                     ComicPageViewController(
                         comicResult: comicResult,
