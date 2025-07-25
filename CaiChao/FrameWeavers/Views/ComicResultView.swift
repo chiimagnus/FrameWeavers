@@ -96,16 +96,17 @@ struct ComicPageViewController: UIViewControllerRepresentable {
         pageViewController.delegate = context.coordinator
         
         // 设置初始页面
-        let initialViewController = context.coordinator.createComicPanelViewController(
+        if let initialViewController = context.coordinator.createComicPanelViewController(
             panel: comicResult.panels[0],
             index: 0,
             geometry: geometry
-        )
-        pageViewController.setViewControllers(
-            [initialViewController],
-            direction: .forward,
-            animated: false
-        )
+        ) {
+            pageViewController.setViewControllers(
+                [initialViewController],
+                direction: .forward,
+                animated: false
+            )
+        }
         
         return pageViewController
     }
