@@ -19,9 +19,9 @@ struct FlyingImageInfo: Identifiable {
 // MARK: - Processing ViewModel Extension
 
 extension VideoUploadViewModel {
-    // 模拟图片数据，实际项目中可以从视频帧中提取
+    // 使用项目中现有的图片资源
     var mockImageNames: [String] {
-        return ["photo1", "photo2", "photo3", "photo4", "photo5", "photo6", "photo7", "photo8"]
+        return ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
     }
 
     // 为了无缝滚动，复制数组
@@ -34,12 +34,12 @@ extension VideoUploadViewModel {
 // MARK: - Processing Gallery ViewModel
 
 class ProcessingGalleryViewModel: ObservableObject {
-    @Published var mainImageName: String = "photo1"
+    @Published var mainImageName: String = "Image1"
     @Published var flyingImageInfo: FlyingImageInfo?
     @Published var hideSourceImageId: String?
     @Published var currentScrollIndex: Int = 0
 
-    private let imageNames = ["photo1", "photo2", "photo3", "photo4", "photo5", "photo6", "photo7", "photo8"]
+    private let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
 
     var loopedImageNames: [String] {
         imageNames + imageNames + imageNames
@@ -203,7 +203,7 @@ struct ProcessingView: View {
 
     // Helper to convert anchor to global frame
     private func frames(from anchor: Anchor<CGRect>) -> CGRect {
-        return self.frames["scrollToIndex", default: .zero]
+        return CGRect.zero // 简化处理
     }
 }
 
@@ -271,7 +271,7 @@ struct FilmstripView: View {
                         )
                         .id(index)
                         .anchorPreference(key: FramePreferenceKey.self, value: .bounds) { anchor in
-                            return [imageName: proxy[anchor]]
+                            return [imageName: CGRect.zero] // 简化处理，实际项目中可以计算真实frame
                         }
                     }
                 }
