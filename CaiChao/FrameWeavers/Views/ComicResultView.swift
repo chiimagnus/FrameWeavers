@@ -339,20 +339,12 @@ struct ComicPanelView: View {
     }
 
     var body: some View {
-        ZStack {
-            // 背景使用"背景单色"
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            if isLandscape {
-                // 横屏布局：图片在左，文本在右
-                landscapeLayout
-            } else {
-                // 竖屏布局：图片在上，文本在下
-                portraitLayout
-            }
+        if isLandscape {
+            // 横屏布局：图片在左，文本在右
+            landscapeLayout
+        } else {
+            // 竖屏布局：图片在上，文本在下
+            portraitLayout
         }
     }
 
@@ -449,20 +441,12 @@ struct QuestionsView: View {
     }
     
     var body: some View {
-        ZStack {
-            // 背景使用"背景单色"
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            if isLandscape {
-                // 横屏布局
-                landscapeLayout
-            } else {
-                // 竖屏布局
-                portraitLayout
-            }
+        if isLandscape {
+            // 横屏布局
+            landscapeLayout
+        } else {
+            // 竖屏布局
+            portraitLayout
         }
     }
     
