@@ -31,7 +31,7 @@ struct WelcomeView: View {
             .font(.custom("STKaiti", size: 18))
             .multilineTextAlignment(.center)
             .foregroundColor(Color(hex: "#2F2617"))
-            .lineSpacing(12)
+            .lineSpacing(10)
 
             PhotosPicker(
                 selection: $selectedItems,
