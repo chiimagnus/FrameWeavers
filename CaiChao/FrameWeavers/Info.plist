@@ -5,7 +5,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>WSQuanXing.ttf</string>
-		<string>KaitiSC-Regular.ttf</string>
+		<string>STKaitiSC-Regular.ttf</string>
 	</array>
 </dict>
 </plist>
