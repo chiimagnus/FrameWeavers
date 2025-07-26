@@ -20,8 +20,6 @@ graph LR
     C --> D[获取连环画结果]
 ```
 
----
-
 ## 🔧 基础信息
 
 - **服务地址**: `http://服务器地址:5001`
@@ -34,8 +32,6 @@ graph LR
   - `404` 资源不存在
   - `413` 文件过大
   - `500` 服务器错误
-
----
 
 ## 1️⃣ 核心API：视频上传接口
 
@@ -193,8 +189,6 @@ curl -X POST "http://localhost:5001/api/process/complete-comic" \
 - **🎨 风格**: 支持自定义风格提示词
 - **📚 故事**: 支持多种文体风格（古典、现代、童话等）
 
----
-
 ## 📊 任务状态查询接口
 
 ### 接口信息
@@ -236,8 +230,6 @@ curl -X GET "http://localhost:5001/api/task/status/550e8400-e29b-41d4-a716-44665
 | `stylizing_frames` | 风格化处理 | 70-90% | 正在进行风格化处理 |
 | `complete_comic_completed` | 完成 | 100% | 连环画生成完成 |
 | `error` | 错误 | - | 处理出错 |
-
----
 
 ## 📖 获取连环画结果接口
 
@@ -303,8 +295,6 @@ curl -X GET "http://localhost:5001/api/comic/result/550e8400-e29b-41d4-a716-4466
 }
 ```
 
----
-
 ## 🎨 其他辅助接口
 
 ### 关键帧提取接口
@@ -327,155 +317,6 @@ curl -X GET "http://localhost:5001/api/comic/result/550e8400-e29b-41d4-a716-4466
 - **路径**: `/api/device/<device_id>/tasks`
 - **作用**: 查看设备的所有任务记录
 
----
-
-## 💻 前端集成示例
-
-### JavaScript示例
-
-```javascript
-class ComicGenerator {
-  constructor(baseUrl = 'http://localhost:5001') {
-    this.baseUrl = baseUrl;
-  }
-
-  // 1. 上传视频
-  async uploadVideo(videoFile, deviceId = 'web_client_001') {
-    const formData = new FormData();
-    formData.append('device_id', deviceId);
-    formData.append('videos', videoFile);
-
-    const response = await fetch(`${this.baseUrl}/api/upload/videos`, {
-      method: 'POST',
-      body: formData
-    });
-
-    return await response.json();
-  }
-
-  // 2. 提取基础帧
-  async extractBaseFrames(taskId, interval = 1.0) {
-    const formData = new FormData();
-    formData.append('task_id', taskId);
-    formData.append('interval', interval);
-
-    const response = await fetch(`${this.baseUrl}/api/extract/base-frames`, {
-      method: 'POST',
-      body: formData
-    });
-
-    return await response.json();
-  }
-
-  // 3. 生成完整连环画
-  async generateCompleteComic(taskId, options = {}) {
-    const formData = new FormData();
-    formData.append('task_id', taskId);
-    formData.append('target_frames', options.targetFrames || 8);
-    formData.append('style_prompt', options.stylePrompt || '');
-    formData.append('story_style', options.storyStyle || '');
-
-    const response = await fetch(`${this.baseUrl}/api/process/complete-comic`, {
-      method: 'POST',
-      body: formData
-    });
-
-    return await response.json();
-  }
-
-  // 4. 监控进度
-  async pollProgress(taskId, onProgress) {
-    while (true) {
-      const response = await fetch(`${this.baseUrl}/api/task/status/${taskId}`);
-      const status = await response.json();
-
-      // 回调更新进度
-      if (onProgress) {
-        onProgress(status.progress, status.stage, status.message);
-      }
-
-      // 检查完成状态
-      if (status.status === 'complete_comic_completed') {
-        const resultResponse = await fetch(`${this.baseUrl}/api/comic/result/${taskId}`);
-        return await resultResponse.json();
-      }
-
-      if (status.status === 'error' || status.status === 'complete_comic_failed') {
-        throw new Error(status.message || '生成失败');
-      }
-
-      // 等待2秒后再次查询
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-  }
-
-  // 完整流程
-  async createComic(videoFile, options = {}) {
-    try {
-      console.log('🎬 开始上传视频...');
-      const uploadResult = await this.uploadVideo(videoFile);
-      const taskId = uploadResult.task_id;
-
-      console.log('📸 开始提取基础帧...');
-      await this.extractBaseFrames(taskId, options.interval);
-
-      console.log('🎨 开始生成连环画...');
-      await this.generateCompleteComic(taskId, options);
-
-      console.log('⏳ 等待处理完成...');
-      const result = await this.pollProgress(taskId, (progress, stage, message) => {
-        console.log(`进度: ${progress}% - ${stage} - ${message}`);
-      });
-
-      console.log('✅ 连环画生成完成！');
-      return result;
-
-    } catch (error) {
-      console.error('❌ 生成失败:', error);
-      throw error;
-    }
-  }
-}
-
-// 使用示例
-const generator = new ComicGenerator();
-
-// 获取视频文件（从文件选择器）
-const fileInput = document.getElementById('videoFile');
-const videoFile = fileInput.files[0];
-
-// 生成连环画
-generator.createComic(videoFile, {
-  targetFrames: 10,
-  stylePrompt: '手绘漫画风格，温暖明亮的色调',
-  storyStyle: '童话风格',
-  interval: 0.8
-}).then(result => {
-  console.log('连环画数据:', result);
-  // 在这里处理和显示连环画结果
-  displayComic(result.results.successful_comics[0].comic_data);
-}).catch(error => {
-  console.error('生成失败:', error);
-  alert('连环画生成失败，请重试');
-});
-
-function displayComic(comicData) {
-  const { story_info, pages, interactive_questions } = comicData;
-  
-  console.log('故事主题:', story_info.overall_theme);
-  console.log('总页数:', story_info.total_pages);
-  
-  pages.forEach((page, index) => {
-    console.log(`第${index + 1}页:`, page.story_text);
-    console.log('风格化图片:', page.styled_frame_path);
-  });
-  
-  console.log('互动问题:', interactive_questions);
-}
-```
-
----
-
 ## 🚨 错误处理
 
 ### 常见错误类型
@@ -495,33 +336,3 @@ function displayComic(comicData) {
   "message": "文件过大，请选择小于800MB的视频文件"
 }
 ```
-
----
-
-## 📝 重要提示
-
-### ✅ 最佳实践
-
-1. **文件大小**: 建议视频文件小于500MB，处理速度更快
-2. **视频时长**: 建议1-10分钟的视频，效果最佳
-3. **网络稳定**: 上传和处理过程需要稳定网络连接
-4. **耐心等待**: 完整连环画生成需要2-5分钟，请勿重复提交
-
-### ⚠️ 注意事项
-
-1. **任务ID**: 每次上传后记住task_id，用于后续查询
-2. **并发限制**: 同一设备建议最多同时处理3个任务
-3. **文件格式**: 确保视频格式为支持的类型
-4. **存储清理**: 系统会定期清理过期文件
-
-### 🎯 性能优化建议
-
-1. **基础帧间隔**: 对于动作较少的视频，可设置较大间隔（1.5-2.0秒）
-2. **关键帧数量**: 建议6-12帧，太少缺乏细节，太多处理时间长
-3. **风格化**: 复杂的风格提示词会增加处理时间
-4. **并发处理**: 可同时上传多个视频但建议控制在合理范围内
-
----
-
-*📚 文档版本: v2.0 | 最后更新: 2024年1月*
-
