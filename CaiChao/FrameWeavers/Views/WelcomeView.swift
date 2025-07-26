@@ -58,7 +58,7 @@ struct WelcomeView: View {
             最多上传5段3分钟内的视频
             选择有故事的片段效果更佳
             """)
-                .font(.custom("KaitiSC-Regular", size: 12))
+                .font(.custom("STKaiti", size: 12))
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
