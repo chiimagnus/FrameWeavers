@@ -352,80 +352,71 @@ struct ComicPanelView: View {
 
     var body: some View {
         if isLandscape {
-            // 横屏布局：图片在左，文本在右，页码在右上角
-            ZStack {
-                landscapeLayout
-                
-                // 横屏页码显示在右上角
+            // 横屏布局：图片在左，文本在右，页码在中间底部
+            HStack(spacing: 0) {
+                // 左侧图片区域 - 占据50%宽度
                 VStack {
-                    HStack {
-                        Spacer()
-                        Text("· \(pageIndex + 1) ·")
-                            .font(.title3.bold())
-                            .foregroundColor(.primary)
-                            .padding(8)
-                            .background(Color.clear)
-                            .cornerRadius(8)
-                            .padding(.top, 20)
-                            .padding(.trailing, 20)
-                    }
-                    Spacer()
+                    Image(panel.imageUrl)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.clear)
+                        .cornerRadius(12)
+                        .padding(20)
                 }
+                .frame(width: geometry.size.width * 0.5)
+                
+                // 右侧文本区域 - 占据50%宽度
+                VStack(spacing: 0) {
+                    textContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    // 横屏页码显示在底部中央
+                    Text("· \(pageIndex + 1) ·")
+                        .font(.title3.bold())
+                        .foregroundColor(.primary)
+                        .padding(8)
+                        .background(Color.clear)
+                        .cornerRadius(8)
+                        .padding(.bottom, 20)
+                }
+                .frame(width: geometry.size.width * 0.5)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             // 竖屏布局：图片在上，文本在下，页码在底部
             VStack(spacing: 0) {
-                // 上方图片区域 - 占据约60%高度
-                Image(panel.imageUrl)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(
-                        width: geometry.size.width * 0.8,
-                        height: geometry.size.height * 0.6
-                    )
-                    .background(Color.clear) // 确保图片背景透明
-                    .cornerRadius(12)
-                    .clipped()
-
-                // 中间文本区域 - 占据约35%高度
-                textContent
-                    .frame(height: geometry.size.height * 0.35)
-
-                // 底部页码
-                Text("· \(pageIndex + 1) ·")
-                    .font(.title3.bold())
-                    .foregroundColor(.primary)
-                    .padding(8)
-                    .background(Color.clear)
-                    .cornerRadius(8)
-                    .padding(.bottom, 20)
+                // 上方图片区域 - 占据50%高度
+                VStack {
+                    Image(panel.imageUrl)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.clear)
+                        .cornerRadius(12)
+                        .padding(20)
+                }
+                .frame(height: geometry.size.height * 0.5)
+                
+                // 下方文本区域 - 占据50%高度
+                VStack(spacing: 0) {
+                    textContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    // 底部页码
+                    Text("· \(pageIndex + 1) ·")
+                        .font(.title3.bold())
+                        .foregroundColor(.primary)
+                        .padding(8)
+                        .background(Color.clear)
+                        .cornerRadius(8)
+                        .padding(.bottom, 20)
+                }
+                .frame(height: geometry.size.height * 0.5)
             }
             .padding(.horizontal, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-
-    // 横屏布局
-    private var landscapeLayout: some View {
-        HStack(spacing: 20) {
-            // 左侧图片区域 - 占据约60%宽度
-            Image(panel.imageUrl)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(
-                    width: geometry.size.width * 0.6,
-                    height: geometry.size.height * 0.75
-                )
-                .background(Color.clear) // 确保图片背景透明
-                .cornerRadius(12)
-                .clipped()
-
-            // 右侧文本区域 - 占据约35%宽度
-            textContent
-                .frame(width: geometry.size.width * 0.35)
-        }
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // 文本内容组件
@@ -435,16 +426,16 @@ struct ComicPanelView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("故事叙述")
-                            .font(.title3.bold())
-
+                            .font(isLandscape ? .title2.bold() : .title3.bold())
+                        
                         Text(narration)
-                            .font(.body)
-                            .lineSpacing(6)
+                            .font(isLandscape ? .title3 : .body)
+                            .lineSpacing(8)
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .background(Color.clear) // 透明背景
+                .background(Color.clear)
                 .cornerRadius(12)
             } else {
                 // 如果没有叙述文本，显示占位符
@@ -454,8 +445,9 @@ struct ComicPanelView: View {
                         .foregroundColor(.gray.opacity(0.5))
                     Text("暂无文本描述")
                         .foregroundColor(.gray.opacity(0.5))
+                        .font(isLandscape ? .title3 : .body)
                 }
-                .background(Color.clear) // 透明背景
+                .background(Color.clear)
                 .cornerRadius(12)
             }
         }
@@ -517,7 +509,6 @@ struct QuestionsView: View {
                     .cornerRadius(8)
                     .padding(.bottom, 20)
             }
-            .padding(.horizontal, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
