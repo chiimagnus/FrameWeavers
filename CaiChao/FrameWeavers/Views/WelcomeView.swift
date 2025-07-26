@@ -29,7 +29,7 @@ struct WelcomeView: View {
                 """,
                 typeSpeed: 0.08
             )
-            .font(.custom("Kaiti SC", size: 16))
+            .font(.custom("KaitiSC-Regular", size: 16))
             .fontWeight(.bold)
             .multilineTextAlignment(.center)
             .foregroundColor(Color(hex: "#2F2617"))
@@ -53,22 +53,12 @@ struct WelcomeView: View {
                         .foregroundColor(Color(hex: "#855C23"))
                 }
             }
-            .onAppear {
-                // 打印所有中文字体
-                for family in UIFont.familyNames.sorted() {
-                    if family.contains("万事") || family.contains("全兴") {
-                        let names = UIFont.fontNames(forFamilyName: family)
-                        print("找到字体: \(family) - 名称: \(names)")
-                    }
-                }
-            }
-
 
             Text("""
             最多上传5段3分钟内的视频
             选择有故事的片段效果更佳
             """)
-                .font(.custom("Kaiti SC", size: 12))
+                .font(.custom("KaitiSC-Regular", size: 12))
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
