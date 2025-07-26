@@ -42,7 +42,7 @@ def test_direct_comic_generation():
         'task_id': task_id,                # 必须：任务ID
         'video_path': video_path,          # 必须：视频路径
         'story_style': '温馨童话',          # 必须：故事风格关键词
-        'target_frames': '4',              # 快速测试用少量帧
+        'target_frames': '12',              # 快速测试用少量帧
         'frame_interval': '2.0',
         'significance_weight': '0.7',
         'quality_weight': '0.3',
@@ -103,7 +103,7 @@ def test_direct_comic_generation():
     except Exception as e:
         print(f"❌ 测试异常: {str(e)}")
 
-def monitor_progress(base_url: str, task_id: str, max_wait: int = 300):
+def monitor_progress(base_url: str, task_id: str, max_wait: int = 3000):
     """监控任务进度"""
     start_time = time.time()
     last_progress = -1

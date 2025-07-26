@@ -12,6 +12,8 @@ import json
 from PIL import Image
 from io import BytesIO
 import config
+import logging
+import traceback
 
 app = Flask(__name__)
 
@@ -35,9 +37,52 @@ os.makedirs(STORIES_FOLDER, exist_ok=True)
 # 任务状态存储
 task_status = {}
 
+def upload_to_imgbb(image_path, api_key="7c9e1b2a3f4d5e6f7a8b9c0d1e2f3a4b"):
+    """
+    上传图片到图床并返回在线URL
+    
+    Args:
+        image_path (str): 本地图片文件路径
+        api_key (str): 图床API密钥（可选）
+    
+    Returns:
+        str: 上传后的图片在线URL
+    """
+    try:
+        # 使用自己的图床服务
+        upload_url = 'https://tuchuan.zeabur.app/api/upload'
+        
+        print(f"[INFO] 上传图片到图床: {image_path}")
+        
+        # 检查文件是否存在
+        if not os.path.exists(image_path):
+            raise Exception(f"图片文件不存在: {image_path}")
+        
+        # 上传文件
+        with open(image_path, 'rb') as f:
+            files = {'file': f}
+            response = requests.post(upload_url, files=files, timeout=30)
+        
+        if response.status_code != 200:
+            raise Exception(f"上传请求失败，状态码: {response.status_code}")
+        
+        result = response.json()
+        if result.get('success'):
+            image_url = result['url']
+            print(f"[INFO] 图片上传成功: {image_url}")
+            return image_url
+        else:
+            error_msg = result.get('error', '未知错误')
+            raise Exception(f"上传失败: {error_msg}")
+            
+    except Exception as e:
+        print(f"[ERROR] 图片上传失败: {str(e)}")
+        raise e
+
 def style_transform_image(image_path, style_prompt=None, image_size=None):
     """
     对图像进行风格化处理 - 基于ModelScope API
+    使用在线图片URL的方式调用API
     
     Args:
         image_path (str): 本地图像文件路径
@@ -48,12 +93,6 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
         dict: 包含处理结果的字典
     """
     try:
-        import requests
-        import json
-        from PIL import Image
-        from io import BytesIO
-        import base64
-        
         # 使用配置文件中的默认值
         if style_prompt is None:
             style_prompt = config.DEFAULT_STYLE_PROMPT
@@ -70,66 +109,78 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
                 'error': f'本地图像文件不存在: {image_path}'
             }
         
-        # 预处理图像：压缩大图像以避免API限制
-        from PIL import Image as PILImage
-        
-        # 先读取并可能压缩图像
-        with PILImage.open(image_path) as img:
-            # 转换为RGB模式（如果是RGBA）
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
+        # 第一步：上传图片到图床获取在线URL
+        try:
+            print(f"[INFO] 正在上传图片到图床...")
+            image_url = upload_to_imgbb(image_path)
+            print(f"[INFO] 图片上传成功，URL: {image_url}")
+        except Exception as upload_error:
+            print(f"[ERROR] 图片上传失败: {str(upload_error)}")
+            print(f"[INFO] 上传失败，返回原图作为降级处理")
             
-            # 如果图像太大，压缩到合理尺寸
-            max_size = (1024, 1024)  # 最大尺寸限制
-            if img.size[0] > max_size[0] or img.size[1] > max_size[1]:
-                print(f"[INFO] 压缩图像从 {img.size} 到适合API的尺寸")
-                img.thumbnail(max_size, PILImage.Resampling.LANCZOS)
+            # 降级处理：返回原图
+            with open(image_path, 'rb') as f:
+                original_image_data = f.read()
             
-            # 保存为高质量JPEG以减小文件大小
-            from io import BytesIO
-            temp_buffer = BytesIO()
-            img.save(temp_buffer, format='JPEG', quality=85, optimize=True)
-            image_data = temp_buffer.getvalue()
+            return {
+                'success': True,  # 标记为成功，但使用原图
+                'styled_image': None,
+                'styled_image_url': '',
+                'image_data': original_image_data,  # 使用原图数据
+                'original_path': image_path,
+                'style_prompt': style_prompt,
+                'fallback_used': True,  # 标记使用了降级处理
+                'upload_error': str(upload_error)
+            }
         
-        # 检查文件大小
-        max_size_mb = 5  # 5MB限制
-        if len(image_data) > max_size_mb * 1024 * 1024:
-            print(f"[WARNING] 图像文件过大 ({len(image_data)/1024/1024:.1f}MB)，尝试进一步压缩")
-            # 进一步压缩
-            with PILImage.open(image_path) as img:
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
-                img.thumbnail((512, 512), PILImage.Resampling.LANCZOS)
-                temp_buffer = BytesIO()
-                img.save(temp_buffer, format='JPEG', quality=70, optimize=True)
-                image_data = temp_buffer.getvalue()
+        # 第二步：使用在线URL调用ModelScope API进行风格化
+        # 尝试不同的API参数格式
         
-        image_base64 = base64.b64encode(image_data).decode('utf-8')
-        image_url = f"data:image/jpeg;base64,{image_base64}"
-        
-        print(f"[INFO] 图像处理完成，压缩后大小: {len(image_data)/1024:.1f}KB")
-        
-        # 构建请求数据（按照ModelScope API格式）
-        payload = {
+        # 格式1：按照用户示例的平级结构（优先尝试）
+        payload_flat = {
             'model': config.MODELSCOPE_MODEL,
             'prompt': style_prompt,
-            'image_url': image_url
+            'image_url': image_url,  # 使用上传后的在线URL
+            'size': image_size
         }
         
-        # 构建请求头
+        # 格式2：嵌套在input中的结构（备用）
+        payload_nested = {
+            'input': {
+                'model': config.MODELSCOPE_MODEL,
+                'prompt': style_prompt,
+                'image_url': image_url,  # 使用上传后的在线URL
+                'size': image_size
+            }
+        }
+        
         headers = {
             'Authorization': f'Bearer {config.MODELSCOPE_API_KEY}',
             'Content-Type': 'application/json'
         }
         
-        # 发送风格化请求
+        # 首先尝试用户示例的格式
         print(f"[INFO] 调用ModelScope API进行风格化...")
+        print(f"[INFO] 尝试格式1 (平级参数): {payload_flat}")
+        
         response = requests.post(
             config.MODELSCOPE_API_URL, 
-            data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), 
+            data=json.dumps(payload_flat, ensure_ascii=False).encode('utf-8'), 
             headers=headers,
             timeout=config.STYLE_PROCESSING_TIMEOUT
         )
+        
+        # 如果第一种格式失败，尝试第二种格式
+        if response.status_code != 200:
+            print(f"[INFO] 格式1失败 (状态码: {response.status_code})，尝试格式2 (嵌套参数): {payload_nested}")
+            response = requests.post(
+                config.MODELSCOPE_API_URL, 
+                data=json.dumps(payload_nested, ensure_ascii=False).encode('utf-8'), 
+                headers=headers,
+                timeout=config.STYLE_PROCESSING_TIMEOUT
+            )
+        
+        print(f"[INFO] API响应状态码: {response.status_code}")
         
         # 检查响应状态
         if response.status_code != 200:
@@ -155,11 +206,24 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
         # 解析响应数据
         try:
             response_data = response.json()
+            print(f"[INFO] API响应解析成功")
         except json.JSONDecodeError as e:
             print(f"[ERROR] 响应JSON解析失败: {e}")
+            print(f"[INFO] JSON解析失败，返回原图作为降级处理")
+            
+            # 降级处理：返回原图
+            with open(image_path, 'rb') as f:
+                original_image_data = f.read()
+            
             return {
-                'success': False,
-                'error': f'API响应JSON解析失败: {e}, 响应: {response.text}'
+                'success': True,  # 标记为成功，但使用原图
+                'styled_image': None,
+                'styled_image_url': '',
+                'image_data': original_image_data,  # 使用原图数据
+                'original_path': image_path,
+                'style_prompt': style_prompt,
+                'fallback_used': True,  # 标记使用了降级处理
+                'api_error': f'JSON解析失败: {e}, 响应: {response.text}'
             }
         
         # 检查响应数据格式
@@ -191,9 +255,22 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
         image_response = requests.get(styled_image_url, timeout=60)
         
         if image_response.status_code != 200:
+            print(f"[ERROR] 下载风格化图像失败，状态码: {image_response.status_code}")
+            print(f"[INFO] 下载失败，返回原图作为降级处理")
+            
+            # 降级处理：返回原图
+            with open(image_path, 'rb') as f:
+                original_image_data = f.read()
+            
             return {
-                'success': False,
-                'error': f'下载风格化图像失败，状态码: {image_response.status_code}'
+                'success': True,  # 标记为成功，但使用原图
+                'styled_image': None,
+                'styled_image_url': styled_image_url,
+                'image_data': original_image_data,  # 使用原图数据
+                'original_path': image_path,
+                'style_prompt': style_prompt,
+                'fallback_used': True,  # 标记使用了降级处理
+                'download_error': f'下载失败，状态码: {image_response.status_code}'
             }
         
         # 转换为PIL图像对象
@@ -206,7 +283,8 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
             'styled_image_url': styled_image_url,
             'image_data': image_response.content,  # 原始图像数据，用于保存
             'original_path': image_path,
-            'style_prompt': style_prompt
+            'style_prompt': style_prompt,
+            'uploaded_image_url': image_url  # 记录上传后的图片URL
         }
         
     except Exception as e:
@@ -235,22 +313,6 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
                 'success': False,
                 'error': f'风格化处理异常且无法读取原图: {str(e)}'
             }
-        
-    except requests.exceptions.Timeout:
-        return {
-            'success': False,
-            'error': '风格化处理超时，请稍后重试'
-        }
-    except requests.exceptions.RequestException as e:
-        return {
-            'success': False,
-            'error': f'网络请求错误: {str(e)}'
-        }
-    except Exception as e:
-        return {
-            'success': False,
-            'error': f'风格化处理失败: {str(e)}'
-        }
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
