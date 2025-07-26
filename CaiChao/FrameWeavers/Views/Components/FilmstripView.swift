@@ -21,11 +21,13 @@ struct FilmstripView: View {
                 HStack(spacing: 10) {
                     ForEach(galleryViewModel.loopedImageNames.indices, id: \.self) { index in
                         let imageName = galleryViewModel.loopedImageNames[index]
+                        let baseFrame = galleryViewModel.getBaseFrame(for: imageName)
                         FilmstripFrameView(
                             imageName: imageName,
                             isHidden: galleryViewModel.hideSourceImageId == imageName,
                             namespace: namespace,
-                            isSource: false // 显式设置为 false
+                            isSource: false, // 显式设置为 false
+                            baseFrame: baseFrame
                         )
                         .id(index)
                         .background(
@@ -87,14 +89,49 @@ struct FilmstripFrameView: View {
     let isHidden: Bool
     let namespace: Namespace.ID
     let isSource: Bool
-    
+    let baseFrame: BaseFrameData?
+
+    init(imageName: String, isHidden: Bool, namespace: Namespace.ID, isSource: Bool, baseFrame: BaseFrameData? = nil) {
+        self.imageName = imageName
+        self.isHidden = isHidden
+        self.namespace = namespace
+        self.isSource = isSource
+        self.baseFrame = baseFrame
+    }
+
     var body: some View {
         ZStack {
             if !isHidden {
-                Image(imageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay(
+                                ProgressView()
+                                    .scaleEffect(0.5)
+                            )
+                    }
                     .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
+                } else if baseFrame == nil {
+                    // 当没有基础帧数据时，显示空白而不是本地图片
+                    Rectangle()
+                        .fill(Color.clear)
+                        .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
+                } else {
+                    // 有基础帧数据但URL无效时显示错误状态
+                    Rectangle()
+                        .fill(Color.red.opacity(0.3))
+                        .overlay(
+                            Text("文件不存在")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        )
+                        .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
+                }
             } else {
                 Rectangle().fill(.clear)
             }

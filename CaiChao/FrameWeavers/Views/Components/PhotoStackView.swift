@@ -5,6 +5,14 @@ struct PhotoStackView: View {
     let mainImageName: String
     let stackedImages: [String]
     let namespace: Namespace.ID
+    let galleryViewModel: ProcessingGalleryViewModel?
+
+    init(mainImageName: String, stackedImages: [String], namespace: Namespace.ID, galleryViewModel: ProcessingGalleryViewModel? = nil) {
+        self.mainImageName = mainImageName
+        self.stackedImages = stackedImages
+        self.namespace = namespace
+        self.galleryViewModel = galleryViewModel
+    }
 
     var body: some View {
         ZStack {
@@ -13,11 +21,37 @@ struct PhotoStackView: View {
                 let imageName = stackedImages[index]
                 let offset = CGFloat(index) * 3
                 let rotation = Double.random(in: -8...8)
+                let baseFrame = galleryViewModel?.getBaseFrame(for: imageName)
 
                 ZStack {
-                    Image(imageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                    if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(
+                                    ProgressView()
+                                        .scaleEffect(0.5)
+                                )
+                        }
+                    } else if baseFrame == nil {
+                        // 只有在没有基础帧数据时才显示本地图片
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        // 有基础帧数据但URL无效时显示错误状态
+                        Rectangle()
+                            .fill(Color.orange.opacity(0.3))
+                            .overlay(
+                                Text("URL无效")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                            )
+                    }
                 }
                 .frame(width: 300, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -33,10 +67,38 @@ struct PhotoStackView: View {
             // 主图卡片
             ZStack {
                 if !mainImageName.isEmpty {
-                    Image(mainImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                    let mainBaseFrame = galleryViewModel?.getBaseFrame(for: mainImageName)
+                    if let baseFrame = mainBaseFrame, let url = baseFrame.thumbnailURL {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(
+                                    ProgressView()
+                                        .scaleEffect(0.5)
+                                )
+                        }
                         .matchedGeometryEffect(id: mainImageName, in: namespace)
+                    } else if mainBaseFrame == nil {
+                        // 只有在没有基础帧数据时才显示本地图片
+                        Image(mainImageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .matchedGeometryEffect(id: mainImageName, in: namespace)
+                    } else {
+                        // 有基础帧数据但URL无效时显示错误状态
+                        Rectangle()
+                            .fill(Color.orange.opacity(0.3))
+                            .overlay(
+                                Text("URL无效")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                            )
+                            .matchedGeometryEffect(id: mainImageName, in: namespace)
+                    }
                 }
             }
             .frame(width: 300, height: 200)

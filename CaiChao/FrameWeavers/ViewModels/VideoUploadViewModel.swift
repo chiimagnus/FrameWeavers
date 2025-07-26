@@ -10,20 +10,17 @@ class VideoUploadViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var comicResult: ComicResult?
     @Published var isShowingPicker = false
+    @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
     private var currentTaskId: String?  // 当前任务ID
     private var progressTimer: Timer?   // 进度查询定时器
+    private let baseFrameService = BaseFrameService() // 基础帧服务
 
     // 兼容性属性，返回第一个选中的视频
     var selectedVideo: URL? {
         return selectedVideos.first
-    }
-    
-    // 公开任务ID属性
-    var uploadedTaskId: String? {
-        return currentTaskId
     }
     
     func selectVideo(_ url: URL) {
@@ -257,7 +254,7 @@ class VideoUploadViewModel: ObservableObject {
             // 尝试解析为通用JSON对象
             if let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 // 提取关键字段
-                let success = jsonObject["success"] as? Bool ?? false
+                let _ = jsonObject["success"] as? Bool ?? false
                 let status = jsonObject["status"] as? String ?? ""
                 let progress = jsonObject["progress"] as? Int ?? 0
                 let message = jsonObject["message"] as? String ?? ""
@@ -268,11 +265,13 @@ class VideoUploadViewModel: ObservableObject {
                 print("任务状态: \(status), 进度: \(progress)%")
 
                 if status == "completed" {
-                    uploadStatus = .completed
+                    uploadStatus = .processing // 先设置为处理中
                     progressTimer?.invalidate()
                     progressTimer = nil
-                    // 使用Mock结果
-                    comicResult = createMockComicResult()
+                    // 开始提取基础帧
+                    Task {
+                        await extractBaseFrames()
+                    }
                 } else if status == "error" || status == "cancelled" {
                     uploadStatus = .failed
                     errorMessage = message
@@ -292,6 +291,56 @@ class VideoUploadViewModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.comicResult = self.createMockComicResult()
             self.uploadStatus = .completed
+        }
+    }
+
+    // MARK: - 基础帧提取
+    private func extractBaseFrames() async {
+        guard let taskId = currentTaskId else {
+            print("❌ 基础帧提取失败: 缺少任务ID")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "缺少任务ID"
+            }
+            return
+        }
+
+        print("🎬 开始提取基础帧, taskId: \(taskId)")
+
+        do {
+            let response = try await baseFrameService.extractBaseFrames(taskId: taskId, interval: 1.0)
+            print("✅ 基础帧提取API调用成功")
+            print("📊 响应数据: success=\(response.success), message=\(response.message)")
+            print("📁 结果数量: \(response.results.count)")
+
+            // 转换响应数据为BaseFrameData
+            let frames = response.results.flatMap { result in
+                print("🎞️ 视频: \(result.videoName), 基础帧数量: \(result.baseFramesCount)")
+                print("📸 基础帧路径: \(result.baseFramesPaths)")
+                return result.baseFramesPaths.enumerated().map { index, path in
+                    BaseFrameData(
+                        framePath: path,
+                        frameIndex: index,
+                        timestamp: Double(index) * 1.0
+                    )
+                }
+            }
+
+            print("🖼️ 转换后的基础帧数量: \(frames.count)")
+
+            await MainActor.run {
+                self.baseFrames = frames
+                self.uploadStatus = .completed
+                self.comicResult = self.createMockComicResult()
+                print("✅ 基础帧数据已设置到ViewModel")
+            }
+
+        } catch {
+            print("❌ 基础帧提取失败: \(error)")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "基础帧提取失败: \(error.localizedDescription)"
+            }
         }
     }
     

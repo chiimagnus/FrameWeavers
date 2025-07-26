@@ -367,11 +367,10 @@ struct ComicPanelView: View {
 
                 // 底部页码
                 Text("· \(pageIndex + 1) ·")
-                    .font(.title3.bold())
-                    .foregroundColor(.primary)
+                    .font(.custom("STKaiti", size: 16))
+                    .foregroundColor(Color(hex: "#2F2617"))
                     .padding(8)
                     .background(Color.clear)
-                    .cornerRadius(8)
                     .padding(.bottom, 20)
             }
             .frame(height: geometry.size.height * 0.5)
@@ -386,11 +385,9 @@ struct ComicPanelView: View {
             if let narration = panel.narration {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("故事叙述")
-                            .font(.title3.bold())
-
                         Text(narration)
-                            .font(.body)
+                            .font(.custom("STKaiti", size: 16))
+                            .foregroundColor(Color(hex: "#2F2617"))
                             .lineSpacing(8)
                     }
                     .padding()
@@ -429,8 +426,8 @@ struct QuestionsView: View {
 
             VStack(spacing: 30) {
                 Text("互动问题")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(.primary)
+                    .font(.custom("STKaiti", size: 28))
+                    .foregroundColor(Color(hex: "#855C23"))
 
                 VStack(alignment: .leading, spacing: 20) {
                     ForEach(questions, id: \.self) { question in
@@ -440,10 +437,11 @@ struct QuestionsView: View {
                                 typeSpeed: 0.10,
                                 showCursor: false
                             )
+                            .font(.custom("STKaiti", size: 18))
+                            .foregroundColor(Color(hex: "#2F2617"))
                         }
                         .padding()
                         .background(Color.clear)
-                        .cornerRadius(12)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -454,11 +452,10 @@ struct QuestionsView: View {
 
             // 底部页码
             Text("· 完 ·")
-                .font(.title2.bold())
-                .foregroundColor(.primary)
+                .font(.custom("STKaiti", size: 16))
+                .foregroundColor(Color(hex: "#2F2617"))
                 .padding(8)
                 .background(Color.clear)
-                .cornerRadius(8)
                 .padding(.bottom, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
