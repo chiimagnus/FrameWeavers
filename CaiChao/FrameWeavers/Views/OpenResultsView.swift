@@ -13,26 +13,44 @@ struct OpenResultsView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 40) {
-                Image("封面")
-                    .resizable()
-                    .scaledToFit()
-                    // .frame(width: 100, height: 100)
-                    .shadow(radius: 10)
-                    .padding(.horizontal, 20)
+                // 显示第一页的图片作为封面
+                if let firstPanel = comicResult.panels.first {
+                    AsyncImageView(imageUrl: firstPanel.imageUrl)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxHeight: 300)
+                        .shadow(radius: 10)
+                        .padding(.horizontal, 20)
+                } else {
+                    // 如果没有页面，显示默认封面
+                    Image("封面")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 300)
+                        .shadow(radius: 10)
+                        .padding(.horizontal, 20)
+                }
 
-                Text("""
-                在钢筋水泥的都市中，藏着一片不为人知的秘境。
+                VStack(spacing: 16) {
+                    // 显示连环画标题
+                    Text(comicResult.originalVideoTitle)
+                        .font(.custom("WSQuanXing", size: 24))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "#855C23"))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
 
-                少女爱丽丝，一个能听懂风语花言的女孩，在一次午后小憩中，无意间听到了来自古老精灵的微弱呼唤。
-                
-                为了拯救被污染的自然，她必须与精灵签下契约，然而契约的代价，是她自己的生命力……
-                """)
-                    .font(.custom("STKaiti", size: 16))
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
-                    // .frame(width: 275, height: 202.99998, alignment: .topLeading)
-                    .opacity(0.6)
-                    .padding(.horizontal, 20)
+                    // 显示第一页的旁白作为描述
+                    if let firstPanel = comicResult.panels.first, let narration = firstPanel.narration {
+                        Text(narration)
+                            .font(.custom("STKaiti", size: 16))
+                            .fontWeight(.bold)
+                            .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
+                            .opacity(0.6)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                            .lineLimit(4)
+                    }
+                }
 
                 
                 NavigationLink {
