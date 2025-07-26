@@ -116,7 +116,6 @@ struct VideoUploadView: View {
                 }
                 .padding()
             }
-            .background(Color(red: 0.81, green: 0.74, blue: 0.66))
         }
     }
     
