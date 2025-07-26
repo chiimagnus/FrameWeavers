@@ -29,7 +29,7 @@ struct ProcessingView: View {
                 if let info = galleryViewModel.flyingImageInfo {
                     let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        CustomAsyncImage(url: url) { image in
+                        AsyncImage(url: url) { image in
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)

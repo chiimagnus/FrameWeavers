@@ -25,7 +25,7 @@ struct PhotoStackView: View {
 
                 ZStack {
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        CustomAsyncImage(url: url) { image in
+                        AsyncImage(url: url) { image in
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -69,7 +69,7 @@ struct PhotoStackView: View {
                 if !mainImageName.isEmpty {
                     let mainBaseFrame = galleryViewModel?.getBaseFrame(for: mainImageName)
                     if let baseFrame = mainBaseFrame, let url = baseFrame.thumbnailURL {
-                        CustomAsyncImage(url: url) { image in
+                        AsyncImage(url: url) { image in
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)

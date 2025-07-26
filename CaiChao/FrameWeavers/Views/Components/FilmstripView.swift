@@ -103,7 +103,7 @@ struct FilmstripFrameView: View {
         ZStack {
             if !isHidden {
                 if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                    CustomAsyncImage(url: url) { image in
+                    AsyncImage(url: url) { image in
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
