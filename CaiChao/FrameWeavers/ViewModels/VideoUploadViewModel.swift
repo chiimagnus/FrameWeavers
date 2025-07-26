@@ -21,6 +21,11 @@ class VideoUploadViewModel: ObservableObject {
         return selectedVideos.first
     }
     
+    // 公开任务ID属性
+    var uploadedTaskId: String? {
+        return currentTaskId
+    }
+    
     func selectVideo(_ url: URL) {
         selectedVideos = [url]  // 单视频选择
         validateVideos()
