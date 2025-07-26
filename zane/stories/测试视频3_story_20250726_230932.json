@@ -1,0 +1,255 @@
+{
+  "story_info": {
+    "task_id": "test_task_1753542218",
+    "video_name": "测试视频3.mp4",
+    "video_path": "D:\\PRODUCT\\FrameWeavers\\zane\\测试视频3.mp4",
+    "processing_time": "2025-07-26T23:09:32.288121",
+    "overall_theme": "一段由青春同行、日常仪式感与沿途风景共同编织的“公路式”成长叙事——在移动与停顿之间，友谊、爱情与自我认同悄然生根发芽，最终凝结为一束可握在手心里的温暖记忆。",
+    "total_narrations": 12,
+    "total_interactive_questions": 5
+  },
+  "final_narrations": [
+    {
+      "frame_index": 0,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0001.jpg",
+      "story_text": "在咔哒咔哒的小火车肚子里，彩虹UNO牌像一群调皮的精灵，围着两位小小旅人跳舞；黑夹克女孩悄悄把“希望旅程再长一点”的愿望藏进牌背，而笑声咚的一声撞进男生怀里，变成一颗会唱歌的糖。"
+    },
+    {
+      "frame_index": 5,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0006.jpg",
+      "story_text": "魔法大桥上，风把云朵揉成棉花糖，粉玫瑰和向日葵在女孩怀里开成两把小小的太阳；快门“咔嚓”一响，就把“我们永远这样闪亮”的咒语贴进了天空的相册。"
+    },
+    {
+      "frame_index": 7,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0008.jpg",
+      "story_text": "藤蔓墙是绿色的小城堡，黄色向日葵像国王派来的使者，轻轻靠在女孩胸口；她听见花盘里传来“请抱抱自己”的温柔口令，于是微笑像泡泡糖一样吹得又大又甜。"
+    },
+    {
+      "frame_index": 9,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0010.jpg",
+      "story_text": "金色招牌在屋檐上眨眼睛，手抓饼的香气变成一条软软的光带，把远方的思念牵到鼻尖；旅人抬头，舌尖已先一步回到故乡的小巷，那里有奶奶轻轻翻面的“嚓啦”声。"
+    },
+    {
+      "frame_index": 12,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0013.jpg",
+      "story_text": "黄昏是一条玫瑰色的丝带，把小镇轻轻捆成礼物；女孩把粉玫瑰举到耳边，听见花瓣替她说出“再见啦，今天辛苦了”，于是天色也跟着温柔地打了个哈欠。"
+    },
+    {
+      "frame_index": 13,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0014.jpg",
+      "story_text": "夜市是一盏会唱歌的灯笼，烤串在铁架上滋滋地讲故事；蓝衣女孩用白色手套做小桥，把热乎乎的勇气递给下一位旅人，雾气像小精灵一样围着他们转圈说晚安。"
+    },
+    {
+      "frame_index": 16,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0017.jpg",
+      "story_text": "夜里的古老城门变成一本发光的绘本，每块砖都是金色的字母；风把书页吹得哗啦啦响，旅人每走一步，就听见自己的旧故事像落叶一样轻轻脱掉，发出脆脆的笑声。"
+    },
+    {
+      "frame_index": 20,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0021.jpg",
+      "story_text": "博物馆里的金色大佛低垂眼帘，像月亮落在人间的耳朵；他把世界的喧哗调成沙沙的落叶声，留给每个小小观众一颗听得见心跳的安静糖果。"
+    },
+    {
+      "frame_index": 38,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0039.jpg",
+      "story_text": "黄色小巴士是阴天里的橡皮鸭，摇啊摇就把瞌睡摇成泡泡；两位女孩用手指比出“5”和“V”，像给天空贴上两枚亮闪闪的创可贴，连乌云都不好意思再皱眉。"
+    },
+    {
+      "frame_index": 39,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0040.jpg",
+      "story_text": "花墙从地面一路长到云边，把小镇一角变成童话里的瀑布；蹲下的旅人把地图折成纸飞机，让它载着“下一段路去哪里”的小问号，扑簌簌飞向粉花深处。"
+    },
+    {
+      "frame_index": 44,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0045.jpg",
+      "story_text": "雪森林是一条会发光的奶油路，三位小旅人站在木栈道上挥手，像给冬天贴上三颗会跳动的星星；雪花落在袖口变成凉凉的吻，悄悄告诉他们：离别只是下一次冒险的开关。"
+    },
+    {
+      "frame_index": 45,
+      "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0046.jpg",
+      "story_text": "大海把天空抱在怀里，浪花一排排写下“故事到此结束”的银色句子；三位朋友把V字手势插进风里，像把此刻钉进蓝色的记忆画布，海鸥飞过来，为他们盖上“永恒”的小印章。"
+    }
+  ],
+  "interactive_questions": [
+    {
+      "id": 1,
+      "type": "memory_recall",
+      "question": "当UNO牌在火车小桌上翻飞，男生的笑声像一颗糖撞进女生怀里时，你脑海里是否也闪过某一段‘只想让旅程再长一点’的同行时光？",
+      "intent": "把观众瞬间拉回火车车厢的亲密氛围，勾起“青春同路”的集体记忆"
+    },
+    {
+      "id": 2,
+      "type": "emotional_reflection",
+      "question": "当粉色玫瑰与向日葵在镜头里并肩而立，你心底有没有一处被悄悄照亮——那是你曾渴望却未说出口的祝福，还是曾被别人赠予却来不及珍藏的热烈？",
+      "intent": "借花的象征，让观众触碰自己关于“爱与被爱”的柔软褶皱"
+    },
+    {
+      "id": 3,
+      "type": "detail_observation",
+      "question": "夜市摊位上，女孩递出烤串时手套边缘腾起的雾气像小精灵围着她打转——如果那团雾气会说话，它会替摊主把哪句悄悄话带给下一个接棒的旅人？",
+      "intent": "放大一个微小而温暖的动作，引导观众在细节里听见“人与人之间的善意暗号”"
+    },
+    {
+      "id": 4,
+      "type": "personal_association",
+      "question": "当古城门在夜色里变成一本发光的绘本，你每踏一步就有旧故事像落叶脆响——如果此刻你正走过自己生命的城门，你愿意把哪一片“落叶”轻轻放下，又想把哪片夹进书页珍藏？",
+      "intent": "把古城门幻化为个人成长的隐喻入口，让观众把“告别与珍藏”的私人清单投射进去"
+    },
+    {
+      "id": 5,
+      "type": "thematic_thinking",
+      "question": "从火车、夜市、藤蔓墙到博物馆，这条“公路”其实没有里程表，它只以温度计量——当你回望自己一路走来的“站点”，你觉得真正让你长大的，是途经的风景、身边的人，还是你在每一次停顿里学会拥抱自己的那个瞬间？",
+      "intent": "升华主题，邀请观众把影片的“移动与停顿”转化为对自我成长的深度丈量"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": 0,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0001.jpg",
+        "story_text": "启程：车厢微光中，UNO纸牌成为友谊的契约，旅途的节拍由笑声打响。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0006.jpg",
+        "story_text": "共证：桥上的自拍定格集体的高光，玫瑰与向日葵交换彼此的祝语。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0008.jpg",
+        "story_text": "独照：藤蔓墙前，她把向日葵抱在胸前，完成与自己的和解与确认。"
+      },
+      {
+        "frame_index": 9,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0010.jpg",
+        "story_text": "味觉锚点：金色招牌下的手抓饼香，标记旅程的地理与情感坐标。"
+      },
+      {
+        "frame_index": 12,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0013.jpg",
+        "story_text": "黄昏小驻：小镇街头的粉玫瑰与蓝调天空，把一天的奔波温柔收尾。"
+      },
+      {
+        "frame_index": 13,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0014.jpg",
+        "story_text": "烟火补给：夜市灯光与手套递出的烤串，替夜行者续上人情温度。"
+      },
+      {
+        "frame_index": 16,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0017.jpg",
+        "story_text": "历史之门：夜照城楼敞开，像一页被风掀动的史书迎他们走进下一章。"
+      },
+      {
+        "frame_index": 20,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0021.jpg",
+        "story_text": "静观：博物馆内金色佛像低眉，提醒旅者在喧哗中保留一分钟的敬畏。"
+      },
+      {
+        "frame_index": 38,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0039.jpg",
+        "story_text": "车内广播：黄色小巴摇晃，手势与笑容把阴天的路途点亮成移动派对。"
+      },
+      {
+        "frame_index": 39,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0040.jpg",
+        "story_text": "花墙打卡：小镇街角的花瀑与旅人蹲下的身影，让日常成为浪漫布景。"
+      },
+      {
+        "frame_index": 44,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0045.jpg",
+        "story_text": "雪原合影：白色森林栈道上的挥手，把冬天的冷冽酿成炙热的集体记忆。"
+      },
+      {
+        "frame_index": 45,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0046.jpg",
+        "story_text": "海线终章：鸥鸟掠过，三人的V字手势与文艺字幕封存整段旅程的尾韵。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": 0,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0001.jpg",
+        "story_text": "在摇晃的车厢里，我把最灿烂的笑容递给他，却把“别那么快就到站”的恐慌悄悄藏在牌底。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0006.jpg",
+        "story_text": "举起手机的那一秒，我把所有对未来的不确定都塞进这束玫瑰，假装它们只会盛放不会枯萎。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0008.jpg",
+        "story_text": "向日葵的温度隔着牛皮纸传到手心，我忽然意识到：最想拥抱的人其实是自己。"
+      },
+      {
+        "frame_index": 9,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0010.jpg",
+        "story_text": "仰头望向金字的瞬间，我闻到家乡巷口的味道——那份被距离反复翻炒的思念终于在此刻起锅。"
+      },
+      {
+        "frame_index": 12,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0013.jpg",
+        "story_text": "暮色把玫瑰衬得更艳，像替我开口说出了那句迟迟不敢出口的告别。"
+      },
+      {
+        "frame_index": 13,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0014.jpg",
+        "story_text": "隔着口罩的一呼一吸，我把所有奔波后的疲惫都托付给这串冒热气的安慰。"
+      },
+      {
+        "frame_index": 16,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0017.jpg",
+        "story_text": "城门洞开的暖光像一条缝，我每靠近一步，心里的旧章节便轻轻剥落一层。"
+      },
+      {
+        "frame_index": 20,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0021.jpg",
+        "story_text": "佛像的低眉不是漠视，而是替我把所有喧嚣调成刚好听得见心跳的音量。"
+      },
+      {
+        "frame_index": 38,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0039.jpg",
+        "story_text": "黄色车厢摇成童年的摇篮，我们的手势像两面旗，在无风的阴天里替彼此鼓劲。"
+      },
+      {
+        "frame_index": 39,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0040.jpg",
+        "story_text": "蹲在花墙下的那一刻，我把地图折成纸飞机，任它载着“接下来去哪儿”的犹豫飞向远处的屋檐。"
+      },
+      {
+        "frame_index": 44,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0045.jpg",
+        "story_text": "雪粒落进袖口化成水，我忽然懂了：冷的不是气温，是明知终将别离仍伸出的那只手。"
+      },
+      {
+        "frame_index": 45,
+        "frame_path": "frames\\test_task_1753542218_1753542220\\base_frame_0046.jpg",
+        "story_text": "海浪一声一声把时间推远，我们比出的V像两根钉子，将此刻钉进永不回头的蓝色。"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-26T23:05:03.146250",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 77.37405109405518,
+    "soul_writer_time": 141.45652294158936,
+    "master_editor_time": 228.80260610580444,
+    "interactive_completed": true,
+    "interactive_time": 269.1428518295288,
+    "end_time": "2025-07-26T23:09:32.288121",
+    "total_time": 269.1428518295288,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-26T23:09:32.288121"
+  }
+}

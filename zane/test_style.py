@@ -4,23 +4,20 @@ from PIL import Image
 from io import BytesIO
 
 def upload_to_imgbb(image_path, api_key="7c9e1b2a3f4d5e6f7a8b9c0d1e2f3a4b"):
-    """上传图片到imgbb并返回URL"""
-    url = "https://api.imgbb.com/1/upload"
+    """上传图片并返回URL"""
+    with open(image_path, 'rb') as f:
+        files = {'file': f}
+        response = requests.post('https://tuchuan.zeabur.app/api/upload', files=files)
     
-    with open(image_path, "rb") as file:
-        files = {"image": file}
-        data = {"key": api_key}
-        response = requests.post(url, files=files, data=data)
-        
-    if response.status_code == 200:
-        result = response.json()
-        return result["data"]["url"]
+    result = response.json()
+    if result['success']:
+        return result['url']
     else:
-        raise Exception(f"Upload failed: {response.text}")
+        raise Exception(f"上传失败: {result['error']}")
 
 # 上传本地图片获取URL
 print("Uploading image...")
-image_url = upload_to_imgbb("unified_key_03.jpg")
+image_url = upload_to_imgbb("styled_unified_key_02.jpg")
 print(f"Image uploaded: {image_url}")
 
 url = 'https://api-inference.modelscope.cn/v1/images/generations'
