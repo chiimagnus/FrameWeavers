@@ -60,28 +60,6 @@ struct SampleFlowView: View {
                 }
             }
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        if currentStep == .styleSelection {
-                            dismiss()
-                        } else {
-                            // 返回上一步
-                            withAnimation {
-                                if currentStep == .processing {
-                                    currentStep = .styleSelection
-                                    mockViewModel.reset()
-                                } else if currentStep == .results {
-                                    currentStep = .processing
-                                }
-                            }
-                        }
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(Color(hex: "#2F2617"))
-                    }
-                }
-            }
         }
     }
 
