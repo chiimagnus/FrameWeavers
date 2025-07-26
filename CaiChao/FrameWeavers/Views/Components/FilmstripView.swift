@@ -103,23 +103,48 @@ struct FilmstripFrameView: View {
         ZStack {
             if !isHidden {
                 if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .overlay(
-                                ProgressView()
-                                    .scaleEffect(0.5)
-                            )
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure(_):
+                            Rectangle()
+                                .fill(Color.red.opacity(0.3))
+                                .overlay(
+                                    Text("加载失败")
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                )
+                        case .empty:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(
+                                    ProgressView()
+                                        .scaleEffect(0.5)
+                                )
+                        @unknown default:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                        }
                     }
                     .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
-                } else {
+                } else if baseFrame == nil {
+                    // 只有在没有基础帧数据时才显示本地图片
                     Image(imageName)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
+                } else {
+                    // 有基础帧数据但URL无效时显示错误状态
+                    Rectangle()
+                        .fill(Color.orange.opacity(0.3))
+                        .overlay(
+                            Text("URL无效")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        )
                         .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
                 }
             } else {

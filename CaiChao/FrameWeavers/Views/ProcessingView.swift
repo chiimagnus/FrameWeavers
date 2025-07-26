@@ -29,23 +29,43 @@ struct ProcessingView: View {
                 if let info = galleryViewModel.flyingImageInfo {
                     let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure(_):
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.3))
+                            case .empty:
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .overlay(ProgressView().scaleEffect(0.5))
+                            @unknown default:
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                            }
                         }
                         .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .matchedGeometryEffect(id: info.id, in: galleryNamespace)
                         .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
                         .transition(.identity)
-                    } else {
+                    } else if baseFrame == nil {
+                        // 只有在没有基础帧数据时才显示本地图片
                         Image(info.id)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
+                            .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .matchedGeometryEffect(id: info.id, in: galleryNamespace)
+                            .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
+                            .transition(.identity)
+                    } else {
+                        // 有基础帧数据但URL无效时显示错误状态
+                        Rectangle()
+                            .fill(Color.orange.opacity(0.3))
                             .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .matchedGeometryEffect(id: info.id, in: galleryNamespace)

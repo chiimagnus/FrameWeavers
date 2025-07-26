@@ -19,7 +19,27 @@ struct BaseFrameData: Identifiable, Hashable {
         } else {
             // 如果是相对路径，需要拼接服务器地址
             let baseURL = NetworkConfig.baseURL
-            self.thumbnailURL = URL(string: "\(baseURL)/\(framePath)")
+            // 修复Windows路径分隔符问题：将反斜杠替换为正斜杠
+            let normalizedPath = framePath.replacingOccurrences(of: "\\", with: "/")
+            let fullURL = "\(baseURL)/\(normalizedPath)"
+            self.thumbnailURL = URL(string: fullURL)
+            print("🔗 BaseFrameData: 原始路径: \(framePath)")
+            print("🔗 BaseFrameData: 标准化路径: \(normalizedPath)")
+            print("🔗 BaseFrameData: 完整URL: \(fullURL)")
+
+            // 测试URL是否可访问
+            if let url = self.thumbnailURL {
+                Task {
+                    do {
+                        let (_, response) = try await URLSession.shared.data(from: url)
+                        if let httpResponse = response as? HTTPURLResponse {
+                            print("🌐 URL测试: \(fullURL) - 状态码: \(httpResponse.statusCode)")
+                        }
+                    } catch {
+                        print("❌ URL测试失败: \(fullURL) - 错误: \(error.localizedDescription)")
+                    }
+                }
+            }
         }
     }
 }

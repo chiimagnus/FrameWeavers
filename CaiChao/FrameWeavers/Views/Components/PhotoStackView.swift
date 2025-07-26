@@ -25,22 +25,46 @@ struct PhotoStackView: View {
 
                 ZStack {
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-                                .overlay(
-                                    ProgressView()
-                                        .scaleEffect(0.5)
-                                )
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure(_):
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.3))
+                                    .overlay(
+                                        Text("加载失败")
+                                            .font(.caption)
+                                            .foregroundColor(.white)
+                                    )
+                            case .empty:
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .overlay(
+                                        ProgressView()
+                                            .scaleEffect(0.5)
+                                    )
+                            @unknown default:
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                            }
                         }
-                    } else {
+                    } else if baseFrame == nil {
+                        // 只有在没有基础帧数据时才显示本地图片
                         Image(imageName)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
+                    } else {
+                        // 有基础帧数据但URL无效时显示错误状态
+                        Rectangle()
+                            .fill(Color.orange.opacity(0.3))
+                            .overlay(
+                                Text("URL无效")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                            )
                     }
                 }
                 .frame(width: 300, height: 200)
@@ -59,23 +83,48 @@ struct PhotoStackView: View {
                 if !mainImageName.isEmpty {
                     let mainBaseFrame = galleryViewModel?.getBaseFrame(for: mainImageName)
                     if let baseFrame = mainBaseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-                                .overlay(
-                                    ProgressView()
-                                        .scaleEffect(0.5)
-                                )
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure(_):
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.3))
+                                    .overlay(
+                                        Text("加载失败")
+                                            .font(.caption)
+                                            .foregroundColor(.white)
+                                    )
+                            case .empty:
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .overlay(
+                                        ProgressView()
+                                            .scaleEffect(0.5)
+                                    )
+                            @unknown default:
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                            }
                         }
                         .matchedGeometryEffect(id: mainImageName, in: namespace)
-                    } else {
+                    } else if mainBaseFrame == nil {
+                        // 只有在没有基础帧数据时才显示本地图片
                         Image(mainImageName)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
+                            .matchedGeometryEffect(id: mainImageName, in: namespace)
+                    } else {
+                        // 有基础帧数据但URL无效时显示错误状态
+                        Rectangle()
+                            .fill(Color.orange.opacity(0.3))
+                            .overlay(
+                                Text("URL无效")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                            )
                             .matchedGeometryEffect(id: mainImageName, in: namespace)
                     }
                 }
