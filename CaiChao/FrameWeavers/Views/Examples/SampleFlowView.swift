@@ -90,6 +90,7 @@ struct SampleFlowView: View {
 // MARK: - Mock ViewModel
 class MockVideoUploadViewModel: VideoUploadViewModel {
     private let targetComicResult: ComicResult?
+    private var mockTimer: Timer?
 
     init(comicResult: ComicResult? = nil) {
         self.targetComicResult = comicResult
@@ -101,12 +102,19 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
         ]
     }
 
+    // 重写uploadVideo方法，避免真实的HTTP请求
+    override func uploadVideo() {
+        // 不调用super.uploadVideo()，直接开始模拟处理
+        startMockProcessing()
+    }
+
     func startMockProcessing() {
         uploadStatus = .uploading
         uploadProgress = 0
+        errorMessage = nil
 
         // 模拟上传进度
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+        mockTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
             DispatchQueue.main.async {
                 self.uploadProgress += 0.02
 
@@ -122,13 +130,29 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
                         self.comicResult = result
                     }
                     timer.invalidate()
+                    self.mockTimer = nil
                 }
             }
         }
     }
 
     override func reset() {
+        // 停止模拟定时器
+        mockTimer?.invalidate()
+        mockTimer = nil
+
         super.reset()
+        uploadStatus = .pending
+        uploadProgress = 0
+        errorMessage = nil
+    }
+
+    override func cancelUpload() {
+        // 停止模拟定时器
+        mockTimer?.invalidate()
+        mockTimer = nil
+
+        // 不调用super.cancelUpload()，避免网络请求
         uploadStatus = .pending
         uploadProgress = 0
         errorMessage = nil
