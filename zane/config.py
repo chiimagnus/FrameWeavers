@@ -27,5 +27,5 @@ MODELSCOPE_MODEL = "black-forest-labs/FLUX.1-Kontext-dev"
 
 # 风格化处理默认配置
 DEFAULT_STYLE_PROMPT = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness"
-DEFAULT_IMAGE_SIZE = "1920x1024"
+DEFAULT_IMAGE_SIZE = "1780x1024"
 STYLE_PROCESSING_TIMEOUT = 120  # 秒

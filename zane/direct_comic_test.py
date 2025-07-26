@@ -42,12 +42,12 @@ def test_direct_comic_generation():
         'task_id': task_id,                # 必须：任务ID
         'video_path': video_path,          # 必须：视频路径
         'story_style': '温馨童话',          # 必须：故事风格关键词
-        'target_frames': '12',              # 快速测试用少量帧
+        'target_frames': '5',              # 快速测试用少量帧
         'frame_interval': '2.0',
         'significance_weight': '0.7',
         'quality_weight': '0.3',
-        'style_prompt': '简洁现代风格，温暖色调',
-        'image_size': '512x384',           # 小尺寸加快处理
+        'style_prompt': 'Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness',
+        'image_size': '1780x1024',           # 小尺寸加快处理
         'max_concurrent': '50'
     }
     
