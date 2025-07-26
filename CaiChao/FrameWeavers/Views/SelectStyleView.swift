@@ -35,12 +35,20 @@ struct SelectStyleView: View {
                             .scaledToFill()
                             .frame(width: 400, height: 400)
                         
-                        // 图钉图标 - 右上角
+                        // 图钉图标 - 初始在右上角，根据选中位置移动
+                        let pinPositions = [
+                            (x: 180, y: 40),   // 左上象限右上角
+                            (x: 370, y: 40),   // 右上象限右上角（初始位置）
+                            (x: 180, y: 220),  // 左下象限右上角
+                            (x: 370, y: 220)   // 右下象限右上角
+                        ]
+                        
+                        let pinIndex = selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == selectedStyle } ?? 1)
                         Image("图钉")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 60, height: 60)
-                            .position(x: 370, y: 30)
+                            .position(x: CGFloat(pinPositions[pinIndex].x), y: CGFloat(pinPositions[pinIndex].y))
                         
                         // 四个象限的风格选择按钮
                         let positions = [
@@ -61,13 +69,6 @@ struct SelectStyleView: View {
                                     .font(.custom("STKaiti", size: 24))
                                     .fontWeight(.bold)
                                     .foregroundColor(selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
-                                    .padding(8)
-                                    .background(
-                                        selectedStyle == styleKey ?
-                                            Color.white.opacity(0.3) :
-                                            Color.clear
-                                    )
-                                    .cornerRadius(8)
                             }
                             .position(x: CGFloat(positions[index].x), y: CGFloat(positions[index].y))
                         }
