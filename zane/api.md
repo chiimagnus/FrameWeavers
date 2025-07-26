@@ -2,14 +2,14 @@
 
 ## 概述
 
-本文档详细说明了帧织者系统的API接口，供前端开发人员调用。系统提供视频上传、基础帧提取、关键帧提取等功能，支持异步处理和状态查询。
+本文档详细说明了帧织者系统的API接口，供前端开发人员调用。系统提供视频上传、基础帧提取、关键帧提取、风格化处理等功能，支持异步处理和状态查询。
 
 **支持的视频格式**: mp4, mov, avi, mkv, wmv, flv, 3gp
 **文件大小限制**: 单个文件最大800MB
 
 ## 基础信息
 
-- **基础URL**: `http://服务器地址:5000`
+- **基础URL**: `http://服务器地址:5001`
 - **响应格式**: 所有API返回JSON格式数据
 - **状态码**:
   - 200: 请求成功
@@ -20,7 +20,7 @@
 
 ## API接口列表
 
-系统共提供12个API接口，包括视频处理、任务管理、故事生成和错误处理等功能。
+系统共提供13个API接口，包括视频处理、任务管理、故事生成、风格化处理和错误处理等功能。
 
 ### 1. 视频上传
 
@@ -85,6 +85,8 @@
 - `base_frames_extracted`: 基础帧提取完成
 - `extracting_key_frames`: 正在提取关键帧
 - `unified_processing`: 正在进行统一智能处理
+- `style_processing`: 正在进行风格化处理
+- `style_completed`: 风格化处理完成
 - `completed`: 处理完成
 - `error`: 处理出错
 - `cancelled`: 任务已取消
@@ -432,7 +434,80 @@
 **响应**:
 成功时返回JSON文件内容，失败时返回JSON错误信息。
 
-### 12. 文件过大错误处理
+### 12. 关键帧风格化处理
+
+对关键帧进行风格化处理，使用AI技术将图像转换为指定风格。
+
+- **URL**: `/api/process/style-transform`
+- **方法**: `POST`
+- **Content-Type**: `application/json`
+
+**请求参数**:
+
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "style_prompt": "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",
+  "image_size": "1920x1024",
+  "image_urls": [
+    {
+      "url": "http://localhost:5001/api/frames/task_id/unified_key_00.jpg",
+      "local_path": "frames/task_dir/unified_key_00.jpg",
+      "filename": "unified_key_00.jpg"
+    }
+  ]
+}
+```
+
+**请求参数说明**:
+
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| task_id | string | 是 | 任务ID |
+| style_prompt | string | 否 | 风格化提示词，默认使用配置的水墨画风格 |
+| image_size | string | 否 | 输出图像尺寸，默认1920x1024 |
+| image_urls | array | 否 | 要处理的图像信息数组，如果不提供则自动从任务结果中获取关键帧 |
+
+**响应示例（成功）**:
+
+```json
+{
+  "success": true,
+  "message": "风格化处理完成",
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "processed_count": 8,
+  "successful_count": 7,
+  "failed_count": 1,
+  "style_prompt": "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",
+  "style_results": [
+    {
+      "success": true,
+      "original_url": "http://localhost:5001/api/frames/task_id/unified_key_00.jpg",
+      "original_filename": "unified_key_00.jpg",
+      "styled_path": "frames/task_dir/unified_key_00_styled.jpg",
+      "styled_filename": "unified_key_00_styled.jpg",
+      "styled_image_url": "https://...",
+      "style_prompt": "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness"
+    }
+  ]
+}
+```
+
+**响应示例（失败）**:
+
+```json
+{
+  "success": false,
+  "message": "风格化处理失败: API调用超时"
+}
+```
+
+**任务状态更新**:
+风格化处理过程中，任务状态会更新为以下值：
+- `style_processing`: 正在进行风格化处理
+- `style_completed`: 风格化处理完成
+
+### 13. 文件过大错误处理
 
 当上传的文件超过800MB限制时，系统会自动返回413错误。
 
@@ -522,6 +597,19 @@
 4. **获取故事文件**：使用返回的`json_file_path`或通过故事文件API获取完整的故事JSON文件
 5. **解析故事内容**：从JSON文件中提取最终旁白、中间结果和处理统计信息
 
+### 关键帧风格化处理流程
+
+1. **完成基础处理**：按照基础流程完成视频处理，获得关键帧图像
+2. **调用风格化处理**：调用关键帧风格化处理API
+   - 可以指定自定义的风格化提示词和输出尺寸
+   - 如果不指定图像URLs，系统会自动从任务结果中获取关键帧
+   - 支持批量处理多张关键帧图像
+3. **监控处理进度**：通过任务状态API监控风格化处理进度
+   - 状态会显示为`style_processing`（处理中）到`style_completed`（完成）
+4. **获取风格化结果**：从风格化处理的响应中获取处理后的图像信息
+   - 风格化后的图像会保存在原关键帧目录中，文件名添加`_styled`后缀
+   - 可以通过帧图像API获取风格化后的图像文件
+
 ## 错误处理
 
 所有API在发生错误时会返回带有`success: false`和`message`字段的JSON响应，其中`message`包含错误详情。常见错误包括：
@@ -530,5 +618,6 @@
 - 文件格式不支持
 - 文件大小超限（上限800MB）
 - 任务不存在或状态不允许操作
+- 风格化处理API调用失败或超时
 - 服务器内部错误
 

@@ -468,6 +468,103 @@ class FrameWeaverAPITester:
             self.log(f"加载关键帧数据失败: {e}", "ERROR")
             return None
     
+    def test_style_transform(self, task_id: str = None, style_prompt: str = None) -> bool:
+        """
+        测试风格化处理API
+        
+        Args:
+            task_id: 任务ID，如果为None则使用当前任务ID
+            style_prompt: 风格化提示词，如果为None则使用默认值
+            
+        Returns:
+            是否成功
+        """
+        self.log("=== 测试风格化处理API ===")
+        
+        # 使用提供的task_id或当前任务ID
+        target_task_id = task_id or self.current_task_id
+        
+        if not target_task_id:
+            self.log("没有可用的任务ID，无法测试风格化处理", "WARNING")
+            return False
+        
+        # 构建请求数据
+        request_data = {
+            "task_id": target_task_id
+        }
+        
+        # 添加可选参数
+        if style_prompt:
+            request_data["style_prompt"] = style_prompt
+            
+        # 添加图像尺寸（可选）
+        # request_data["image_size"] = "1920x1024"
+        
+        # 可以添加特定的图像URL列表（用于测试特定图像）
+        # request_data["image_urls"] = [
+        #     {"url": "http://localhost:5000/api/frames/task_id/image1.jpg", "filename": "image1.jpg"}
+        # ]
+        
+        self.log(f"风格化处理任务ID: {target_task_id}")
+        if style_prompt:
+            self.log(f"使用自定义风格提示词: {style_prompt}")
+        else:
+            self.log("使用默认风格提示词")
+        
+        # 发送风格化处理请求
+        response = self.make_request(
+            "POST",
+            "/api/process/style-transform",
+            json=request_data,
+            timeout=600  # 风格化处理可能需要较长时间
+        )
+        
+        if response["success"] and response["status_code"] == 200:
+            data = response["data"]
+            if data.get("success"):
+                self.log("风格化处理成功！")
+                
+                # 显示处理结果统计
+                processed_count = data.get("processed_count", 0)
+                successful_count = data.get("successful_count", 0)
+                failed_count = data.get("failed_count", 0)
+                
+                self.log(f"处理图像总数: {processed_count}")
+                self.log(f"成功处理: {successful_count}")
+                self.log(f"处理失败: {failed_count}")
+                self.log(f"使用的风格提示词: {data.get('style_prompt', 'N/A')}")
+                
+                # 显示风格化结果详情
+                style_results = data.get("style_results", [])
+                success_results = [r for r in style_results if r.get("success")]
+                failed_results = [r for r in style_results if not r.get("success")]
+                
+                # 显示成功的结果（最多3个）
+                for i, result in enumerate(success_results[:3]):
+                    original_filename = result.get('original_filename', 'N/A')
+                    styled_filename = result.get('styled_filename', 'N/A')
+                    self.log(f"✓ 图像 {i+1}: {original_filename} -> {styled_filename}")
+                
+                if len(success_results) > 3:
+                    self.log(f"... 还有 {len(success_results) - 3} 个成功结果")
+                
+                # 显示失败的结果（最多2个）
+                for i, result in enumerate(failed_results[:2]):
+                    original_filename = result.get('original_filename', 'N/A')
+                    error = result.get('error', 'N/A')
+                    self.log(f"✗ 图像失败: {original_filename} - {error}", "WARNING")
+                
+                if len(failed_results) > 2:
+                    self.log(f"... 还有 {len(failed_results) - 2} 个失败结果", "WARNING")
+                
+                return True
+            else:
+                self.log(f"风格化处理失败: {data.get('message', 'Unknown error')}", "ERROR")
+                return False
+        else:
+            error_message = self.get_error_message(response)
+            self.log(f"风格化处理API请求失败: {error_message}", "ERROR")
+            return False
 
     
     def wait_for_task_completion(self, task_id: str, max_wait_time: int = 300) -> bool:
@@ -539,7 +636,11 @@ class FrameWeaverAPITester:
             if self.wait_for_task_completion(task_id, 300):
                 self.log("统一智能处理完成")
                 
-                # 5. 测试故事生成（现在是同步的）
+                # 5. 测试风格化处理
+                if self.test_style_transform(task_id):
+                    self.log("风格化处理测试完成")
+                
+                # 6. 测试故事生成（现在是同步的）
                 if self.test_generate_story():
                     self.log("故事生成测试完成")
         

@@ -19,3 +19,13 @@ LOG_LEVEL = "INFO"
 # 备用配置（当主API不可用时）
 ENABLE_FALLBACK = True
 FALLBACK_DELAY = 2.0  # 秒
+
+# ModelScope风格化处理API配置
+MODELSCOPE_API_URL = "https://api-inference.modelscope.cn/v1/images/generations"
+MODELSCOPE_API_KEY = "ms-a2eb2a0e-dded-42eb-b41c-835e3bd447b7"
+MODELSCOPE_MODEL = "black-forest-labs/FLUX.1-Kontext-dev"
+
+# 风格化处理默认配置
+DEFAULT_STYLE_PROMPT = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness"
+DEFAULT_IMAGE_SIZE = "1920x1024"
+STYLE_PROCESSING_TIMEOUT = 120  # 秒

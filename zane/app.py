@@ -7,6 +7,11 @@ import time
 import asyncio
 from datetime import datetime
 from diversity_frame_extractor import DiversityFrameExtractor
+import requests
+import json
+from PIL import Image
+from io import BytesIO
+import config
 
 app = Flask(__name__)
 
@@ -15,7 +20,7 @@ UPLOAD_FOLDER = 'uploads'
 FRAMES_FOLDER = 'frames'
 STORIES_FOLDER = 'stories'
 ALLOWED_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', '3gp'}
-MAX_CONTENT_LENGTH = 800 * 1024 * 1024  # 800MB
+MAX_CONTENT_LENGTH = 1024 * 1024 * 1024  # 1GB
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['FRAMES_FOLDER'] = FRAMES_FOLDER
@@ -29,6 +34,105 @@ os.makedirs(STORIES_FOLDER, exist_ok=True)
 
 # 任务状态存储
 task_status = {}
+
+def style_transform_image(image_url, style_prompt=None, image_size=None):
+    """
+    对图像进行风格化处理
+    
+    Args:
+        image_url (str): 图像的URL地址
+        style_prompt (str): 风格化提示词，如果为None则使用默认值
+        image_size (str): 输出图像尺寸，如果为None则使用默认值
+    
+    Returns:
+        dict: 包含处理结果的字典
+    """
+    try:
+        # 使用配置文件中的默认值
+        if style_prompt is None:
+            style_prompt = config.DEFAULT_STYLE_PROMPT
+        if image_size is None:
+            image_size = config.DEFAULT_IMAGE_SIZE
+        
+        # 构建请求数据
+        payload = {
+            'model': config.MODELSCOPE_MODEL,
+            'prompt': style_prompt,
+            'image_url': image_url,
+            'size': image_size
+        }
+        
+        # 构建请求头
+        headers = {
+            'Authorization': f'Bearer {config.MODELSCOPE_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # 发送风格化请求
+        print(f"[INFO] 开始风格化处理图像: {image_url}")
+        response = requests.post(
+            config.MODELSCOPE_API_URL, 
+            data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), 
+            headers=headers,
+            timeout=config.STYLE_PROCESSING_TIMEOUT
+        )
+        
+        # 检查响应状态
+        if response.status_code != 200:
+            return {
+                'success': False,
+                'error': f'API请求失败，状态码: {response.status_code}, 响应: {response.text}'
+            }
+        
+        # 解析响应数据
+        response_data = response.json()
+        
+        # 检查响应数据格式
+        if 'images' not in response_data or len(response_data['images']) == 0:
+            return {
+                'success': False,
+                'error': f'API响应格式错误: {response_data}'
+            }
+        
+        # 获取风格化后的图像URL
+        styled_image_url = response_data['images'][0]['url']
+        
+        # 下载风格化后的图像
+        print(f"[INFO] 下载风格化后的图像: {styled_image_url}")
+        image_response = requests.get(styled_image_url, timeout=30)
+        
+        if image_response.status_code != 200:
+            return {
+                'success': False,
+                'error': f'下载风格化图像失败，状态码: {image_response.status_code}'
+            }
+        
+        # 转换为PIL图像对象
+        styled_image = Image.open(BytesIO(image_response.content))
+        
+        return {
+            'success': True,
+            'styled_image': styled_image,
+            'styled_image_url': styled_image_url,
+            'original_url': image_url,
+            'style_prompt': style_prompt
+        }
+        
+    except requests.exceptions.Timeout:
+        return {
+            'success': False,
+            'error': '风格化处理超时，请稍后重试'
+        }
+    except requests.exceptions.RequestException as e:
+        return {
+            'success': False,
+            'error': f'网络请求错误: {str(e)}'
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'风格化处理失败: {str(e)}'
+        }
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
@@ -754,14 +858,220 @@ def get_story_file(filename):
             'message': f'获取故事文件失败: {str(e)}'
         }), 500
 
-# 12. 文件过大错误处理
+# 12. 关键帧风格化处理API
+@app.route('/api/process/style-transform', methods=['POST'])
+def process_style_transform():
+    """关键帧风格化处理API"""
+    try:
+        # 获取JSON数据
+        if not request.is_json:
+            return jsonify({
+                'success': False,
+                'message': '请求必须是JSON格式'
+            }), 400
+        
+        input_data = request.get_json()
+        
+        # 验证必需参数
+        task_id = input_data.get('task_id')
+        if not task_id:
+            return jsonify({
+                'success': False,
+                'message': '缺少任务ID'
+            }), 400
+        
+        # 检查任务是否存在，如果不存在则创建新的任务状态（用于直接风格化处理）
+        if task_id not in task_status:
+            # 如果用户提供了图像URL，则允许直接处理
+            if input_data.get('image_urls'):
+                task_status[task_id] = {
+                    'status': 'style_processing',
+                    'progress': 0,
+                    'message': '直接风格化处理中...',
+                    'created_time': datetime.now().strftime('%Y%m%d_%H%M%S')
+                }
+                print(f"[INFO] 创建新任务进行直接风格化处理: {task_id}")
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': '任务不存在且未提供图像URL'
+                }), 404
+        
+        # 获取参数
+        style_prompt = input_data.get('style_prompt')  # 可选，使用默认值
+        image_size = input_data.get('image_size')  # 可选，使用默认值
+        
+        # 获取要处理的图像信息
+        image_urls = input_data.get('image_urls', [])
+        if not image_urls:
+            # 如果没有指定图像URL，尝试从任务结果中获取关键帧
+            unified_results = task_status[task_id].get('unified_results', [])
+            key_frames_results = task_status[task_id].get('key_frames_results', [])
+            
+            if unified_results:
+                # 从统一处理结果中获取关键帧
+                for result in unified_results:
+                    if isinstance(result, dict) and result.get('success', False):
+                        key_frame_paths = result.get('key_frame_paths', [])
+                        for path in key_frame_paths:
+                            # 构建图像URL（假设可以通过API访问）
+                            filename = os.path.basename(path)
+                            image_url = f"http://localhost:5001/api/frames/{task_id}/{filename}"
+                            image_urls.append({
+                                'url': image_url,
+                                'local_path': path,
+                                'filename': filename
+                            })
+            elif key_frames_results:
+                # 从关键帧结果中获取
+                for result in key_frames_results:
+                    key_frame_paths = result.get('key_frame_paths', [])
+                    for path in key_frame_paths:
+                        filename = os.path.basename(path)
+                        image_url = f"http://localhost:5001/api/frames/{task_id}/{filename}"
+                        image_urls.append({
+                            'url': image_url,
+                            'local_path': path,
+                            'filename': filename
+                        })
+        
+        if not image_urls:
+            return jsonify({
+                'success': False,
+                'message': '没有找到可以处理的图像'
+            }), 400
+        
+        # 更新任务状态
+        task_status[task_id]['status'] = 'style_processing'
+        task_status[task_id]['message'] = '正在进行风格化处理...'
+        task_status[task_id]['progress'] = 0
+        
+        # 处理每个图像
+        style_results = []
+        total_images = len(image_urls)
+        
+        for i, image_info in enumerate(image_urls):
+            try:
+                # 更新进度
+                progress = int((i / total_images) * 100)
+                task_status[task_id]['progress'] = progress
+                task_status[task_id]['message'] = f'正在处理第 {i+1}/{total_images} 张图像...'
+                
+                # 获取图像URL
+                if isinstance(image_info, dict):
+                    image_url = image_info['url']
+                    filename = image_info.get('filename', f'image_{i}')
+                    local_path = image_info.get('local_path', '')
+                else:
+                    image_url = image_info
+                    filename = f'image_{i}'
+                    local_path = ''
+                
+                # 进行风格化处理
+                print(f"[INFO] 开始处理图像 {i+1}/{total_images}: {filename}")
+                style_result = style_transform_image(
+                    image_url=image_url,
+                    style_prompt=style_prompt,
+                    image_size=image_size
+                )
+                
+                if style_result['success']:
+                    # 保存风格化后的图像
+                    styled_image = style_result['styled_image']
+                    
+                    # 生成保存路径
+                    if local_path:
+                        # 在原图像目录中保存
+                        dir_path = os.path.dirname(local_path)
+                        base_name = os.path.splitext(os.path.basename(local_path))[0]
+                        styled_filename = f"{base_name}_styled.jpg"
+                        styled_path = os.path.join(dir_path, styled_filename)
+                    else:
+                        # 在frames目录中保存
+                        styled_filename = f"styled_{filename}"
+                        styled_path = os.path.join(app.config['FRAMES_FOLDER'], styled_filename)
+                    
+                    # 保存图像
+                    styled_image.save(styled_path, 'JPEG', quality=95)
+                    
+                    # 记录结果
+                    style_results.append({
+                        'success': True,
+                        'original_url': image_url,
+                        'original_filename': filename,
+                        'styled_path': styled_path,
+                        'styled_filename': os.path.basename(styled_path),
+                        'styled_image_url': style_result['styled_image_url'],
+                        'style_prompt': style_result['style_prompt']
+                    })
+                    
+                    print(f"[INFO] 图像风格化完成: {styled_path}")
+                
+                else:
+                    # 记录失败结果
+                    style_results.append({
+                        'success': False,
+                        'original_url': image_url,
+                        'original_filename': filename,
+                        'error': style_result['error']
+                    })
+                    
+                    print(f"[ERROR] 图像风格化失败: {style_result['error']}")
+            
+            except Exception as image_error:
+                # 记录单个图像处理错误
+                style_results.append({
+                    'success': False,
+                    'original_url': image_url if 'image_url' in locals() else 'unknown',
+                    'original_filename': filename if 'filename' in locals() else 'unknown',
+                    'error': f'处理图像时出错: {str(image_error)}'
+                })
+                print(f"[ERROR] 处理图像时出错: {str(image_error)}")
+            
+            # 更新进度
+            task_status[task_id]['progress'] = int(((i + 1) / total_images) * 100)
+        
+        # 统计处理结果
+        successful_count = sum(1 for result in style_results if result['success'])
+        failed_count = total_images - successful_count
+        
+        # 更新任务状态
+        task_status[task_id]['status'] = 'style_completed'
+        task_status[task_id]['message'] = f'风格化处理完成，成功: {successful_count}，失败: {failed_count}'
+        task_status[task_id]['progress'] = 100
+        task_status[task_id]['style_results'] = style_results
+        
+        return jsonify({
+            'success': True,
+            'message': '风格化处理完成',
+            'task_id': task_id,
+            'processed_count': total_images,
+            'successful_count': successful_count,
+            'failed_count': failed_count,
+            'style_results': style_results,
+            'style_prompt': style_prompt or config.DEFAULT_STYLE_PROMPT
+        }), 200
+        
+    except Exception as e:
+        if 'task_id' in locals() and task_id in task_status:
+            task_status[task_id]['status'] = 'error'
+            task_status[task_id]['message'] = f'风格化处理失败: {str(e)}'
+            task_status[task_id]['error'] = str(e)
+            
+        print(f"[ERROR] 风格化处理异常: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'风格化处理失败: {str(e)}'
+        }), 500
+
+# 13. 文件过大错误处理
 @app.errorhandler(413)
 def too_large(e):
     """文件过大错误处理"""
     return jsonify({
         'success': False,
-        'message': '文件过大，请选择小于800MB的视频文件'
+        'message': '文件过大，请选择小于1GB的视频文件'
     }), 413
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
