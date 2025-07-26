@@ -29,10 +29,9 @@ struct WelcomeView: View {
                 typeSpeed: 0.08
             )
             .font(.custom("STKaiti", size: 16))
-            .fontWeight(.bold)
             .multilineTextAlignment(.center)
             .foregroundColor(Color(hex: "#2F2617"))
-            .lineSpacing(15)
+            .lineSpacing(12)
 
             PhotosPicker(
                 selection: $selectedItems,
@@ -48,7 +47,6 @@ struct WelcomeView: View {
                     
                     Text("开启一段故事织造")
                         .font(.custom("WSQuanXing", size: 24))
-                        .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))
                 }
             }
