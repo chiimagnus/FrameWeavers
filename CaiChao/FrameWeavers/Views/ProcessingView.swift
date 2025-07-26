@@ -20,8 +20,8 @@ struct ProcessingView: View {
                 Color(red: 0.91, green: 0.88, blue: 0.83).ignoresSafeArea()
                 
                 VStack(spacing: 40) {
-                    // 根据上传状态显示不同内容
-                    if viewModel.uploadStatus == .processing {
+                    // 在所有等待状态下都显示胶片动画
+                    if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
                         // 显示胶片动画
                         filmGalleryView
                     } else {
@@ -48,12 +48,14 @@ struct ProcessingView: View {
             self.frames.merge(value, uniquingKeysWith: { $1 })
         }
         .onReceive(scrollTimer) { _ in
-            if viewModel.uploadStatus == .processing {
+            // 在所有等待状态下都播放滚动动画
+            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
                 galleryViewModel.currentScrollIndex += 1
             }
         }
         .onReceive(jumpTimer) { _ in
-            if viewModel.uploadStatus == .processing {
+            // 在所有等待状态下都播放跳跃动画
+            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
                 withAnimation(.easeInOut(duration: 1.2)) {
                     galleryViewModel.triggerJumpAnimation(from: frames)
                 }
@@ -96,15 +98,20 @@ extension ProcessingView {
     /// 胶片画廊视图
     private var filmGalleryView: some View {
         VStack(spacing: 40) {
-            PhotoStackView(mainImageName: galleryViewModel.mainImageName, namespace: galleryNamespace)
+            PhotoStackView(
+                mainImageName: galleryViewModel.mainImageName,
+                stackedImages: galleryViewModel.stackedImages,
+                namespace: galleryNamespace
+            )
                 .anchorPreference(key: FramePreferenceKey.self, value: .bounds) { anchor in
                     return ["photoStackTarget": self.frames(from: anchor)]
                 }
-            
+
             FilmstripView(galleryViewModel: galleryViewModel, namespace: galleryNamespace)
-            
+
+            // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
-            
+
             Spacer()
         }
     }
@@ -134,7 +141,9 @@ extension ProcessingView {
     
     /// Helper to convert anchor to global frame
     private func frames(from anchor: Anchor<CGRect>) -> CGRect {
-        return CGRect.zero // 简化处理
+        // 这里应该返回实际的全局frame，但由于我们在FilmstripView中已经处理了frame计算
+        // 这个方法主要用于PhotoStackView的target frame
+        return CGRect(x: UIScreen.main.bounds.midX - 150, y: 100, width: 300, height: 200)
     }
 }
 

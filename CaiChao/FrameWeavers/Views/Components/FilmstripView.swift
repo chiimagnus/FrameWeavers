@@ -4,40 +4,51 @@ import SwiftUI
 struct FilmstripView: View {
     @ObservedObject var galleryViewModel: ProcessingGalleryViewModel
     let namespace: Namespace.ID
-    
+
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(galleryViewModel.loopedImageNames.indices, id: \.self) { index in
-                        let imageName = galleryViewModel.loopedImageNames[index]
-                        FilmstripFrameView(
-                            imageName: imageName,
-                            isHidden: galleryViewModel.hideSourceImageId == imageName,
-                            namespace: namespace
-                        )
-                        .id(index)
-                        .anchorPreference(key: FramePreferenceKey.self, value: .bounds) { anchor in
-                            return [imageName: CGRect.zero] // 简化处理，实际项目中可以计算真实frame
+        GeometryReader { geometry in
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(galleryViewModel.loopedImageNames.indices, id: \.self) { index in
+                            let imageName = galleryViewModel.loopedImageNames[index]
+                            FilmstripFrameView(
+                                imageName: imageName,
+                                isHidden: galleryViewModel.hideSourceImageId == imageName,
+                                namespace: namespace
+                            )
+                            .id(index)
+                            .background(
+                                GeometryReader { frameGeometry in
+                                    Color.clear
+                                        .preference(key: FramePreferenceKey.self, value: [
+                                            imageName: frameGeometry.frame(in: .global)
+                                        ])
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .frame(height: 100)
+                .background(Color.black.opacity(0.8))
+                .overlay(sprocketHoles)
+                .onChange(of: galleryViewModel.currentScrollIndex) { newIndex in
+                    // 更流畅的胶片运动动画
+                    withAnimation(.linear(duration: 2.5)) {
+                        proxy.scrollTo(newIndex, anchor: .center)
+                    }
+                    // 无限循环逻辑
+                    if newIndex >= galleryViewModel.loopedImageNames.count - 8 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                            galleryViewModel.currentScrollIndex = 8
+                            proxy.scrollTo(galleryViewModel.currentScrollIndex, anchor: .center)
                         }
                     }
                 }
-                .padding(.horizontal)
-            }
-            .frame(height: 100)
-            .background(Color.black.opacity(0.8))
-            .overlay(sprocketHoles)
-            .onChange(of: galleryViewModel.currentScrollIndex) { newIndex in
-                withAnimation(.easeInOut(duration: 3.0)) {
-                    proxy.scrollTo(newIndex, anchor: .center)
-                }
-                // 无限循环逻辑
-                if newIndex >= galleryViewModel.loopedImageNames.count - 8 {
-                    galleryViewModel.currentScrollIndex = 8
-                    proxy.scrollTo(galleryViewModel.currentScrollIndex, anchor: .center)
-                }
             }
         }
+        .frame(height: 100)
     }
     
     /// 胶片齿孔装饰
