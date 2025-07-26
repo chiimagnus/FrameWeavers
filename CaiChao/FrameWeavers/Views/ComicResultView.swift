@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ComicResultView: View {
+    @Environment(\.dismiss) private var dismiss
     let comicResult: ComicResult
     @State private var currentPage = 0
     
@@ -23,6 +24,17 @@ struct ComicResultView: View {
             }
         }
         .ignoresSafeArea()
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(Color(hex: "#2F2617"))
+                }
+            }
+        }
     }
 }
 

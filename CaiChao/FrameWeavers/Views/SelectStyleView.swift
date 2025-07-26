@@ -113,6 +113,17 @@ struct SelectStyleView: View {
             .navigationDestination(isPresented: $navigateToProcessing) {
                 ProcessingView(viewModel: viewModel)
             }
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Color(hex: "#2F2617"))
+                    }
+                }
+            }
         }
         .onAppear {
             print("SelectStyleView: 已选择 \(viewModel.selectedVideos.count) 个视频")

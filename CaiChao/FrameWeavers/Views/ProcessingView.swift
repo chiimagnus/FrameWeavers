@@ -2,6 +2,7 @@ import SwiftUI
 
 /// 处理视图 - 遵循MVVM架构的主视图
 struct ProcessingView: View {
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: VideoUploadViewModel
     @State private var navigateToResults = false
     @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
@@ -73,6 +74,17 @@ struct ProcessingView: View {
         .navigationDestination(isPresented: $navigateToResults) {
             if let result = viewModel.comicResult {
                 OpenResultsView(comicResult: result)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(Color(hex: "#2F2617"))
+                }
             }
         }
     }

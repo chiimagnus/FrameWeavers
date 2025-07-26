@@ -2,6 +2,7 @@ import SwiftUI
 import PhotosUI
 
 struct OpenResultsView: View {
+    @Environment(\.dismiss) private var dismiss
     let comicResult: ComicResult
     
     var body: some View {
@@ -51,6 +52,17 @@ struct OpenResultsView: View {
                 }
             }
             .padding()
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Color(hex: "#855C23"))
+                    }
+                }
+            }
         }
     }
 }
