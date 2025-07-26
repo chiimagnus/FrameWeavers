@@ -49,7 +49,7 @@ struct FilmstripView: View {
                     scrollOffset = singleLoopWidth
                 }
             }
-            .onChange(of: uploadViewModel.uploadStatus) { newStatus in
+            .onChange(of: uploadViewModel.uploadStatus) { _, newStatus in
                 if newStatus == .completed || newStatus == .failed {
                     // 停止动画
                     withAnimation(.linear(duration: 0)) {

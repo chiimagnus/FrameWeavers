@@ -9,7 +9,7 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var currentScrollIndex: Int = 0
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
 
-    private let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
+    let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
     
     var loopedImageNames: [String] {
         imageNames + imageNames + imageNames

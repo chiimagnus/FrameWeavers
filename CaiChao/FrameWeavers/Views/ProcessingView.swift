@@ -107,7 +107,7 @@ extension ProcessingView {
                     return ["photoStackTarget": self.frames(from: anchor)]
                 }
 
-            FilmstripView(galleryViewModel: galleryViewModel, namespace: galleryNamespace)
+            FilmstripView(galleryViewModel: galleryViewModel, uploadViewModel: viewModel, namespace: galleryNamespace)
 
             // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
