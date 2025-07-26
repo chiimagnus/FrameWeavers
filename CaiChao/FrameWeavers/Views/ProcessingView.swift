@@ -106,24 +106,6 @@ extension ProcessingView {
             // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
 
-            // 上传完成时显示查看结果按钮
-            if viewModel.uploadStatus == .completed {
-                Button(action: {
-                    navigateToResults = true
-                }) {
-                    Text("查看结果")
-                        .font(.title2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color(hex: "#2F2617"))
-                        .cornerRadius(12)
-                }
-                .padding(.horizontal, 40)
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-
             Spacer()
         }
     }
