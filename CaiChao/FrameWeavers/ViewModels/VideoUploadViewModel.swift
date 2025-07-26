@@ -417,6 +417,8 @@ class VideoUploadViewModel: ObservableObject {
         let interval: TimeInterval = 2.0  // 每2秒查询一次，参考Python实现
         let startTime = Date()
         var lastProgress = -1
+        var consecutiveErrors = 0  // 连续错误计数
+        let maxConsecutiveErrors = 10  // 最多允许10次连续错误
 
         // 阶段描述映射，参考Python实现
         let stageDescriptions = [
@@ -435,7 +437,23 @@ class VideoUploadViewModel: ObservableObject {
 
                 guard let httpResponse = response as? HTTPURLResponse,
                       httpResponse.statusCode == 200 else {
-                    print("❌ 状态查询失败，HTTP状态码: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+                    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+                    consecutiveErrors += 1
+                    print("❌ 状态查询失败，HTTP状态码: \(statusCode)，连续错误: \(consecutiveErrors)")
+
+                    // 打印错误响应内容以便调试
+                    if let errorString = String(data: data, encoding: .utf8) {
+                        print("📄 错误响应内容: \(errorString)")
+                    }
+
+                    // 如果连续错误太多，或者是400错误且进度已经较高，尝试获取最终结果
+                    if consecutiveErrors >= maxConsecutiveErrors ||
+                       (statusCode == 400 && lastProgress >= 70) {
+                        print("⚠️ 连续错误过多或高进度400错误，尝试获取最终结果")
+                        await fetchComicResult(taskId: taskId)
+                        return
+                    }
+
                     do {
                         try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
                     } catch {
@@ -445,6 +463,9 @@ class VideoUploadViewModel: ObservableObject {
                 }
 
                 let statusResponse = try JSONDecoder().decode(TaskStatusResponse.self, from: data)
+
+                // 成功获取状态，重置错误计数
+                consecutiveErrors = 0
 
                 // 只在进度变化时打印，参考Python实现
                 if statusResponse.progress != lastProgress {
