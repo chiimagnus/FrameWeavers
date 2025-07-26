@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional
 class FrameWeaverAPITester:
     """帧织者API测试类"""
     
-    def __init__(self, base_url: str = "http://localhost:5000"):
+    def __init__(self, base_url: str = "http://localhost:5001"):
         """
         初始化测试器
         
@@ -352,17 +352,51 @@ class FrameWeaverAPITester:
             self.log(f"统一智能处理失败: {self.get_error_message(response)}", "ERROR")
             return False
     
-    def test_generate_story(self, keyframes_data: Dict[str, Any] = None) -> bool:
+    def test_get_story_styles(self) -> list:
         """
-        测试同步故事生成API
+        测试获取文体风格列表API
+        
+        Returns:
+            风格列表
+        """
+        self.log("=== 测试获取文体风格列表API ===")
+        
+        response = self.make_request('GET', '/api/story/styles')
+        
+        if response['success'] and response['status_code'] == 200:
+            data = response['data']
+            if data.get('success'):
+                styles = data.get('styles', [])
+                total_count = data.get('total_count', 0)
+                
+                self.log(f"成功获取文体风格列表，共 {total_count} 种风格")
+                
+                # 显示所有可用风格
+                for i, style in enumerate(styles):
+                    name = style.get('name', 'N/A')
+                    description = style.get('description', 'N/A')
+                    self.log(f"  {i+1}. {name}: {description}")
+                
+                return styles
+            else:
+                self.log(f"获取文体风格列表失败: {data.get('message', '未知错误')}", "ERROR")
+                return []
+        else:
+            self.log(f"获取文体风格列表API调用失败: {self.get_error_message(response)}", "ERROR")
+            return []
+    
+    def test_generate_story_with_style(self, keyframes_data: Dict[str, Any] = None, style: str = None) -> bool:
+        """
+        测试带有文体风格的故事生成API
         
         Args:
             keyframes_data: 关键帧数据
+            style: 文体风格
             
         Returns:
             是否成功
         """
-        self.log("=== 测试故事生成API ===")
+        self.log(f"=== 测试故事生成API（风格: {style or '默认'}）===")
         
         # 如果没有提供关键帧数据，尝试从JSON文件加载
         if not keyframes_data:
@@ -403,6 +437,11 @@ class FrameWeaverAPITester:
                 ]
             }
         
+        # 添加文体风格参数（如果提供）
+        if style:
+            keyframes_data['style'] = style
+            self.log(f"使用文体风格: {style}")
+        
         # 设置较长的超时时间，因为故事生成可能需要较长时间
         response = self.make_request('POST', '/api/generate/story', 
                                    json=keyframes_data,
@@ -425,6 +464,11 @@ class FrameWeaverAPITester:
                 # 显示处理统计
                 stats = story_result.get('processing_stats', {})
                 self.log(f"处理时间: {stats.get('total_time', 0):.1f}秒")
+                
+                # 如果使用了风格，显示风格信息
+                if style:
+                    self.log(f"风格效果: 生成的故事应该体现 '{style}' 风格的特点")
+                
                 return True
             else:
                 self.log(f"故事生成失败: {story_result.get('error', '未知错误')}", "ERROR")
@@ -432,6 +476,64 @@ class FrameWeaverAPITester:
         else:
             self.log(f"故事生成API调用失败: {self.get_error_message(response)}", "ERROR")
             return False
+
+    def test_generate_story(self, keyframes_data: Dict[str, Any] = None) -> bool:
+        """
+        测试同步故事生成API（保持原有接口不变）
+        
+        Args:
+            keyframes_data: 关键帧数据
+            
+        Returns:
+            是否成功
+        """
+        return self.test_generate_story_with_style(keyframes_data, None)
+    
+    def test_multiple_story_styles(self) -> bool:
+        """
+        测试多种文体风格的故事生成
+        
+        Returns:
+            是否全部成功
+        """
+        self.log("=== 测试多种文体风格的故事生成 ===")
+        
+        # 首先获取可用的文体风格列表
+        available_styles = self.test_get_story_styles()
+        
+        if not available_styles:
+            self.log("无法获取文体风格列表，跳过多风格测试", "WARNING")
+            return False
+        
+        # 选择几种代表性风格进行测试
+        test_styles = []
+        
+        # 从可用风格中选择几种进行测试
+        style_names = [style.get('name') for style in available_styles if style.get('name')]
+        
+        # 选择最多3种风格进行测试，避免测试时间过长
+        test_style_names = style_names[:3] if len(style_names) >= 3 else style_names
+        
+        # 添加一个自定义风格进行测试
+        test_style_names.append("科幻冒险")
+        
+        success_count = 0
+        total_tests = len(test_style_names)
+        
+        for style_name in test_style_names:
+            self.log(f"\n--- 测试风格: {style_name} ---")
+            
+            if self.test_generate_story_with_style(style=style_name):
+                success_count += 1
+                self.log(f"✓ 风格 '{style_name}' 测试成功")
+            else:
+                self.log(f"✗ 风格 '{style_name}' 测试失败", "ERROR")
+            
+            # 在每次测试之间稍作等待，避免API负载过重
+            time.sleep(2)
+        
+        self.log(f"\n多风格测试完成: {success_count}/{total_tests} 成功")
+        return success_count == total_tests
     
     def _load_keyframes_from_json(self) -> Optional[Dict[str, Any]]:
         """从JSON文件加载关键帧数据"""
@@ -502,7 +604,7 @@ class FrameWeaverAPITester:
         
         # 可以添加特定的图像URL列表（用于测试特定图像）
         # request_data["image_urls"] = [
-        #     {"url": "http://localhost:5000/api/frames/task_id/image1.jpg", "filename": "image1.jpg"}
+        #     {"url": "http://localhost:5001/api/frames/task_id/image1.jpg", "filename": "image1.jpg"}
         # ]
         
         self.log(f"风格化处理任务ID: {target_task_id}")
@@ -640,9 +742,20 @@ class FrameWeaverAPITester:
                 if self.test_style_transform(task_id):
                     self.log("风格化处理测试完成")
                 
-                # 6. 测试故事生成（现在是同步的）
+                # 6. 测试获取文体风格列表
+                styles = self.test_get_story_styles()
+                
+                # 7. 测试故事生成（现在是同步的）
                 if self.test_generate_story():
                     self.log("故事生成测试完成")
+                    
+                    # 8. 测试带风格的故事生成（选择一种风格测试）
+                    if styles:
+                        test_style = styles[0].get('name')  # 选择第一种风格
+                        if test_style:
+                            self.log(f"测试文体风格: {test_style}")
+                            if self.test_generate_story_with_style(style=test_style):
+                                self.log("文体风格故事生成测试完成")
         
         self.log("完整API测试结束")
     
@@ -656,10 +769,104 @@ class FrameWeaverAPITester:
         # 测试设备任务历史
         self.test_device_tasks()
         
+        # 测试获取文体风格列表
+        self.test_get_story_styles()
+        
         # 测试故事生成（使用示例数据）
         self.test_generate_story()
         
         self.log("基础API测试结束")
+    
+    def run_style_test(self):
+        """运行专门的文体风格测试"""
+        self.log("开始文体风格专项测试")
+        
+        # 1. 测试获取文体风格列表API
+        styles = self.test_get_story_styles()
+        
+        if not styles:
+            self.log("无法获取文体风格列表，终止风格测试", "ERROR")
+            return
+        
+        # 2. 测试默认故事生成（无风格）
+        self.log("\n--- 测试默认故事生成（无风格参数）---")
+        self.test_generate_story()
+        
+        # 3. 测试预定义风格的故事生成
+        self.log("\n--- 测试预定义风格故事生成 ---")
+        for i, style in enumerate(styles[:2]):  # 只测试前2种风格，避免测试时间过长
+            style_name = style.get('name')
+            if style_name:
+                self.log(f"\n测试风格 {i+1}: {style_name}")
+                self.test_generate_story_with_style(style=style_name)
+                time.sleep(1)  # 短暂等待
+        
+        # 4. 测试自定义风格
+        custom_styles = ["科幻悬疑", "温暖回忆", "动作冒险"]
+        self.log("\n--- 测试自定义风格故事生成 ---")
+        for style in custom_styles:
+            self.log(f"\n测试自定义风格: {style}")
+            self.test_generate_story_with_style(style=style)
+            time.sleep(1)  # 短暂等待
+        
+        # 5. 测试风格参数验证（错误情况）
+        self.log("\n--- 测试风格参数验证 ---")
+        self.test_style_parameter_validation()
+        
+        self.log("文体风格专项测试结束")
+    
+    def test_style_parameter_validation(self):
+        """测试风格参数验证"""
+        self.log("测试风格参数验证...")
+        
+        # 构建基础数据
+        basic_data = {
+            "video_info": {
+                "task_id": str(uuid.uuid4()),
+                "video_name": "测试视频.mp4",
+                "duration": 60.0,
+                "fps": 30
+            },
+            "keyframes": [
+                {
+                    "index": 1,
+                    "filename": "test_frame_01.jpg",
+                    "photo_path": "/path/to/test_frame_01.jpg",
+                    "combined_score": 0.85,
+                    "significance_score": 0.85,
+                    "quality_score": 0.92,
+                    "description": "测试场景",
+                    "timestamp": 0.0,
+                    "frame_position": 0
+                }
+            ]
+        }
+        
+        # 测试1: 风格参数为非字符串类型
+        test_data = basic_data.copy()
+        test_data['style'] = 123  # 数字而不是字符串
+        
+        response = self.make_request('POST', '/api/generate/story', 
+                                   json=test_data,
+                                   headers={'Content-Type': 'application/json'})
+        
+        if response['status_code'] == 400:
+            self.log("✓ 正确拒绝了非字符串类型的风格参数")
+        else:
+            self.log("✗ 未能正确验证风格参数类型", "WARNING")
+        
+        # 测试2: 空字符串风格参数
+        test_data = basic_data.copy()
+        test_data['style'] = ""
+        
+        response = self.make_request('POST', '/api/generate/story', 
+                                   json=test_data,
+                                   headers={'Content-Type': 'application/json'})
+        
+        if response['status_code'] == 200:
+            self.log("✓ 正确处理了空字符串风格参数")
+        else:
+            self.log("✗ 空字符串风格参数处理失败", "WARNING")
 
 
 def main():
@@ -675,17 +882,168 @@ def main():
     
     if os.path.exists(test_video):
         print(f"找到测试视频: {test_video}")
-        choice = input("选择测试模式:\n1. 完整测试（包含视频处理）\n2. 基础测试（仅API调用）\n请输入选择 (1/2): ").strip()
+        choice = input("选择测试模式:\n1. 完整测试（包含视频处理）\n2. 基础测试（仅API调用）\n3. 文体风格专项测试\n4. 多风格对比测试\n请输入选择 (1/2/3/4): ").strip()
         
         if choice == "1":
             tester.run_full_test([test_video])
+        elif choice == "2":
+            tester.run_basic_test()
+        elif choice == "3":
+            tester.run_style_test()
+        elif choice == "4":
+            tester.test_multiple_story_styles()
         else:
+            print("无效选择，运行基础测试...")
             tester.run_basic_test()
     else:
         print(f"未找到测试视频文件: {test_video}")
-        print("运行基础API测试...")
-        tester.run_basic_test()
+        choice = input("选择测试模式:\n1. 基础测试（仅API调用）\n2. 文体风格专项测试\n3. 多风格对比测试\n请输入选择 (1/2/3): ").strip()
+        
+        if choice == "1":
+            tester.run_basic_test()
+        elif choice == "2":
+            tester.run_style_test()
+        elif choice == "3":
+            tester.test_multiple_story_styles()
+        else:
+            print("无效选择，运行基础测试...")
+            tester.run_basic_test()
 
+
+def test_complete_comic_generation():
+    """测试完整连环画生成接口"""
+    print("\n" + "="*50)
+    print("测试完整连环画生成接口")
+    print("="*50)
+    
+    # 首先需要有一个已上传的任务
+    print("1. 先上传一个测试视频...")
+    
+    # 使用现有的基础测试设置
+    base_url = "http://localhost:5001"
+    test_video_path = "测试视频3.mp4"
+    
+    if not os.path.exists(test_video_path):
+        print("❌ 测试视频文件不存在，跳过连环画生成测试")
+        return False
+    
+    # 上传视频
+    try:
+        with open(test_video_path, 'rb') as f:
+            files = {'video': f}
+            data = {'device_id': 'test_device'}
+            response = requests.post(f'{base_url}/api/upload/videos', files=files, data=data)
+        
+        if response.status_code == 200:
+            result = response.json()
+            task_id = result.get('task_id')
+            print(f"✅ 获得任务ID: {task_id}")
+        else:
+            print("❌ 视频上传失败，跳过连环画生成测试")
+            return False
+    except Exception as e:
+        print(f"❌ 上传视频时出错: {e}")
+        return False
+    
+    # 等待上传完成
+    print("2. 等待视频上传完成...")
+    time.sleep(3)
+    
+    # 启动完整连环画生成
+    print("3. 启动完整连环画生成...")
+    comic_data = {
+        'task_id': task_id,
+        'target_frames': '6',  # 测试用较少帧数
+        'frame_interval': '1.0',
+        'significance_weight': '0.6',
+        'quality_weight': '0.4',
+        'style_prompt': '水彩画风格，温和色调',
+        'story_style': '童话风格'
+    }
+    
+    try:
+        response = requests.post(f'{base_url}/api/process/complete-comic', data=comic_data)
+        print(f"请求状态码: {response.status_code}")
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"✅ 连环画生成启动成功")
+            print(f"   任务ID: {result.get('task_id')}")
+            print(f"   状态: {result.get('status')}")
+            print(f"   当前阶段: {result.get('stage')}")
+            print(f"   进度: {result.get('progress')}%")
+            
+            # 简化的进度监控（避免长时间等待）
+            print("\n4. 监控处理进度（简化版）...")
+            
+            # 等待一段时间后检查结果
+            for i in range(5):  # 最多等待10秒
+                time.sleep(2)
+                status_response = requests.get(f'{base_url}/api/task/status/{task_id}')
+                if status_response.status_code == 200:
+                    status = status_response.json()
+                    print(f"   进度: {status.get('progress', 0)}% - {status.get('stage', 'unknown')}")
+                    
+                    if status.get('status') == 'complete_comic_completed':
+                        print("   ✅ 处理完成！")
+                        break
+                    elif status.get('status') == 'complete_comic_failed':
+                        print(f"   ❌ 处理失败: {status.get('error', '未知错误')}")
+                        return False
+            
+            print("✅ 连环画生成接口测试完成")
+            return True
+        else:
+            print(f"❌ 启动失败: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ 请求异常: {e}")
+        return False
+
+def test_get_comic_result():
+    """测试获取连环画结果接口"""
+    print("\n" + "="*50)
+    print("测试获取连环画结果接口")
+    print("="*50)
+    
+    base_url = "http://localhost:5001"
+    test_task_id = "test_task_id"
+    
+    try:
+        response = requests.get(f'{base_url}/api/comic/result/{test_task_id}')
+        print(f"请求状态码: {response.status_code}")
+        
+        if response.status_code == 404:
+            print("✅ 正确返回404，任务不存在")
+            return True
+        elif response.status_code == 202:
+            result = response.json()
+            print("✅ 正确返回202，任务处理中")
+            print(f"   状态: {result.get('status')}")
+            print(f"   进度: {result.get('progress')}%")
+            return True
+        elif response.status_code == 200:
+            result = response.json()
+            print("✅ 成功获取连环画结果")
+            return True
+        else:
+            print(f"⚠️ 意外的状态码: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ 请求异常: {e}")
+        return False
 
 if __name__ == "__main__":
-    main()
+    # 检查命令行参数
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "comic":
+        # 仅测试连环画生成功能
+        print("🎨 测试连环画生成功能")
+        test_complete_comic_generation()
+        test_get_comic_result()
+    else:
+        # 运行原有的主程序
+        main()
