@@ -81,8 +81,7 @@ def upload_to_imgbb(image_path, api_key="7c9e1b2a3f4d5e6f7a8b9c0d1e2f3a4b"):
 
 def style_transform_image(image_path, style_prompt=None, image_size=None):
     """
-    对图像进行风格化处理 - 基于ModelScope API
-    使用在线图片URL的方式调用API
+    对图像进行风格化处理 - 严格按照test_style.py的成功示例
     
     Args:
         image_path (str): 本地图像文件路径
@@ -99,8 +98,7 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
         if image_size is None:
             image_size = config.DEFAULT_IMAGE_SIZE
         
-        print(f"[INFO] 开始风格化处理本地图像: {image_path}")
-        print(f"[INFO] 风格提示词: {style_prompt}")
+        print(f"[INFO] 开始风格化处理: {image_path}")
         
         # 检查本地文件是否存在
         if not os.path.exists(image_path):
@@ -111,47 +109,26 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
         
         # 第一步：上传图片到图床获取在线URL
         try:
-            print(f"[INFO] 正在上传图片到图床...")
+            print("Uploading image...")
             image_url = upload_to_imgbb(image_path)
-            print(f"[INFO] 图片上传成功，URL: {image_url}")
+            print(f"Image uploaded: {image_url}")
         except Exception as upload_error:
             print(f"[ERROR] 图片上传失败: {str(upload_error)}")
-            print(f"[INFO] 上传失败，返回原图作为降级处理")
-            
-            # 降级处理：返回原图
-            with open(image_path, 'rb') as f:
-                original_image_data = f.read()
-            
+            # 上传失败直接返回错误，不使用降级
             return {
-                'success': True,  # 标记为成功，但使用原图
-                'styled_image': None,
-                'styled_image_url': '',
-                'image_data': original_image_data,  # 使用原图数据
-                'original_path': image_path,
-                'style_prompt': style_prompt,
-                'fallback_used': True,  # 标记使用了降级处理
-                'upload_error': str(upload_error)
+                'success': False,
+                'error': f'图片上传失败: {str(upload_error)}'
             }
         
-        # 第二步：使用在线URL调用ModelScope API进行风格化
-        # 尝试不同的API参数格式
+        # 第二步：严格按照test_style.py的格式调用API
+        url = config.MODELSCOPE_API_URL
         
-        # 格式1：按照用户示例的平级结构（优先尝试）
-        payload_flat = {
+        # 使用与test_style.py完全相同的payload格式
+        payload = {
             'model': config.MODELSCOPE_MODEL,
             'prompt': style_prompt,
-            'image_url': image_url,  # 使用上传后的在线URL
+            'image_url': image_url,
             'size': image_size
-        }
-        
-        # 格式2：嵌套在input中的结构（备用）
-        payload_nested = {
-            'input': {
-                'model': config.MODELSCOPE_MODEL,
-                'prompt': style_prompt,
-                'image_url': image_url,  # 使用上传后的在线URL
-                'size': image_size
-            }
         }
         
         headers = {
@@ -159,160 +136,62 @@ def style_transform_image(image_path, style_prompt=None, image_size=None):
             'Content-Type': 'application/json'
         }
         
-        # 首先尝试用户示例的格式
-        print(f"[INFO] 调用ModelScope API进行风格化...")
-        print(f"[INFO] 尝试格式1 (平级参数): {payload_flat}")
+        print(f"[INFO] 调用ModelScope API...")
+        print(f"Response status: checking...")
         
+        # 使用与test_style.py相同的请求方式
         response = requests.post(
-            config.MODELSCOPE_API_URL, 
-            data=json.dumps(payload_flat, ensure_ascii=False).encode('utf-8'), 
+            url, 
+            data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), 
             headers=headers,
             timeout=config.STYLE_PROCESSING_TIMEOUT
         )
         
-        # 如果第一种格式失败，尝试第二种格式
+        print(f"Response status: {response.status_code}")
+        
         if response.status_code != 200:
-            print(f"[INFO] 格式1失败 (状态码: {response.status_code})，尝试格式2 (嵌套参数): {payload_nested}")
-            response = requests.post(
-                config.MODELSCOPE_API_URL, 
-                data=json.dumps(payload_nested, ensure_ascii=False).encode('utf-8'), 
-                headers=headers,
-                timeout=config.STYLE_PROCESSING_TIMEOUT
-            )
-        
-        print(f"[INFO] API响应状态码: {response.status_code}")
-        
-        # 检查响应状态
-        if response.status_code != 200:
-            print(f"[ERROR] ModelScope API请求失败，状态码: {response.status_code}")
-            print(f"[ERROR] 响应内容: {response.text}")
-            print(f"[INFO] 风格化失败，返回原图作为降级处理")
-            
-            # 降级处理：返回原图
-            with open(image_path, 'rb') as f:
-                original_image_data = f.read()
-            
+            print(f"Error: {response.text}")
             return {
-                'success': True,  # 标记为成功，但使用原图
-                'styled_image': None,
-                'styled_image_url': '',
-                'image_data': original_image_data,  # 使用原图数据
-                'original_path': image_path,
-                'style_prompt': style_prompt,
-                'fallback_used': True,  # 标记使用了降级处理
-                'api_error': f'状态码: {response.status_code}, 响应: {response.text}'
+                'success': False,
+                'error': f'API请求失败: 状态码 {response.status_code}, 响应: {response.text}'
             }
         
-        # 解析响应数据
-        try:
-            response_data = response.json()
-            print(f"[INFO] API响应解析成功")
-        except json.JSONDecodeError as e:
-            print(f"[ERROR] 响应JSON解析失败: {e}")
-            print(f"[INFO] JSON解析失败，返回原图作为降级处理")
-            
-            # 降级处理：返回原图
-            with open(image_path, 'rb') as f:
-                original_image_data = f.read()
-            
-            return {
-                'success': True,  # 标记为成功，但使用原图
-                'styled_image': None,
-                'styled_image_url': '',
-                'image_data': original_image_data,  # 使用原图数据
-                'original_path': image_path,
-                'style_prompt': style_prompt,
-                'fallback_used': True,  # 标记使用了降级处理
-                'api_error': f'JSON解析失败: {e}, 响应: {response.text}'
-            }
+        # 解析响应
+        response_data = response.json()
+        print("API response received successfully")
         
-        # 检查响应数据格式
-        if 'images' not in response_data or len(response_data['images']) == 0:
-            print(f"[ERROR] API响应格式错误: {response_data}")
-            print(f"[INFO] 响应格式错误，返回原图作为降级处理")
-            
-            # 降级处理：返回原图
-            with open(image_path, 'rb') as f:
-                original_image_data = f.read()
-            
-            return {
-                'success': True,  # 标记为成功，但使用原图
-                'styled_image': None,
-                'styled_image_url': '',
-                'image_data': original_image_data,  # 使用原图数据
-                'original_path': image_path,
-                'style_prompt': style_prompt,
-                'fallback_used': True,  # 标记使用了降级处理
-                'api_error': f'响应格式错误: {response_data}'
-            }
-        
-        # 获取风格化后的图像URL
+        # 下载风格化后的图像 - 与test_style.py相同的方式
         styled_image_url = response_data['images'][0]['url']
-        print(f"[INFO] 获取到风格化图像URL: {styled_image_url}")
-        
-        # 下载风格化后的图像
-        print(f"[INFO] 下载风格化后的图像...")
-        image_response = requests.get(styled_image_url, timeout=60)
+        image_response = requests.get(styled_image_url)
         
         if image_response.status_code != 200:
-            print(f"[ERROR] 下载风格化图像失败，状态码: {image_response.status_code}")
-            print(f"[INFO] 下载失败，返回原图作为降级处理")
-            
-            # 降级处理：返回原图
-            with open(image_path, 'rb') as f:
-                original_image_data = f.read()
-            
             return {
-                'success': True,  # 标记为成功，但使用原图
-                'styled_image': None,
-                'styled_image_url': styled_image_url,
-                'image_data': original_image_data,  # 使用原图数据
-                'original_path': image_path,
-                'style_prompt': style_prompt,
-                'fallback_used': True,  # 标记使用了降级处理
-                'download_error': f'下载失败，状态码: {image_response.status_code}'
+                'success': False,
+                'error': f'下载风格化图像失败: 状态码 {image_response.status_code}'
             }
         
         # 转换为PIL图像对象
         styled_image = Image.open(BytesIO(image_response.content))
-        print(f"[INFO] 风格化图像下载成功，尺寸: {styled_image.size}")
+        print(f"[INFO] 风格化图像处理成功，尺寸: {styled_image.size}")
         
         return {
             'success': True,
             'styled_image': styled_image,
             'styled_image_url': styled_image_url,
-            'image_data': image_response.content,  # 原始图像数据，用于保存
+            'image_data': image_response.content,
             'original_path': image_path,
             'style_prompt': style_prompt,
-            'uploaded_image_url': image_url  # 记录上传后的图片URL
+            'uploaded_image_url': image_url
         }
         
     except Exception as e:
-        print(f"[ERROR] 风格化处理异常: {str(e)}")
-        print(f"[INFO] 处理异常，返回原图作为降级处理")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
-        
-        # 降级处理：返回原图
-        try:
-            with open(image_path, 'rb') as f:
-                original_image_data = f.read()
-            
-            return {
-                'success': True,  # 标记为成功，但使用原图
-                'styled_image': None,
-                'styled_image_url': '',
-                'image_data': original_image_data,  # 使用原图数据
-                'original_path': image_path,
-                'style_prompt': style_prompt,
-                'fallback_used': True,  # 标记使用了降级处理
-                'exception_error': str(e)
-            }
-        except:
-            return {
-                'success': False,
-                'error': f'风格化处理异常且无法读取原图: {str(e)}'
-            }
+        return {
+            'success': False,
+            'error': f'风格化处理异常: {str(e)}'
+        }
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
@@ -1725,29 +1604,16 @@ def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
                         f.write(style_result['image_data'])
                     
                     print(f"[INFO] 风格化图像已保存: {styled_path}")
+                    print(f"[INFO] 风格化成功: {filename}")
                     
-                    # 检查是否使用了降级处理
-                    if style_result.get('fallback_used'):
-                        print(f"[WARNING] 风格化API失败，使用原图: {filename}")
-                        styled_frames.append({
-                            'original_path': frame_path,
-                            'styled_path': styled_path,  # 保存的是原图数据
-                            'styled_filename': styled_filename,
-                            'index': i,
-                            'style_failed': True,  # 标记为失败但有降级
-                            'fallback_used': True,
-                            'api_error': style_result.get('api_error', style_result.get('exception_error', ''))
-                        })
-                    else:
-                        print(f"[INFO] 风格化成功: {filename}")
-                        styled_frames.append({
-                            'original_path': frame_path,
-                            'styled_path': styled_path,
-                            'styled_filename': styled_filename,
-                            'index': i,
-                            'style_failed': False,
-                            'styled_image_url': style_result['styled_image_url']
-                        })
+                    styled_frames.append({
+                        'original_path': frame_path,
+                        'styled_path': styled_path,
+                        'styled_filename': styled_filename,
+                        'index': i,
+                        'style_failed': False,
+                        'styled_image_url': style_result['styled_image_url']
+                    })
                 else:
                     print(f"[ERROR] 风格化失败: {style_result['error']}")
                     # 使用原图
