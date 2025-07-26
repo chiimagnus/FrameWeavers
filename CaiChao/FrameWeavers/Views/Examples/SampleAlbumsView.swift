@@ -7,41 +7,36 @@ struct SampleAlbumsView: View {
     private let sampleAlbums: [SampleAlbum] = [
         SampleAlbum(
             id: "sample-001",
-            title: "都市精灵的秘境",
-            description: "少女爱丽丝与古老精灵的奇幻冒险",
+            title: "时光里的温暖记忆",
+            description: "一个关于家庭温情的美好故事",
             coverImage: "封面",
             comicResult: ComicResult(
                 comicId: "sample-001",
                 deviceId: "sample-device",
-                originalVideoTitle: "都市精灵的秘境",
+                originalVideoTitle: "时光里的温暖记忆",
                 creationDate: "2025-07-26",
-                panelCount: 4,
+                panelCount: 3,
                 panels: [
                     ComicPanel(
                         panelNumber: 1,
-                        imageUrl: "Image1",
-                        narration: "在钢筋水泥的都市中，藏着一片不为人知的秘境。少女爱丽丝，一个能听懂风语花言的女孩，在一次午后小憩中，无意间听到了来自古老精灵的微弱呼唤。"
+                        imageUrl: "1-第1页",
+                        narration: "阳光透过窗棂洒在桌案上，奶奶正在为即将远行的孙女准备行囊。每一件衣物都被细心地叠好，每一样物品都承载着满满的爱意。"
                     ),
                     ComicPanel(
                         panelNumber: 2,
-                        imageUrl: "Image2",
-                        narration: "精灵告诉她，这片秘境正在被都市的污染慢慢侵蚀，如果不及时拯救，这里的所有生灵都将消失。爱丽丝看着眼前这个只有巴掌大小的精灵，心中涌起了强烈的保护欲。"
+                        imageUrl: "1-第2页",
+                        narration: "小女孩依偎在奶奶身边，听着那些讲了无数遍却永远不厌倦的故事。奶奶温暖的怀抱，是这世界上最安全的港湾。"
                     ),
                     ComicPanel(
                         panelNumber: 3,
-                        imageUrl: "Image3",
-                        narration: "为了拯救被污染的自然，她必须与精灵签下契约。然而契约的代价，是她自己的生命力。每使用一次净化魔法，她的寿命就会减少一年。"
-                    ),
-                    ComicPanel(
-                        panelNumber: 4,
-                        imageUrl: "Image4",
-                        narration: "爱丽丝毫不犹豫地签下了契约。她相信，用自己的生命换来这片秘境的重生，是值得的。因为有些美好，值得用生命去守护。"
+                        imageUrl: "1-第3页",
+                        narration: "离别的时刻终于到来，奶奶将一个小小的香囊塞进孙女的手中。'无论走到哪里，都要记得回家的路。'奶奶的话语如春风般温柔。"
                     )
                 ],
                 finalQuestions: [
-                    "如果你是爱丽丝，你会选择签下这个契约吗？",
-                    "你觉得什么样的事物值得用生命去守护？",
-                    "在现实生活中，我们应该如何保护环境？"
+                    "你还记得和家人在一起的温暖时光吗？",
+                    "什么样的物品能让你想起家的温暖？",
+                    "长大后，你会如何回报家人的爱？"
                 ]
             )
         ),

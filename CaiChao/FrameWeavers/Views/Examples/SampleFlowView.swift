@@ -1,37 +1,60 @@
 import SwiftUI
 
-/// 示例流程视图 - 模拟完整的风格选择和处理流程
+/// 示例流程视图 - 复用现有的SelectStyleView和ProcessingView
 struct SampleFlowView: View {
     @Environment(\.dismiss) private var dismiss
     let comicResult: ComicResult
-    
+
     @State private var currentStep: FlowStep = .styleSelection
-    @State private var selectedStyle: String = ""
-    @State private var showProcessing = false
-    @StateObject private var mockViewModel = MockVideoUploadViewModel()
-    
+    @State private var navigateToProcessing = false
+    @State private var navigateToResults = false
+    @StateObject private var mockViewModel: MockVideoUploadViewModel
+
+    init(comicResult: ComicResult) {
+        self.comicResult = comicResult
+        self._mockViewModel = StateObject(wrappedValue: MockVideoUploadViewModel(comicResult: comicResult))
+    }
+
     enum FlowStep {
         case styleSelection
         case processing
         case results
     }
-    
-    // 定义故事风格
-    private let storyStyles = [
-        ("文艺哲学", "文 艺\n哲 学"),
-        ("童话想象", "童 话\n想 象"),
-        ("悬念反转", "悬 念\n反 转"),
-        ("生活散文", "生 活\n散 文")
-    ]
-    
+
     var body: some View {
         NavigationStack {
             Group {
                 switch currentStep {
                 case .styleSelection:
-                    styleSelectionView
+                    SelectStyleView(viewModel: mockViewModel)
+                        .onAppear {
+                            // 设置一些模拟视频数据
+                            mockViewModel.selectVideos([
+                                URL(string: "file:///mock/sample1.mp4")!,
+                                URL(string: "file:///mock/sample2.mp4")!
+                            ])
+                        }
+                        .onChange(of: mockViewModel.uploadStatus) { _, newStatus in
+                            if newStatus == .uploading || newStatus == .processing {
+                                withAnimation {
+                                    currentStep = .processing
+                                }
+                            }
+                        }
                 case .processing:
-                    processingView
+                    ProcessingView(viewModel: mockViewModel)
+                        .onAppear {
+                            mockViewModel.startMockProcessing()
+                        }
+                        .onChange(of: mockViewModel.uploadStatus) { _, newStatus in
+                            if newStatus == .completed {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                    withAnimation {
+                                        currentStep = .results
+                                    }
+                                }
+                            }
+                        }
                 case .results:
                     OpenResultsView(comicResult: comicResult)
                 }
@@ -61,117 +84,15 @@ struct SampleFlowView: View {
             }
         }
     }
-    
-    // MARK: - 风格选择视图
-    private var styleSelectionView: some View {
-        ZStack {
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
 
-            VStack(spacing: 30) {
-                Text("· 选择故事风格 ·")
-                    .font(.custom("STKaiti", size: 16))
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .padding(.bottom, 50)
-
-                // 风格选择网格
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 20), count: 2), spacing: 20) {
-                    ForEach(storyStyles, id: \.0) { style in
-                        Button(action: {
-                            selectedStyle = style.0
-                        }) {
-                            VStack(spacing: 10) {
-                                Text(style.1)
-                                    .font(.custom("WSQuanXing", size: 20))
-                                    .fontWeight(.bold)
-                                    .foregroundColor(
-                                        selectedStyle == style.0 ?
-                                            Color(hex: "#855C23") :
-                                            Color(hex: "#2F2617")
-                                    )
-                                    .multilineTextAlignment(.center)
-                                    .lineSpacing(5)
-                            }
-                            .frame(width: 150, height: 150)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.white.opacity(0.8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20)
-                                            .stroke(
-                                                selectedStyle == style.0 ?
-                                                    Color(hex: "#855C23") :
-                                                    Color.clear,
-                                                lineWidth: 3
-                                            )
-                                    )
-                            )
-                        }
-                    }
-                }
-                .frame(width: 400, height: 400)
-                .padding(.horizontal)
-                .padding(.bottom, 100)
-
-                // 开始生成按钮
-                Button(action: {
-                    startGeneration()
-                }) {
-                    ZStack {
-                        Image("翻开画册")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 250, height: 44)
-
-                        Text("开始生成")
-                            .font(.custom("WSQuanXing", size: 24))
-                            .fontWeight(.bold)
-                            .foregroundColor(
-                                selectedStyle.isEmpty ?
-                                    Color(hex: "#CCCCCC") :
-                                    Color(hex: "#855C23")
-                            )
-                    }
-                }
-                .disabled(selectedStyle.isEmpty)
-                .opacity(selectedStyle.isEmpty ? 0.6 : 1.0)
-            }
-        }
-    }
-    
-    // MARK: - 处理视图
-    private var processingView: some View {
-        ProcessingView(viewModel: mockViewModel)
-            .onAppear {
-                mockViewModel.startMockProcessing()
-            }
-            .onChange(of: mockViewModel.uploadStatus) { _, newStatus in
-                if newStatus == .completed {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        withAnimation {
-                            currentStep = .results
-                        }
-                    }
-                }
-            }
-    }
-    
-    private func startGeneration() {
-        guard !selectedStyle.isEmpty else { return }
-        
-        withAnimation {
-            currentStep = .processing
-        }
-    }
 }
 
 // MARK: - Mock ViewModel
 class MockVideoUploadViewModel: VideoUploadViewModel {
-    
-    override init() {
+    private let targetComicResult: ComicResult?
+
+    init(comicResult: ComicResult? = nil) {
+        self.targetComicResult = comicResult
         super.init()
         // 设置一些模拟视频
         self.selectedVideos = [
@@ -179,29 +100,33 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
             URL(string: "file:///mock/sample2.mp4")!
         ]
     }
-    
+
     func startMockProcessing() {
         uploadStatus = .uploading
         uploadProgress = 0
-        
+
         // 模拟上传进度
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
             DispatchQueue.main.async {
                 self.uploadProgress += 0.02
-                
+
                 if self.uploadProgress >= 0.3 {
                     self.uploadStatus = .processing
                 }
-                
+
                 if self.uploadProgress >= 1.0 {
                     self.uploadProgress = 1.0
                     self.uploadStatus = .completed
+                    // 设置目标结果
+                    if let result = self.targetComicResult {
+                        self.comicResult = result
+                    }
                     timer.invalidate()
                 }
             }
         }
     }
-    
+
     override func reset() {
         super.reset()
         uploadStatus = .pending
