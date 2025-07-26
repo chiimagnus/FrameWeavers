@@ -38,9 +38,9 @@ struct SelectStyleView: View {
                         // 图钉图标 - 初始在右上角，根据选中位置移动
                         let pinPositions = [
                             (x: 180, y: 40),   // 左上象限右上角
-                            (x: 370, y: 40),   // 右上象限右上角（初始位置）
+                            (x: 360, y: 40),   // 右上象限右上角（初始位置）
                             (x: 180, y: 220),  // 左下象限右上角
-                            (x: 370, y: 220)   // 右下象限右上角
+                            (x: 360, y: 220)   // 右下象限右上角
                         ]
                         
                         let pinIndex = selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == selectedStyle } ?? 1)
