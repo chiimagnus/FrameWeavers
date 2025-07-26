@@ -52,10 +52,10 @@ struct SelectStyleView: View {
                         
                         // 四个象限的风格选择按钮
                         let positions = [
-                            (x: 100, y: 100),  // 左上
-                            (x: 300, y: 100),  // 右上
-                            (x: 100, y: 300),  // 左下
-                            (x: 300, y: 300)   // 右下
+                            (x: 110, y: 110),  // 左上
+                            (x: 290, y: 110),  // 右上
+                            (x: 110, y: 290),  // 左下
+                            (x: 290, y: 290)   // 右下
                         ]
                         
                         ForEach(Array(storyStyles.enumerated()), id: \.offset) { index, style in
@@ -66,7 +66,7 @@ struct SelectStyleView: View {
                                 selectedStyle = styleKey
                             }) {
                                 Text(styleText)
-                                    .font(.custom("STKaiti", size: 24))
+                                    .font(.custom("WSQuanXing", size: 24))
                                     .fontWeight(.bold)
                                     .foregroundColor(selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
                             }
@@ -88,7 +88,7 @@ struct SelectStyleView: View {
                                 .frame(width: 250, height: 44)
 
                             Text("开始生成")
-                                .font(.custom("STKaiti", size: 24))
+                                .font(.custom("WSQuanXing", size: 24))
                                 .fontWeight(.bold)
                                 .foregroundColor(
                                     selectedStyle.isEmpty ?
