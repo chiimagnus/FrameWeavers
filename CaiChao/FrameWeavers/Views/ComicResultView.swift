@@ -573,3 +573,90 @@ struct QuestionsView: View {
         }
     }
 }
+
+// MARK: - Preview Data
+struct ComicResultView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            // 竖屏预览
+            ComicResultView(comicResult: ComicResult(
+                comicId: "preview-001",
+                deviceId: "preview-device",
+                originalVideoTitle: "预览视频",
+                creationDate: "2025-07-26",
+                panelCount: 3,
+                panels: [
+                    ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image1",
+                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 2,
+                        imageUrl: "Image2",
+                        narration: "突然，一只可爱的小狗从草丛中跳了出来，摇着尾巴看着小明。小明蹲下身，轻轻抚摸着小狗的头，小狗开心地舔着他的手。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 3,
+                        imageUrl: "Image3",
+                        narration: "小明决定带着这只小狗一起回家，他想给小狗取个名字叫\"阳光\"。从那天起，阳光成为了小明最好的朋友，他们一起度过了许多快乐的时光。"
+                    )
+                ],
+                finalQuestions: [
+                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
+                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
+                    "这个故事告诉我们什么关于友谊和善良的道理？"
+                ]
+            ))
+            .previewDisplayName("竖屏预览")
+            .previewDevice("iPhone 14")
+            
+            // 横屏预览
+            ComicResultView(comicResult: ComicResult(
+                comicId: "preview-002",
+                deviceId: "preview-device",
+                originalVideoTitle: "预览视频",
+                creationDate: "2025-07-26",
+                panelCount: 2,
+                panels: [
+                    ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image1",
+                        narration: "小红在花园里发现了一朵神奇的花，这朵花会随着她的心情变化颜色。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 2,
+                        imageUrl: "Image2",
+                        narration: "当她开心时，花朵绽放出金黄色的光芒；当她难过时，花朵变成了深蓝色。小红意识到，这朵花是她内心世界的镜子。"
+                    )
+                ],
+                finalQuestions: [
+                    "如果你有一朵能反映心情的花，你会用它来做什么？",
+                    "这个故事中的花朵象征着什么？"
+                ]
+            ))
+            .previewDisplayName("横屏预览")
+            .previewDevice("iPad Air (5th generation)")
+            .previewInterfaceOrientation(.landscapeLeft)
+            
+            // 无问题页面预览
+            ComicResultView(comicResult: ComicResult(
+                comicId: "preview-003",
+                deviceId: "preview-device",
+                originalVideoTitle: "简单故事",
+                creationDate: "2025-07-26",
+                panelCount: 1,
+                panels: [
+                    ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image4",
+                        narration: "这是一个简单的故事，讲述了一个人在公园里散步，享受着美好的天气和宁静的时光。"
+                    )
+                ],
+                finalQuestions: []
+            ))
+            .previewDisplayName("无问题预览")
+            .previewDevice("iPhone 14")
+        }
+    }
+}
