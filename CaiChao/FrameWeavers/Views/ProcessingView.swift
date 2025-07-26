@@ -82,8 +82,7 @@ struct ProcessingView: View {
                 Button(action: {
                     dismiss()
                 }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(Color(hex: "#2F2617"))
+                    Image("BackButton")
                 }
             }
         }
