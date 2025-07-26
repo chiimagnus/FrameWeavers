@@ -491,10 +491,11 @@ struct QuestionsView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(questions, id: \.self) { question in
                             HStack(alignment: .top, spacing: 12) {
-                                Text(question)
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                    .lineSpacing(4)
+                                TypewriterView(
+                                    text: question,
+                                    typeSpeed: 0.10,
+                                    showCursor: false
+                                )
                             }
                             .padding()
                             .background(Color.clear)
@@ -541,10 +542,14 @@ struct QuestionsView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(questions, id: \.self) { question in
                             HStack(alignment: .top, spacing: 12) {
-                                Text(question)
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                    .lineSpacing(4)
+                                TypewriterView(
+                                    text: question,
+                                    typeSpeed: 0.10,
+                                    showCursor: false
+                                )
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .lineSpacing(4)
                             }
                             .padding()
                             .background(Color.clear)
