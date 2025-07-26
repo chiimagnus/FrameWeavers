@@ -405,16 +405,20 @@ struct ComicPage: Codable {
 struct InteractiveQuestion: Codable {
     let questionId: Int
     let question: String
-    let options: [String]
-    let sceneDescription: String
+    let intent: String?  // 新增：问题意图
     let questionType: String
 
+    // 可选字段，因为后端可能不返回
+    let options: [String]?
+    let sceneDescription: String?
+
     enum CodingKeys: String, CodingKey {
-        case questionId = "question_id"
+        case questionId = "id"  // 修正：后端返回的是 "id" 而不是 "question_id"
         case question = "question"
+        case intent = "intent"  // 新增：对应后端的 intent 字段
+        case questionType = "type"  // 修正：后端返回的是 "type" 而不是 "question_type"
         case options = "options"
         case sceneDescription = "scene_description"
-        case questionType = "question_type"
     }
 }
 

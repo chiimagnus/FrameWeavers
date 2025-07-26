@@ -382,7 +382,7 @@ class VideoUploadViewModel: ObservableObject {
                 taskId: taskId,
                 videoPath: videoPath,  // 必须：使用后端返回的视频路径
                 storyStyle: "温馨童话",  // 必须：故事风格关键词
-                targetFrames: 12,  // 参考Python测试
+                targetFrames: 5,  // 参考Python测试
                 frameInterval: 2.0,  // 参考Python测试
                 significanceWeight: 0.7,  // 参考Python测试
                 qualityWeight: 0.3,  // 参考Python测试
