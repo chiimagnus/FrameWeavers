@@ -436,11 +436,9 @@ struct ComicPanelView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("故事叙述")
                             .font(.title3.bold())
-                            // .foregroundColor(.white)
 
                         Text(narration)
                             .font(.body)
-                            // .foregroundColor(.white.opacity(0.9))
                             .lineSpacing(6)
                     }
                     .padding()
