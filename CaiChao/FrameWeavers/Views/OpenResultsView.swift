@@ -58,7 +58,8 @@ struct OpenResultsView: View {
                     Button(action: {
                         dismiss()
                     }) {
-                        Image("BackButton")
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Color(hex: "#855C23"))
                     }
                 }
             }
