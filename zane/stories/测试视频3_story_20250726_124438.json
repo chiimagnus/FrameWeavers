@@ -1,0 +1,220 @@
+{
+  "story_info": {
+    "task_id": "c4e9468a-3979-4d6a-9b6f-23e300505271",
+    "video_name": "测试视频3.mp4",
+    "video_path": "测试视频3.mp4",
+    "processing_time": "2025-07-26T12:44:38.089419",
+    "overall_theme": "一次从都市与旅途的轻松日常，逐渐过渡到内心宁静与仪式感的“自我朝圣”——在喧嚣与神圣之间找到温柔平衡的生活颂歌。",
+    "total_narrations": 12
+  },
+  "final_narrations": [
+    {
+      "frame_index": 0,
+      "frame_path": "quick_start_frames\\base_frame_0002.jpg",
+      "story_text": "列车疾驰，她把笑声按在胸口，像把一枚透明的车票藏进心跳——原来逃离并非远离城市，而是让自己在速度里重新学会呼吸。"
+    },
+    {
+      "frame_index": 1,
+      "frame_path": "quick_start_frames\\base_frame_0003.jpg",
+      "story_text": "念珠在方向盘下低声转动，导航的蓝光爬上皱纹——老司机用每一次转弯，把乘客的远方悄悄缝进自己的日常。"
+    },
+    {
+      "frame_index": 2,
+      "frame_path": "quick_start_frames\\base_frame_0005.jpg",
+      "story_text": "露台之上，金毛的尾巴垂成柔软的问号，白犬的目光像一封未寄出的信——它们在彼此的凝视里，为人类的匆忙按下短暂的逗号。"
+    },
+    {
+      "frame_index": 3,
+      "frame_path": "quick_start_frames\\base_frame_0006.jpg",
+      "story_text": "玫瑰在指尖燃烧成粉色的火焰，她把春天塞进友人的臂弯——街角的风忽然温柔，像替所有迟到的心意说了对不起。"
+    },
+    {
+      "frame_index": 4,
+      "frame_path": "quick_start_frames\\base_frame_0008.jpg",
+      "story_text": "向日葵被报纸轻轻裹住，像一束被偷走的黄昏；她站在藤蔓墙前，把光折进口袋，从此黑夜只是未拆封的早晨。"
+    },
+    {
+      "frame_index": 5,
+      "frame_path": "quick_start_frames\\base_frame_0011.jpg",
+      "story_text": "油脂滴落，竹席发出细微的爆裂——烤肉在舌尖盛放，替那些未曾开口的感谢，完成一场滚烫的告白。"
+    },
+    {
+      "frame_index": 6,
+      "frame_path": "quick_start_frames\\base_frame_0017.jpg",
+      "story_text": "匾额上的鎏金剥落如旧雪，却在灯里重生；她仰头，让“新华盛世”四个字替自己把漂泊的姓名轻轻放回历史。"
+    },
+    {
+      "frame_index": 7,
+      "frame_path": "quick_start_frames\\base_frame_0021.jpg",
+      "story_text": "洞穴穹顶悬着星子般的灯，佛像在金光里垂目——众人屏息，仿佛只要再靠近一步，就能听见自己尘埃落定的声音。"
+    },
+    {
+      "frame_index": 8,
+      "frame_path": "quick_start_frames\\base_frame_0023.jpg",
+      "story_text": "宝瓶与佛在红色壁影里低语，金色表面浮出模糊的访客——朝圣的终点，不过是让低头的人第一次看清自己的轮廓。"
+    },
+    {
+      "frame_index": 9,
+      "frame_path": "quick_start_frames\\base_frame_0026.jpg",
+      "story_text": "灯笼把夜色烫出一枚琥珀，他们并肩穿过——古老街巷的暖光像一条柔软的河，载着刚被庙宇洗净的心，缓缓流回尘世。"
+    },
+    {
+      "frame_index": 10,
+      "frame_path": "quick_start_frames\\base_frame_0043.jpg",
+      "story_text": "雨意未落，湖水已先一步替天空哽咽；新娘的白纱被风扬起，像一页写给群山的誓言，在灰调的时光里轻轻发光。"
+    },
+    {
+      "frame_index": 11,
+      "frame_path": "quick_start_frames\\base_frame_0046.jpg",
+      "story_text": "三双手比出一颗心的形状，海鸥在头顶剪下一片蓝——快门咔嚓，阳光替他们写下注脚：所谓永恒，不过是平凡日子里被彼此看见的瞬间。"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": 0,
+        "frame_path": "quick_start_frames\\base_frame_0002.jpg",
+        "story_text": "启程：列车上的少女以笑声打开旅途，奠定“轻快”基调。"
+      },
+      {
+        "frame_index": 1,
+        "frame_path": "quick_start_frames\\base_frame_0003.jpg",
+        "story_text": "城市脉动：老司机的微笑与导航仪，将故事拉回城市日常的节奏。"
+      },
+      {
+        "frame_index": 2,
+        "frame_path": "quick_start_frames\\base_frame_0005.jpg",
+        "story_text": "生活停靠：两只狗在露台上的静谧对视，暗示“慢下来”的休憩节点。"
+      },
+      {
+        "frame_index": 3,
+        "frame_path": "quick_start_frames\\base_frame_0006.jpg",
+        "story_text": "重逢与馈赠：街头好友互送花束，强化“人与人之间的温暖连接”。"
+      },
+      {
+        "frame_index": 4,
+        "frame_path": "quick_start_frames\\base_frame_0008.jpg",
+        "story_text": "自我定格：黑夹克女子与向日葵合影，完成“把阳光打包带走”的私人仪式。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "quick_start_frames\\base_frame_0011.jpg",
+        "story_text": "人间烟火：丰盛拼盘与朋友聚餐，把旅途的能量转化为共享的味觉记忆。"
+      },
+      {
+        "frame_index": 6,
+        "frame_path": "quick_start_frames\\base_frame_0017.jpg",
+        "story_text": "城市地标：夜幕下的古老城楼，标志从“日常漫游”迈向“文化凝视”。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "quick_start_frames\\base_frame_0021.jpg",
+        "story_text": "沉浸历史：博物馆洞穴展厅内，游客与佛像对视，开启“内心对话”阶段。"
+      },
+      {
+        "frame_index": 8,
+        "frame_path": "quick_start_frames\\base_frame_0023.jpg",
+        "story_text": "圣境低语：金佛与宝瓶的静穆场景，将外部旅程收束为“心灵朝圣”。"
+      },
+      {
+        "frame_index": 9,
+        "frame_path": "quick_start_frames\\base_frame_0026.jpg",
+        "story_text": "夜色归途：古街灯笼下的并肩而行，把庄严带回尘世，完成“神圣⇄日常”的循环。"
+      },
+      {
+        "frame_index": 10,
+        "frame_path": "quick_start_frames\\base_frame_0043.jpg",
+        "story_text": "静默见证：灰调湖景中的婚纱仪式，把个人故事升华为“时间之镜”。"
+      },
+      {
+        "frame_index": 11,
+        "frame_path": "quick_start_frames\\base_frame_0046.jpg",
+        "story_text": "尾声定格：三位年轻人比心的合影，用一抹文字与阳光收束全片——“平凡日子里的那束光”正是旅程的答案。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": 0,
+        "frame_path": "quick_start_frames\\base_frame_0002.jpg",
+        "story_text": "当列车轻晃的那一刻，我知道，真正的逃离不是远离城市，而是终于听见自己笑得不再克制。"
+      },
+      {
+        "frame_index": 1,
+        "frame_path": "quick_start_frames\\base_frame_0003.jpg",
+        "story_text": "念珠在指尖滑动，一圈圈数过的是乘客的目的地，也是他心中被城市喧嚣盖过的脉搏。"
+      },
+      {
+        "frame_index": 2,
+        "frame_path": "quick_start_frames\\base_frame_0005.jpg",
+        "story_text": "两只狗隔着牵引绳对视——一个想奔向远方，一个只想守住当下——我在它们安静的对峙里看见自己摇晃的影子。"
+      },
+      {
+        "frame_index": 3,
+        "frame_path": "quick_start_frames\\base_frame_0006.jpg",
+        "story_text": "当我把花塞进朋友怀里，忽然明白，所谓重逢，是把一路攒下的勇气换成一句“我为你留了一束春天”。"
+      },
+      {
+        "frame_index": 4,
+        "frame_path": "quick_start_frames\\base_frame_0008.jpg",
+        "story_text": "向日葵在怀里发烫——原来阳光也能被折起带走，只要我愿意承认，黑暗不过是一面等待被照亮的墙。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "quick_start_frames\\base_frame_0011.jpg",
+        "story_text": "当烤肉的油脂滴在竹席上，我听见记忆轻微炸开的声音——那些未曾说出口的感谢，都被味蕾替我说完了。"
+      },
+      {
+        "frame_index": 6,
+        "frame_path": "quick_start_frames\\base_frame_0017.jpg",
+        "story_text": "站在古老的匾额下，我终于敢把自己交给时间——任它用金漆剥落我的不安，用砖缝收藏我悄悄掉落的叹息。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "quick_start_frames\\base_frame_0021.jpg",
+        "story_text": "佛在灯里看我，我在暗处看佛——那一刻，尘世与神圣不过是一场互相点头的温柔。"
+      },
+      {
+        "frame_index": 8,
+        "frame_path": "quick_start_frames\\base_frame_0023.jpg",
+        "story_text": "金色宝瓶映出我模糊的倒影，像一面不肯戳破的慈悲：原来朝圣的尽头，只是学会向自己低头。"
+      },
+      {
+        "frame_index": 9,
+        "frame_path": "quick_start_frames\\base_frame_0026.jpg",
+        "story_text": "灯笼把夜色烫出一个洞，我们就并肩走进那团光晕——像两颗刚熬过寒夜的星，终于学会借彼此的微暖发亮。"
+      },
+      {
+        "frame_index": 10,
+        "frame_path": "quick_start_frames\\base_frame_0043.jpg",
+        "story_text": "雨云低垂，湖水替天空兜底——新娘的白纱被风掀起，像是要把“我愿意”也递给那一片沉默的山峦作证。"
+      },
+      {
+        "frame_index": 11,
+        "frame_path": "quick_start_frames\\base_frame_0046.jpg",
+        "story_text": "当三颗心并成同一节拍，阳光替我们按下快门——原来最磅礴的史诗，不过是平凡日子里彼此看见的一瞬光。"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-26T12:41:35.198957",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 57.83566999435425,
+    "soul_writer_time": 120.47371363639832,
+    "master_editor_time": 182.89046144485474,
+    "end_time": "2025-07-26T12:44:38.089419",
+    "total_time": 182.89046144485474,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-26T12:44:38.089419"
+  }
+}
