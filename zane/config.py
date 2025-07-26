@@ -28,4 +28,11 @@ MODELSCOPE_MODEL = "black-forest-labs/FLUX.1-Kontext-dev"
 # 风格化处理默认配置
 DEFAULT_STYLE_PROMPT = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness"
 DEFAULT_IMAGE_SIZE = "1780x1024"
-STYLE_PROCESSING_TIMEOUT = 120  # 秒
+STYLE_PROCESSING_TIMEOUT = 3000  # 秒
+
+# 性能和稳定性配置
+MAX_CONCURRENT_REQUESTS = 40  # 降低默认并发数量（原来50，现在10）
+MEMORY_WARNING_THRESHOLD = 80  # 内存使用超过80%时发出警告
+MAX_MEMORY_USAGE = 90  # 内存使用超过90%时停止处理
+CONNECTION_TIMEOUT = 3000  # 连接超时时间（秒）
+REQUEST_TIMEOUT = 6000  # 请求超时时间（秒）

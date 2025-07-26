@@ -525,13 +525,13 @@ class DiversityFrameExtractor:
                 }
     
     async def analyze_frames_with_ai_async(self, frame_paths: List[str], 
-                                           max_concurrent: int = 50) -> List[Dict[str, any]]:
+                                           max_concurrent: int = 10) -> List[Dict[str, any]]:
         """
         使用AI异步并发分析所有基础帧
         
         Args:
             frame_paths: 基础帧文件路径列表
-            max_concurrent: 最大并发数（默认50）
+            max_concurrent: 最大并发数（默认10）
             
         Returns:
             包含AI分析结果的帧信息列表
@@ -543,9 +543,18 @@ class DiversityFrameExtractor:
         semaphore = asyncio.Semaphore(max_concurrent)
         analyzed_frames = []
         
-        # 创建aiohttp会话
-        connector = aiohttp.TCPConnector(limit=max_concurrent * 2)  # 连接池大小
-        timeout = aiohttp.ClientTimeout(total=60)  # 总超时时间
+        # 创建aiohttp会话 - 使用更保守的设置
+        connector = aiohttp.TCPConnector(
+            limit=max_concurrent,  # 连接池大小等于并发数
+            limit_per_host=max_concurrent // 2,  # 每个主机的连接限制
+            ttl_dns_cache=300,  # DNS缓存5分钟
+            use_dns_cache=True
+        )
+        timeout = aiohttp.ClientTimeout(
+            total=120,  # 总超时时间2分钟
+            connect=30,  # 连接超时30秒
+            sock_read=30  # 读取超时30秒
+        )
         
         async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
             # 创建所有异步任务
@@ -566,6 +575,9 @@ class DiversityFrameExtractor:
                 for i, result in enumerate(results):
                     if isinstance(result, Exception):
                         print(f"任务 {i} 执行失败: {result}")
+                        # 如果是网络相关错误，记录详细信息
+                        if isinstance(result, (aiohttp.ClientError, asyncio.TimeoutError)):
+                            print(f"   网络错误详情: {type(result).__name__}: {str(result)}")
                     elif result is not None:
                         analyzed_frames.append(result)
                     
@@ -578,6 +590,24 @@ class DiversityFrameExtractor:
                         
             except Exception as e:
                 print(f"批量任务执行失败: {e}")
+                # 尝试优雅关闭所有任务
+                for task in tasks:
+                    if not task.done():
+                        task.cancel()
+                
+                # 等待所有任务真正完成或取消
+                try:
+                    await asyncio.gather(*tasks, return_exceptions=True)
+                except Exception as cleanup_error:
+                    print(f"任务清理时发生错误: {cleanup_error}")
+            
+            finally:
+                # 确保连接器正确关闭
+                try:
+                    await connector.close()
+                    print("✅ 网络连接已清理")
+                except Exception as e:
+                    print(f"⚠️ 连接清理失败: {e}")
         
         # 按原始索引排序
         analyzed_frames.sort(key=lambda x: x['index'])
@@ -787,7 +817,7 @@ class DiversityFrameExtractor:
                                           target_key_frames: int = 10,
                                           significance_weight: float = 0.6,
                                           quality_weight: float = 0.4,
-                                          max_concurrent: int = 50) -> Dict[str, any]:
+                                          max_concurrent: int = 10) -> Dict[str, any]:
         """
         两阶段智能抽帧：基础帧提取 + AI异步并发分析筛选关键帧
         
@@ -867,7 +897,7 @@ class DiversityFrameExtractor:
                                         base_frame_interval: float = 1.0,
                                         significance_weight: float = 0.6,
                                         quality_weight: float = 0.4,
-                                        max_concurrent: int = 50) -> Dict[str, any]:
+                                        max_concurrent: int = 10) -> Dict[str, any]:
         """
         🎯 统一智能处理方法：智能抽基础帧 + 异步并发AI分析
         
@@ -1276,4 +1306,6 @@ def main():
         print(f"❌ 处理失败：{str(e)}")
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # 测试代码
+    print("DiversityFrameExtractor 模块已加载完成")
+    print("如需测试功能，请在主应用程序中调用相关方法")

@@ -14,6 +14,9 @@ from io import BytesIO
 import config
 import logging
 import traceback
+import psutil  # 添加系统监控库
+import gc  # 添加垃圾回收库
+import atexit  # 添加程序退出处理库
 
 app = Flask(__name__)
 
@@ -36,6 +39,49 @@ os.makedirs(STORIES_FOLDER, exist_ok=True)
 
 # 任务状态存储
 task_status = {}
+
+# 内存监控函数
+def check_memory_usage():
+    """
+    检查系统内存使用情况
+    
+    Returns:
+        dict: 包含内存信息的字典
+    """
+    try:
+        memory = psutil.virtual_memory()
+        memory_info = {
+            'total': memory.total,
+            'available': memory.available,
+            'used': memory.used,
+            'percentage': memory.percent
+        }
+        
+        # 发出警告
+        if memory.percent > config.MEMORY_WARNING_THRESHOLD:
+            print(f"⚠️ 内存使用率过高: {memory.percent:.1f}%")
+            
+        # 如果内存使用过高，强制垃圾回收
+        if memory.percent > config.MAX_MEMORY_USAGE:
+            print(f"🚨 内存使用率危险: {memory.percent:.1f}%，执行垃圾回收...")
+            gc.collect()  # 强制垃圾回收
+            
+        return memory_info
+    except Exception as e:
+        print(f"内存监控失败: {e}")
+        return None
+
+def safe_memory_check_decorator(func):
+    """
+    内存安全检查装饰器
+    在执行内存密集型操作前检查内存使用情况
+    """
+    def wrapper(*args, **kwargs):
+        memory_info = check_memory_usage()
+        if memory_info and memory_info['percentage'] > config.MAX_MEMORY_USAGE:
+            raise Exception(f"内存使用率过高 ({memory_info['percentage']:.1f}%)，停止处理以防止系统崩溃")
+        return func(*args, **kwargs)
+    return wrapper
 
 def upload_to_imgbb(image_path, api_key="7c9e1b2a3f4d5e6f7a8b9c0d1e2f3a4b"):
     """
@@ -61,7 +107,7 @@ def upload_to_imgbb(image_path, api_key="7c9e1b2a3f4d5e6f7a8b9c0d1e2f3a4b"):
         # 上传文件
         with open(image_path, 'rb') as f:
             files = {'file': f}
-            response = requests.post(upload_url, files=files, timeout=30)
+            response = requests.post(upload_url, files=files, timeout=3000)
         
         if response.status_code != 200:
             raise Exception(f"上传请求失败，状态码: {response.status_code}")
@@ -225,34 +271,59 @@ def process_videos_async(task_id, video_files):
         task_status[task_id]['message'] = f'处理失败: {str(e)}'
         task_status[task_id]['error'] = str(e)
 
-# 创建异步事件循环
-async_loop = asyncio.new_event_loop()
+# 改进的异步事件循环管理
+_async_loop = None
+_loop_thread = None
 
-def run_async_task(coro):
-    """在异步事件循环中运行协程"""
-    import concurrent.futures
+def get_or_create_event_loop():
+    """获取或创建事件循环"""
+    global _async_loop, _loop_thread
     
-    def run_in_thread():
-        # 在新线程中创建新的事件循环
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(coro)
-        finally:
-            loop.close()
+    if _async_loop is None or _async_loop.is_closed():
+        print("[INFO] 创建新的事件循环...")
+        _async_loop = asyncio.new_event_loop()
+        
+        # 创建普通线程运行事件循环（非守护线程）
+        def run_loop():
+            try:
+                asyncio.set_event_loop(_async_loop)
+                _async_loop.run_forever()
+            except Exception as e:
+                print(f"[ERROR] 事件循环异常: {e}")
+            finally:
+                print("[INFO] 事件循环已停止")
+        
+        _loop_thread = threading.Thread(target=run_loop, daemon=False)
+        _loop_thread.start()
+        print("[INFO] 事件循环线程已启动")
     
-    # 使用线程池执行异步任务
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(run_in_thread)
-        return future.result()
+    return _async_loop
 
-def start_async_loop():
-    """启动异步事件循环"""
-    asyncio.set_event_loop(async_loop)
-    async_loop.run_forever()
+def cleanup_event_loop():
+    """清理事件循环资源"""
+    global _async_loop, _loop_thread
+    
+    if _async_loop and not _async_loop.is_closed():
+        print("[INFO] 正在清理事件循环...")
+        # 停止事件循环
+        _async_loop.call_soon_threadsafe(_async_loop.stop)
+        
+        # 等待线程结束（最多等待5秒）
+        if _loop_thread and _loop_thread.is_alive():
+            _loop_thread.join(timeout=5)
+            if _loop_thread.is_alive():
+                print("[WARNING] 事件循环线程未能在5秒内结束")
+        
+        # 关闭事件循环
+        if not _async_loop.is_closed():
+            _async_loop.close()
+        
+        _async_loop = None
+        _loop_thread = None
+        print("[INFO] 事件循环清理完成")
 
-# 在单独的线程中启动异步事件循环
-threading.Thread(target=start_async_loop, daemon=True).start()
+# 注册程序退出时的清理函数
+atexit.register(cleanup_event_loop)
 
 # ========================= API 路由 =========================
 
@@ -540,7 +611,7 @@ def extract_key_frames():
         target_key_frames = int(request.form.get('target_frames', 8))  # 默认8个关键帧
         significance_weight = float(request.form.get('significance_weight', 0.6))  # 默认0.6
         quality_weight = float(request.form.get('quality_weight', 0.4))  # 默认0.4
-        max_concurrent = int(request.form.get('max_concurrent', 50))  # 默认最大并发50
+        max_concurrent = int(request.form.get('max_concurrent', config.MAX_CONCURRENT_REQUESTS))  # 使用配置文件中的默认值
         
         # 更新任务状态
         task_status[task_id]['status'] = 'extracting_key_frames'
@@ -672,7 +743,7 @@ def unified_smart_process():
         base_frame_interval = float(request.form.get('interval', 1.0))  # 默认1秒
         significance_weight = float(request.form.get('significance_weight', 0.6))  # 默认0.6
         quality_weight = float(request.form.get('quality_weight', 0.4))  # 默认0.4
-        max_concurrent = int(request.form.get('max_concurrent', 50))  # 默认最大并发50
+        max_concurrent = int(request.form.get('max_concurrent', config.MAX_CONCURRENT_REQUESTS))  # 使用配置文件中的默认值
         
         # 更新任务状态
         task_status[task_id]['status'] = 'unified_processing'
@@ -1243,7 +1314,7 @@ def process_complete_comic():
             'style_prompt': request.form.get('style_prompt'),  # 可选
             'image_size': request.form.get('image_size'),      # 可选
             'story_style': story_style,                        # 故事风格关键词
-            'max_concurrent': int(request.form.get('max_concurrent', 50))
+            'max_concurrent': int(request.form.get('max_concurrent', config.MAX_CONCURRENT_REQUESTS))
         }
         
         print(f"[INFO] 处理参数: {params}")
@@ -1271,6 +1342,11 @@ def process_complete_comic():
         def async_complete_comic_processing():
             """异步执行完整连环画生成"""
             try:
+                # 添加内存检查
+                memory_info = check_memory_usage()
+                if memory_info and memory_info['percentage'] > config.MAX_MEMORY_USAGE:
+                    raise Exception(f"内存使用率过高 ({memory_info['percentage']:.1f}%)，停止处理")
+                
                 # 阶段1: 关键帧提取 (0-30%)
                 task_status[task_id]['stage'] = 'extracting_keyframes'
                 task_status[task_id]['message'] = '正在提取关键帧...'
@@ -1286,6 +1362,9 @@ def process_complete_comic():
                     task_status[task_id]['error'] = keyframes_result["error"]
                     return
                 
+                # 中途内存检查
+                check_memory_usage()
+                
                 # 阶段2: 故事生成 (30-70%)
                 task_status[task_id]['stage'] = 'generating_story'
                 task_status[task_id]['message'] = '正在生成故事...'
@@ -1300,6 +1379,9 @@ def process_complete_comic():
                     task_status[task_id]['message'] = f'故事生成失败: {story_result["error"]}'
                     task_status[task_id]['error'] = story_result["error"]
                     return
+                
+                # 中途内存检查
+                check_memory_usage()
                 
                 # 阶段3: 风格化处理 (70-100%)
                 task_status[task_id]['stage'] = 'stylizing_frames'
@@ -1331,6 +1413,29 @@ def process_complete_comic():
                 
                 print(f"[INFO] 任务 {task_id} 完整连环画生成完成")
                 
+                # 最后执行垃圾回收
+                gc.collect()
+                
+            except MemoryError as e:
+                print(f"[ERROR] 内存不足: {str(e)}")
+                task_status[task_id]['status'] = 'complete_comic_failed'
+                task_status[task_id]['message'] = f'内存不足，无法完成处理: {str(e)}'
+                task_status[task_id]['error'] = f'MemoryError: {str(e)}'
+                # 强制垃圾回收释放内存
+                gc.collect()
+                
+            except ConnectionError as e:
+                print(f"[ERROR] 网络连接错误: {str(e)}")
+                task_status[task_id]['status'] = 'complete_comic_failed'
+                task_status[task_id]['message'] = f'网络连接失败: {str(e)}'
+                task_status[task_id]['error'] = f'ConnectionError: {str(e)}'
+                
+            except TimeoutError as e:
+                print(f"[ERROR] 操作超时: {str(e)}")
+                task_status[task_id]['status'] = 'complete_comic_failed'
+                task_status[task_id]['message'] = f'操作超时: {str(e)}'
+                task_status[task_id]['error'] = f'TimeoutError: {str(e)}'
+                
             except Exception as e:
                 print(f"[ERROR] 完整连环画生成异常: {str(e)}")
                 import traceback
@@ -1339,6 +1444,16 @@ def process_complete_comic():
                 task_status[task_id]['status'] = 'complete_comic_failed'
                 task_status[task_id]['message'] = f'完整连环画生成失败: {str(e)}'
                 task_status[task_id]['error'] = str(e)
+                task_status[task_id]['traceback'] = traceback.format_exc()
+                
+                # 异常时也执行垃圾回收
+                gc.collect()
+            
+            finally:
+                # 确保在任何情况下都记录完成时间
+                if 'completed_time' not in task_status[task_id]:
+                    task_status[task_id]['completed_time'] = datetime.now().strftime('%Y%m%d_%H%M%S')
+                print(f"[INFO] 任务 {task_id} 处理结束，状态: {task_status[task_id].get('status', 'unknown')}")
         
         # 启动异步处理线程
         processing_thread = threading.Thread(target=async_complete_comic_processing)
@@ -1406,7 +1521,9 @@ def extract_keyframes_for_comic(video_path, task_id, video_name, params):
         print(f"[INFO] 提取参数: target_frames={params['target_frames']}, interval={params['frame_interval']}")
         
         # 执行关键帧提取
-        result = run_async_task(
+        # 获取事件循环并运行异步任务
+        loop = get_or_create_event_loop()
+        future = asyncio.run_coroutine_threadsafe(
             extractor.unified_smart_extraction_async(
                 video_path=video_path,
                 target_key_frames=params['target_frames'],
@@ -1414,8 +1531,11 @@ def extract_keyframes_for_comic(video_path, task_id, video_name, params):
                 significance_weight=params['significance_weight'],
                 quality_weight=params['quality_weight'],
                 max_concurrent=params['max_concurrent']
-            )
+            ),
+            loop
         )
+        # 等待异步任务完成并获取结果
+        result = future.result()
         
         print(f"[INFO] 关键帧提取完成，结果: success={result.get('success', False)}")
         
@@ -1552,7 +1672,7 @@ def stylize_single_frame(frame_data, styled_dir, params):
     frame_path = frame_data['path']
     
     try:
-        print(f"[INFO] 并发处理第 {i+1} 个关键帧: {frame_path}")
+        print(f"[INFO] 处理第 {i+1} 个关键帧: {frame_path}")
         filename = os.path.basename(frame_path)
         
         # 检查文件是否存在
@@ -1617,11 +1737,8 @@ def stylize_single_frame(frame_data, styled_dir, params):
         }
 
 def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
-    """为连环画风格化关键帧 - 并发优化版本"""
+    """为连环画风格化关键帧 - 顺序处理版本"""
     try:
-        # 需要导入并发处理模块
-        import concurrent.futures
-        from concurrent.futures import ThreadPoolExecutor
         import time
         
         styled_frames = []
@@ -1651,80 +1768,66 @@ def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
                         key_frame_paths.append(photo_path)
         
         print(f"[INFO] 风格化处理：找到 {len(key_frame_paths)} 个关键帧路径")
-        print(f"[INFO] 使用并发处理，最大并发数：5")
+        print(f"[INFO] 使用顺序处理模式，逐个处理关键帧")
         
         # 创建风格化输出目录
         styled_dir = os.path.join(keyframes_result['output_dir'], 'styled')
         os.makedirs(styled_dir, exist_ok=True)
         
-        # 准备并发处理的帧数据
-        frame_tasks = [
-            {'index': i, 'path': frame_path}
-            for i, frame_path in enumerate(key_frame_paths)
-        ]
-        
         # 记录开始时间
         start_time = time.time()
         
-        # 使用线程池进行并发处理，最大并发数为5
-        max_workers = min(len(key_frame_paths), 5)  # 确保不会超过实际帧数
+        # 顺序处理每个关键帧
+        styled_frames = []
+        successful_frames = 0
         
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            print(f"[INFO] 启动线程池，工作线程数：{max_workers}")
+        for i, frame_path in enumerate(key_frame_paths):
+            print(f"[INFO] 开始处理第 {i+1}/{len(key_frame_paths)} 个关键帧: {frame_path}")
             
-            # 提交所有风格化任务
-            future_to_frame = {
-                executor.submit(stylize_single_frame, frame_data, styled_dir, params): frame_data
-                for frame_data in frame_tasks
-            }
+            # 准备帧数据
+            frame_data = {'index': i, 'path': frame_path}
             
-            # 收集所有结果
-            styled_frames = [None] * len(key_frame_paths)  # 预分配列表，保持顺序
-            completed_count = 0
-            
-            for future in concurrent.futures.as_completed(future_to_frame):
-                frame_data = future_to_frame[future]
-                frame_index = frame_data['index']
+            try:
+                # 调用单帧处理方法
+                result = stylize_single_frame(frame_data, styled_dir, params)
+                styled_frames.append(result)
                 
-                try:
-                    result = future.result(timeout=620)  # 设置620秒超时
-                    styled_frames[frame_index] = result  # 按索引放置，保持原始顺序
-                    completed_count += 1
-                    
-                    # 显示进度
-                    success_status = "成功" if not result['style_failed'] else "失败"
-                    print(f"[INFO] 进度: {completed_count}/{len(key_frame_paths)} - 帧{frame_index} {success_status}")
-                    
-                except concurrent.futures.TimeoutError:
-                    print(f"[ERROR] 帧 {frame_index} 处理超时")
-                    styled_frames[frame_index] = {
-                        'original_path': frame_data['path'],
-                        'styled_path': frame_data['path'],
-                        'styled_filename': os.path.basename(frame_data['path']),
-                        'index': frame_index,
-                        'style_failed': True,
-                        'error': '处理超时'
-                    }
-                    completed_count += 1
-                    
-                except Exception as exc:
-                    print(f"[ERROR] 帧 {frame_index} 处理异常: {exc}")
-                    styled_frames[frame_index] = {
-                        'original_path': frame_data['path'],
-                        'styled_path': frame_data['path'],
-                        'styled_filename': os.path.basename(frame_data['path']),
-                        'index': frame_index,
-                        'style_failed': True,
-                        'error': str(exc)
-                    }
-                    completed_count += 1
+                # 统计成功数量
+                if not result.get('style_failed', False):
+                    successful_frames += 1
+                    success_status = "成功"
+                else:
+                    success_status = "失败"
+                
+                # 显示进度
+                print(f"[INFO] 进度: {i+1}/{len(key_frame_paths)} - 帧{i} {success_status}")
+                
+                # 计算预估剩余时间
+                elapsed_time = time.time() - start_time
+                if i > 0:  # 避免除以0
+                    avg_time_per_frame = elapsed_time / (i + 1)
+                    remaining_frames = len(key_frame_paths) - (i + 1)
+                    estimated_remaining = avg_time_per_frame * remaining_frames
+                    print(f"[INFO] 预计剩余时间: {estimated_remaining:.1f} 秒")
+                
+            except Exception as exc:
+                print(f"[ERROR] 处理帧 {i} 时发生异常: {exc}")
+                # 创建失败结果
+                error_result = {
+                    'original_path': frame_path,
+                    'styled_path': frame_path,
+                    'styled_filename': os.path.basename(frame_path),
+                    'index': i,
+                    'style_failed': True,
+                    'error': str(exc)
+                }
+                styled_frames.append(error_result)
         
         # 统计处理结果
         end_time = time.time()
         processing_time = end_time - start_time
-        successful_frames = len([f for f in styled_frames if f and not f['style_failed']])
         
-        print(f"[INFO] 并发风格化处理完成！")
+        print(f"[INFO] 顺序风格化处理完成！")
         print(f"[INFO] 总处理时间: {processing_time:.2f} 秒")
         print(f"[INFO] 成功处理: {successful_frames}/{len(key_frame_paths)} 个关键帧")
         print(f"[INFO] 平均每帧处理时间: {processing_time/len(key_frame_paths):.2f} 秒")
@@ -1738,7 +1841,7 @@ def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
                 'successful_frames': successful_frames,
                 'failed_frames': len(key_frame_paths) - successful_frames,
                 'processing_time': processing_time,
-                'concurrent_workers': max_workers
+                'processing_mode': 'sequential'
             }
         }
         
@@ -1916,4 +2019,42 @@ def serve_frames(subpath):
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    import socket
+    import sys
+    
+    # 检查端口是否可用的函数
+    def is_port_available(port):
+        """检查指定端口是否可用"""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('0.0.0.0', port))
+                return True
+        except OSError:
+            return False
+    
+    # 寻找可用端口
+    port = 5001
+    max_attempts = 10
+    
+    print(f"[INFO] 正在启动Flask应用...")
+    
+    for attempt in range(max_attempts):
+        if is_port_available(port):
+            print(f"[INFO] 找到可用端口: {port}")
+            break
+        else:
+            print(f"[WARNING] 端口 {port} 被占用，尝试下一个端口...")
+            port += 1
+    else:
+        print(f"[ERROR] 无法找到可用端口 (尝试了 {max_attempts} 个端口)")
+        sys.exit(1)
+    
+    try:
+        print(f"[INFO] 启动Flask服务器，访问地址: http://localhost:{port}")
+        print(f"[INFO] 按 Ctrl+C 停止服务器")
+        app.run(debug=True, host='0.0.0.0', port=port, threaded=True)
+    except KeyboardInterrupt:
+        print(f"\n[INFO] 服务器已停止")
+    except Exception as e:
+        print(f"[ERROR] 启动服务器时发生错误: {e}")
+        sys.exit(1)

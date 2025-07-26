@@ -1,0 +1,195 @@
+{
+  "story_info": {
+    "task_id": "ffb7e813-ad0e-460e-9efc-d293ddb2dca6",
+    "video_name": "20250727_052440_temp_video_28F21982-41DF-4DFB-9D23-A2A26B807221.mp4",
+    "video_path": "uploads\\20250727_052440_temp_video_28F21982-41DF-4DFB-9D23-A2A26B807221.mp4",
+    "processing_time": "2025-07-27T05:29:05.268977",
+    "overall_theme": "告别日常的终点，启程向未知的光明冒险——四个孩子带着纯真与勇气，踏上寻找未来的希望之旅。",
+    "total_narrations": 8,
+    "total_interactive_questions": 5
+  },
+  "final_narrations": [
+    {
+      "frame_index": -1,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0000.jpg",
+      "story_text": "在温柔的山口，四位小小旅人并肩而立，像四颗刚被晨曦吻亮的露珠，第一次把眼睛投向同一朵遥远的云——那一刻，风悄悄为他们织了一条看不见的丝带，把心跳系在一起，叮当作响。"
+    },
+    {
+      "frame_index": 0,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0001.jpg",
+      "story_text": "当第一只脚踏上金色的道路，草地发出轻轻的“沙啦”一声，像童话书翻页；童年的门扉在背后合上，钥匙化作一只蝴蝶，追着他们跑向更辽阔的故事。"
+    },
+    {
+      "frame_index": 1,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0002.jpg",
+      "story_text": "山坡上的小草托住他们的鞋跟，阳光替他们数睫毛；四个小小脑袋轻轻一点，便在彼此的瞳仁里种下星星——从此，无论夜路多长，都有四盏小灯互相照着。"
+    },
+    {
+      "frame_index": 2,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0003.jpg",
+      "story_text": "夕阳把他们的背影烤得暖暖的，像烤好的面包片；影子被拉得长长的，却轻得像蒲公英的伞——那是对世界最温柔的告别，也是对自己最勇敢的说：出发吧，别怕黑，我们自带光。"
+    },
+    {
+      "frame_index": 3,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0004.jpg",
+      "story_text": "金色的麦浪没过脚踝，发出“簌簌”的笑声，像一群小精灵在讲悄悄话；四个孩子把心跳放进同一段旋律里，让风把这首歌送去远方——告诉每座山，每片云，他们正把童年唱成远行。"
+    },
+    {
+      "frame_index": 4,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0005.jpg",
+      "story_text": "没有谁大声宣布，可风已经记下：最小的手悄悄牵起勇气，最稳的肩悄悄扛起责任，最亮的眼睛悄悄收藏远方，最温柔的金色斗篷悄悄替大家收好眼泪——于是，故事悄悄给他们每人发了一颗会发光的身份糖。"
+    },
+    {
+      "frame_index": 5,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0006.jpg",
+      "story_text": "突然，天空撕开一条光的缎带，像仙女遗落的围巾，轻轻落在他们头顶；孩子们屏住呼吸，听见宇宙小声说：“我看见你们啦。”于是，他们小小的胸膛里同时亮起一盏不灭的星灯。"
+    },
+    {
+      "frame_index": 6,
+      "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0007.jpg",
+      "story_text": "影子被夕阳缝进大地，像四条通往不同王国的丝带；他们肩并肩，像一串被阳光穿起的彩色玻璃珠，每一步都叮铃作响——故事在这里轻轻合上封面，却把“无限可能”四个字偷偷夹进他们的口袋。"
+    }
+  ],
+  "interactive_questions": [
+    {
+      "id": 1,
+      "type": "memory_recall",
+      "question": "这个故事中哪个画面给你留下了最深的印象？",
+      "intent": "引导用户回忆深刻画面"
+    },
+    {
+      "id": 2,
+      "type": "emotional_reflection",
+      "question": "观看这个故事时，你的心情发生了怎样的变化？",
+      "intent": "探索情感变化过程"
+    },
+    {
+      "id": 3,
+      "type": "personal_connection",
+      "question": "这个故事让你想起了自己的哪些经历？",
+      "intent": "建立个人连接"
+    },
+    {
+      "id": 4,
+      "type": "theme_thinking",
+      "question": "关于'告别日常的终点，启程向未知的光明冒险——四个孩子带着纯真与勇气，踏上寻找未来的希望之旅。'这个主题，你有什么新的思考？",
+      "intent": "深化主题理解"
+    },
+    {
+      "id": 5,
+      "type": "detail_observation",
+      "question": "在故事的细节中，你发现了什么特别有意思的地方？",
+      "intent": "关注故事细节"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": -1,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0000.jpg",
+        "story_text": "召唤：在山口定格，四人初次齐望远方，旅程的曙光初现。"
+      },
+      {
+        "frame_index": 0,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0001.jpg",
+        "story_text": "跨出门槛：踏上开阔大道，队伍从静止转向行进，旅途正式开始。"
+      },
+      {
+        "frame_index": 1,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0002.jpg",
+        "story_text": "团队凝聚：山坡上的短暂驻足，确认彼此信任与共同目标。"
+      },
+      {
+        "frame_index": 2,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0003.jpg",
+        "story_text": "誓言：背对夕阳，四人以坚定的背影宣告无畏前行的决心。"
+      },
+      {
+        "frame_index": 3,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0004.jpg",
+        "story_text": "渐入纵深：穿越金色田野，旅途的宁静与诗意并存。"
+      },
+      {
+        "frame_index": 4,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0005.jpg",
+        "story_text": "角色分化：领导者、守护者、思考者与光之使者的身份在步伐中悄然确立。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0006.jpg",
+        "story_text": "天启：穿透云层的光束照临，仿佛命运对这场旅程的神圣背书。"
+      },
+      {
+        "frame_index": 6,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0007.jpg",
+        "story_text": "远景终章：长影延伸向地平线，故事收束于无限可能的开放未来。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": -1,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0000.jpg",
+        "story_text": "当四双眼第一次同时望向同一条地平线，心脏像被悄悄系上同一根看不见的线——既轻得像羽毛，又沉得像命运。"
+      },
+      {
+        "frame_index": 0,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0001.jpg",
+        "story_text": "第一步落地的瞬间，鞋底把童年的尘埃扬进风里——他们听见心里某扇门“咔哒”一声锁上，钥匙被丢向身后的群山。"
+      },
+      {
+        "frame_index": 1,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0002.jpg",
+        "story_text": "在草坡上短暂停驻，目光交换的分秒里，他们彼此的呼吸像四股细流汇成一条暗河——里面藏着尚未命名的恐惧，也有尚未兑现的誓言。"
+      },
+      {
+        "frame_index": 2,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0003.jpg",
+        "story_text": "背对晚霞的影子被拉得比一生还长，却轻盈得能托起整个世界的暮色——那一刻，他们第一次同时相信：长大不是失去光，而是把自己点燃。"
+      },
+      {
+        "frame_index": 3,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0004.jpg",
+        "story_text": "金色麦浪没过脚踝的刹那，四个心跳渐渐踩出同一种节奏——像同一首歌的四部和声，把田野唱成了会呼吸的地图。"
+      },
+      {
+        "frame_index": 4,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0005.jpg",
+        "story_text": "谁在沉默里握紧了方向，谁在回望里藏起了牵挂，谁在背包的重量里学会了担当，谁在光里把脆弱磨成锋刃——身份无声地落定，像夕阳在他们肩背烙下的纹章。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0006.jpg",
+        "story_text": "当神迹一样的天光劈开云层，他们同时屏住呼吸——那不是敬畏，而是一种被看见的战栗：原来渺小的我们，也配被宇宙点名。"
+      },
+      {
+        "frame_index": 6,
+        "frame_path": "frames\\ffb7e813-ad0e-460e-9efc-d293ddb2dca6_1753565083\\base_frame_0007.jpg",
+        "story_text": "影子被夕阳投进无限远的地方，像四条不肯回头的河——他们并肩，却各怀轰鸣；脚下是同一条路，心里却各自长出不同的远方。"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-27T05:25:01.943372",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 38.79502034187317,
+    "soul_writer_time": 88.48985552787781,
+    "master_editor_time": 215.01842331886292,
+    "interactive_completed": true,
+    "interactive_time": 243.32639980316162,
+    "end_time": "2025-07-27T05:29:05.268977",
+    "total_time": 243.32639980316162,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-27T05:29:05.268977"
+  }
+}
