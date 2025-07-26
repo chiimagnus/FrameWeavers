@@ -7,7 +7,7 @@ struct NetworkConfig {
         #if targetEnvironment(simulator)
         return "http://127.0.0.1:5001"
         #else
-        return "https://video-api.zeabur.app"
+        return "https://e8065295b2fd.ngrok-free.app"
         #endif
     }()
 
