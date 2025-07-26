@@ -45,7 +45,7 @@ struct OpenResultsView: View {
                             .frame(width: 250, height: 44)
                         
                         Text("翻开画册")
-                            .font(.custom("STKaiti", size: 24))
+                            .font(.custom("WSQuanXing", size: 24))
                             .fontWeight(.bold)
                             .foregroundColor(Color(hex: "#855C23"))
                     }
