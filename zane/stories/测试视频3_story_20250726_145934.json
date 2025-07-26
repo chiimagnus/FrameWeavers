@@ -1,0 +1,220 @@
+{
+  "story_info": {
+    "task_id": "d9a89ae5-e869-4137-bbcd-f743650fee71",
+    "video_name": "测试视频3.mp4",
+    "video_path": "测试视频3.mp4",
+    "processing_time": "2025-07-26T14:59:34.935542",
+    "overall_theme": "一趟从城市喧嚣到内心归处的旅程：在移动与停留、人群与孤独之间，捕捉那些短暂却足以点亮生命的温柔相遇与微小确幸。",
+    "total_narrations": 12
+  },
+  "final_narrations": [
+    {
+      "frame_index": 0,
+      "frame_path": "quick_start_frames\\base_frame_0002.jpg",
+      "story_text": "列车划破晨雾，她捂不住的笑意在车厢里发芽——那是所有远行故事里，第一粒偷偷生根的心跳。"
+    },
+    {
+      "frame_index": 1,
+      "frame_path": "quick_start_frames\\base_frame_0003.jpg",
+      "story_text": "念珠轻碰方向盘，像老船长数浪——在这座永不停泊的城市，他用一颗一颗木纹经文替每位乘客稳住暗涌。"
+    },
+    {
+      "frame_index": 2,
+      "frame_path": "quick_start_frames\\base_frame_0005.jpg",
+      "story_text": "露台的阳光把两只狗折成一面镜子：金毛的松弛是旅人想抵达的自由，白犬的拘谨却是他放不下的牵挂。"
+    },
+    {
+      "frame_index": 3,
+      "frame_path": "quick_start_frames\\base_frame_0006.jpg",
+      "story_text": "大巴的引擎尚未冷却，玫瑰已把离别染成粉色——他们交换花束，像交换彼此余生里不会褪色的章节。"
+    },
+    {
+      "frame_index": 4,
+      "frame_path": "quick_start_frames\\base_frame_0008.jpg",
+      "story_text": "藤蔓替她写下绿色的序言，向日葵低头的瞬间，她把尚未命名的思念折进报纸，让阳光替自己开口。"
+    },
+    {
+      "frame_index": 5,
+      "frame_path": "quick_start_frames\\base_frame_0011.jpg",
+      "story_text": "烤盘吱啦作响，像岁月在替他们配乐——当镜头对准焦黄与翠绿，烟火替时间按下暂停，把此刻的欢笑腌进味觉的琥珀。"
+    },
+    {
+      "frame_index": 6,
+      "frame_path": "quick_start_frames\\base_frame_0017.jpg",
+      "story_text": "城楼以金漆点燃夜色，像历史突然掀开的瞳孔；每个仰望的人都在那束光里，看见自己渺小却倔强的倒影。"
+    },
+    {
+      "frame_index": 7,
+      "frame_path": "quick_start_frames\\base_frame_0021.jpg",
+      "story_text": "洞穴幽暗如时间子宫，金佛端坐其间；她屏住呼吸，怕一眨眼，千年的沉默会轰然倒塌在她柔软的心壁上。"
+    },
+    {
+      "frame_index": 8,
+      "frame_path": "quick_start_frames\\base_frame_0023.jpg",
+      "story_text": "佛像的慈悲与背影的紧绷构成一声听不见的叹息——当金光落在肩头，他终于学会把仰望的光折回心里。"
+    },
+    {
+      "frame_index": 9,
+      "frame_path": "quick_start_frames\\base_frame_0026.jpg",
+      "story_text": "古街灯笼把两人的影子缝成一条河，他们不言语，只用同步的步点告诉对方：慢一点，让此刻的涟漪荡得更远。"
+    },
+    {
+      "frame_index": 10,
+      "frame_path": "quick_start_frames\\base_frame_0043.jpg",
+      "story_text": "雨丝落在白纱上，像灰墨替誓言加一行脚注——浪漫从未要求晴空，它只要求有人记得雨停后那第一束追光。"
+    },
+    {
+      "frame_index": 11,
+      "frame_path": "quick_start_frames\\base_frame_0046.jpg",
+      "story_text": "她朝湖面比出一颗心，海鸥剪开风的边缘，让整片天空的光漏进来——旅程在此刻盖章：所有缝隙，皆为光而来。"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": 0,
+        "frame_path": "quick_start_frames\\base_frame_0002.jpg",
+        "story_text": "启程：高速列车载着她驶向未知，车厢里的一瞬失笑成为整段旅程的情绪基调——轻快、期待、对远方毫无防备的信任。"
+      },
+      {
+        "frame_index": 1,
+        "frame_path": "quick_start_frames\\base_frame_0003.jpg",
+        "story_text": "城市脉搏：出租车的狭小空间浓缩了都市日常，老司机的从容微笑暗示——无论多匆忙，总有人以笃定节奏替你稳住方向。"
+      },
+      {
+        "frame_index": 2,
+        "frame_path": "quick_start_frames\\base_frame_0005.jpg",
+        "story_text": "途中休憩：露台上的两只狗以截然不同的神态呈现“自在”与“牵挂”，映照旅人内心既想漫游又渴望安放的矛盾。"
+      },
+      {
+        "frame_index": 3,
+        "frame_path": "quick_start_frames\\base_frame_0006.jpg",
+        "story_text": "欢聚节点：大巴旁的青春重逢用鲜花与笑声定格——旅程的中转站，也是人与人之间能量交换的高潮。"
+      },
+      {
+        "frame_index": 4,
+        "frame_path": "quick_start_frames\\base_frame_0008.jpg",
+        "story_text": "独处定格：白墙与藤蔓前，向日葵成为她把远方阳光随身携带的宣言——在陌生城市给自己一束光的仪式感。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "quick_start_frames\\base_frame_0011.jpg",
+        "story_text": "味觉记忆：一桌丰盛拼盘与共享手机照片的伙伴们，把旅途的感官体验升华为“此刻我们在一起”的烟火证据。"
+      },
+      {
+        "frame_index": 6,
+        "frame_path": "quick_start_frames\\base_frame_0017.jpg",
+        "story_text": "夜色地标：辉煌城楼以庄严姿态宣告“抵达”，人潮光影交错，提示旅人——宏大历史与个体脚步在此刻交汇。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "quick_start_frames\\base_frame_0021.jpg",
+        "story_text": "文化深潜：博物馆洞穴中的金佛与专注目光，让外部旅程转为向内凝视——对信仰与时间的静默对话。"
+      },
+      {
+        "frame_index": 8,
+        "frame_path": "quick_start_frames\\base_frame_0023.jpg",
+        "story_text": "心灵倒影：金色佛像与观众背影构成“看”与“被看”的循环——旅人开始将外境之光折射回自己内心。"
+      },
+      {
+        "frame_index": 9,
+        "frame_path": "quick_start_frames\\base_frame_0026.jpg",
+        "story_text": "并肩夜行：古街灯笼下两人的背影，把旅程从“我”扩展成“我们”——共享夜色，也共享一段无法复制的步伐节奏。"
+      },
+      {
+        "frame_index": 10,
+        "frame_path": "quick_start_frames\\base_frame_0043.jpg",
+        "story_text": "情感镜像：灰调湖边的雨中婚纱照，将甜蜜与忧伤并置——提醒旅人，所有相遇终要直面时间与别离的重量。"
+      },
+      {
+        "frame_index": 11,
+        "frame_path": "quick_start_frames\\base_frame_0046.jpg",
+        "story_text": "旅程句号：晴空下的比心女孩与手写“毛充缝中的那抹光”，把琐碎日常提炼为诗——终点处，世界以微小缝隙的光亮回应旅人的全部期待。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": 0,
+        "frame_path": "quick_start_frames\\base_frame_0002.jpg",
+        "story_text": "她捂嘴偷笑—那笑意像窗外一闪而逝的电线杆，在尚未抵达的未来里留下第一道心跳的印记。"
+      },
+      {
+        "frame_index": 1,
+        "frame_path": "quick_start_frames\\base_frame_0003.jpg",
+        "story_text": "念珠在方向盘上微微晃动，像他数十年不动的职业信仰：把每位乘客的急迫与自己的心跳隔进同一段安稳节拍。"
+      },
+      {
+        "frame_index": 2,
+        "frame_path": "quick_start_frames\\base_frame_0005.jpg",
+        "story_text": "金毛的松弛与白犬的拘谨互为倒影，旅人看到的其实是自己——既渴望被牵引，又害怕被束缚。"
+      },
+      {
+        "frame_index": 3,
+        "frame_path": "quick_start_frames\\base_frame_0006.jpg",
+        "story_text": "玫瑰与雨伞在风里交换颜色，那一刻他们同时明白：拥抱的短暂足以抵挡下一次分别的漫长。"
+      },
+      {
+        "frame_index": 4,
+        "frame_path": "quick_start_frames\\base_frame_0008.jpg",
+        "story_text": "她把向日葵贴在胸口，像把未说出口的思念折进报纸——当花低头时，故事刚好开始。"
+      },
+      {
+        "frame_index": 5,
+        "frame_path": "quick_start_frames\\base_frame_0011.jpg",
+        "story_text": "烤盘滋滋作响的瞬间，所有人的手机镜头同时举起——他们想用味觉证明，此刻的欢笑不会被时间偷走。"
+      },
+      {
+        "frame_index": 6,
+        "frame_path": "quick_start_frames\\base_frame_0017.jpg",
+        "story_text": "城楼的光把夜色撕开一道裂缝，每一个仰望的人都在那裂缝里看见自己渺小却倔强的影子。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "quick_start_frames\\base_frame_0021.jpg",
+        "story_text": "金光映在瞳孔深处，她屏住呼吸——仿佛一眨眼，千年的沉默就会轰然倒塌在她心上。"
+      },
+      {
+        "frame_index": 8,
+        "frame_path": "quick_start_frames\\base_frame_0023.jpg",
+        "story_text": "佛像的平静与背影的紧绷形成一声听不见的叹息：当信仰凝视你时，你终于学会凝视自己。"
+      },
+      {
+        "frame_index": 9,
+        "frame_path": "quick_start_frames\\base_frame_0026.jpg",
+        "story_text": "灯笼的光把两人的影子缝在一起，他们不说话，只用步伐交换同一频率的安心：慢一点，让此刻更长。"
+      },
+      {
+        "frame_index": 10,
+        "frame_path": "quick_start_frames\\base_frame_0043.jpg",
+        "story_text": "灰雨落在白纱上，像替他们写下誓言的注脚：浪漫从来不怕阴云，只怕没人记得雨停后的第一缕光。"
+      },
+      {
+        "frame_index": 11,
+        "frame_path": "quick_start_frames\\base_frame_0046.jpg",
+        "story_text": "她对着湖比划的心形，被海鸥剪出一道缺口——恰好让整片天空的光漏进来，为旅途盖上最明亮的印章。"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-26T14:56:46.870244",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 59.65383219718933,
+    "soul_writer_time": 111.54978561401367,
+    "master_editor_time": 168.06529784202576,
+    "end_time": "2025-07-26T14:59:34.935542",
+    "total_time": 168.06529784202576,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-26T14:59:34.935542"
+  }
+}
