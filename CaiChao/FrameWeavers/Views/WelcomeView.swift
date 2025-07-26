@@ -47,7 +47,7 @@ struct WelcomeView: View {
                         .frame(width: 250, height: 44)
                     
                     Text("开启一段故事织造")
-                        .font(.custom("Kaiti SC", size: 24))
+                        .font(.custom("万事全兴体", size: 24))
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))
                 }
