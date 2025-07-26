@@ -117,10 +117,9 @@ struct FilmstripFrameView: View {
                     }
                     .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
                 } else if baseFrame == nil {
-                    // 只有在没有基础帧数据时才显示本地图片
-                    Image(imageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                    // 当没有基础帧数据时，显示空白而不是本地图片
+                    Rectangle()
+                        .fill(Color.clear)
                         .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
                 } else {
                     // 有基础帧数据但URL无效时显示错误状态

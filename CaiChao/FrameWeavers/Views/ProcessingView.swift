@@ -76,8 +76,8 @@ struct ProcessingView: View {
             }
         }
         .onReceive(jumpTimer) { _ in
-            // 在所有等待状态下都播放跳跃动画
-            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
+            // 只有在有基础帧数据时才播放跳跃动画
+            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed && !viewModel.baseFrames.isEmpty {
                 withAnimation(.easeInOut(duration: 1.2)) {
                     galleryViewModel.triggerJumpAnimation(from: frames)
                 }
@@ -90,7 +90,7 @@ struct ProcessingView: View {
         }
         .onChange(of: viewModel.uploadStatus) { _, newStatus in
             if newStatus == .completed {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
                     navigateToResults = true
                 }
             }
