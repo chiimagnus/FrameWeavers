@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct WelcomeView: View {
     @Binding var selectedItems: [PhotosPickerItem]
