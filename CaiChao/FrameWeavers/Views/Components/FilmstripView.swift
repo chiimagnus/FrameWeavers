@@ -3,10 +3,20 @@ import SwiftUI
 /// 胶片条视图组件
 struct FilmstripView: View {
     @ObservedObject var galleryViewModel: ProcessingGalleryViewModel
+    @ObservedObject var uploadViewModel: VideoUploadViewModel
     let namespace: Namespace.ID
     
+    // 用于持续滚动的偏移量
+    @State private var scrollOffset: CGFloat = 0
+    @State private var isScrolling = false
+    
+    // 滚动速度（每秒移动的像素）
+    private let scrollSpeed: CGFloat = 50
+    
     var body: some View {
-        ScrollViewReader { proxy in
+        GeometryReader { geometry in
+            let singleLoopWidth = CGFloat(galleryViewModel.imageNames.count) * 130.0
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(galleryViewModel.loopedImageNames.indices, id: \.self) { index in
@@ -14,30 +24,41 @@ struct FilmstripView: View {
                         FilmstripFrameView(
                             imageName: imageName,
                             isHidden: galleryViewModel.hideSourceImageId == imageName,
-                            namespace: namespace
+                            namespace: namespace,
+                            isSource: false // 显式设置为 false
                         )
                         .id(index)
-                        .anchorPreference(key: FramePreferenceKey.self, value: .bounds) { anchor in
-                            return [imageName: CGRect.zero] // 简化处理，实际项目中可以计算真实frame
-                        }
+                        .background(
+                            GeometryReader { frameGeometry in
+                                Color.clear
+                                    .preference(key: FramePreferenceKey.self, value: [
+                                        imageName: frameGeometry.frame(in: .global)
+                                    ])
+                            }
+                        )
                     }
                 }
                 .padding(.horizontal)
+                .offset(x: -scrollOffset)
             }
             .frame(height: 100)
             .background(Color.black.opacity(0.8))
             .overlay(sprocketHoles)
-            .onChange(of: galleryViewModel.currentScrollIndex) { newIndex in
-                withAnimation(.easeInOut(duration: 3.0)) {
-                    proxy.scrollTo(newIndex, anchor: .center)
+            .onAppear {
+                withAnimation(.linear(duration: 10).repeatForever(autoreverses: false)) {
+                    scrollOffset = singleLoopWidth
                 }
-                // 无限循环逻辑
-                if newIndex >= galleryViewModel.loopedImageNames.count - 8 {
-                    galleryViewModel.currentScrollIndex = 8
-                    proxy.scrollTo(galleryViewModel.currentScrollIndex, anchor: .center)
+            }
+            .onChange(of: uploadViewModel.uploadStatus) { _, newStatus in
+                if newStatus == .completed || newStatus == .failed {
+                    // 停止动画
+                    withAnimation(.linear(duration: 0)) {
+                        scrollOffset = scrollOffset
+                    }
                 }
             }
         }
+        .frame(height: 100)
     }
     
     /// 胶片齿孔装饰
@@ -65,6 +86,7 @@ struct FilmstripFrameView: View {
     let imageName: String
     let isHidden: Bool
     let namespace: Namespace.ID
+    let isSource: Bool
     
     var body: some View {
         ZStack {
@@ -72,7 +94,7 @@ struct FilmstripFrameView: View {
                 Image(imageName)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .matchedGeometryEffect(id: imageName, in: namespace, isSource: true)
+                    .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
             } else {
                 Rectangle().fill(.clear)
             }

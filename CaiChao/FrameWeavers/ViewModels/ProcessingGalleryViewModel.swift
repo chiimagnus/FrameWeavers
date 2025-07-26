@@ -7,8 +7,9 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var flyingImageInfo: FlyingImageInfo?
     @Published var hideSourceImageId: String?
     @Published var currentScrollIndex: Int = 0
-    
-    private let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
+    @Published var stackedImages: [String] = [] // 已堆叠的图片列表
+
+    let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
     
     var loopedImageNames: [String] {
         imageNames + imageNames + imageNames
@@ -21,16 +22,23 @@ class ProcessingGalleryViewModel: ObservableObject {
     /// 触发一次图片跳跃动画
     func triggerJumpAnimation(from frames: [String: CGRect]) {
         guard let centerImageId = findCenterImageId(from: frames),
-              let targetFrame = frames["photoStackTarget"] else { return }
-        
-        if centerImageId == mainImageName { return }
-        
+              frames["photoStackTarget"] != nil else { return }
+
+        // 如果图片已经在堆叠中，跳过
+        if centerImageId == mainImageName || stackedImages.contains(centerImageId) { return }
+
         guard let sourceFrame = frames[centerImageId] else { return }
-        
+
         self.flyingImageInfo = FlyingImageInfo(id: centerImageId, sourceFrame: sourceFrame)
         self.hideSourceImageId = centerImageId
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            // 将当前主图片添加到堆叠中（如果不为空且不在堆叠中）
+            if !self.mainImageName.isEmpty && !self.stackedImages.contains(self.mainImageName) {
+                self.stackedImages.append(self.mainImageName)
+            }
+
+            // 设置新的主图片
             self.mainImageName = centerImageId
             self.flyingImageInfo = nil
             self.hideSourceImageId = nil
@@ -42,8 +50,12 @@ class ProcessingGalleryViewModel: ObservableObject {
         let screenCenter = UIScreen.main.bounds.midX
         var closestImageId: String?
         var minDistance = CGFloat.infinity
-        
-        for (id, frame) in frames where imageNames.contains(id) {
+
+        // 过滤出有效的图片frame，并找到最接近屏幕中心的
+        for (id, frame) in frames {
+            // 确保frame不为零且图片名在列表中
+            guard imageNames.contains(id), frame != .zero else { continue }
+
             let distance = abs(frame.midX - screenCenter)
             if distance < minDistance {
                 minDistance = distance
