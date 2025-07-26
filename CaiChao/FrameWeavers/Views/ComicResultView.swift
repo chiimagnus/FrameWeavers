@@ -338,85 +338,46 @@ extension Notification.Name {
     static let comicPagePrevious = Notification.Name("comicPagePrevious")
 }
 
-// 单独的漫画页面视图组件 - 支持横竖屏自适应布局
+// 单独的漫画页面视图组件 - 竖屏布局
 struct ComicPanelView: View {
     let panel: ComicPanel
     let geometry: GeometryProxy
     let pageIndex: Int
     let totalPages: Int
 
-    // 判断是否为横屏
-    private var isLandscape: Bool {
-        geometry.size.width > geometry.size.height
-    }
-
     var body: some View {
-        if isLandscape {
-            // 横屏布局：图片在左，文本在右，页码在中间底部
-            HStack(spacing: 0) {
-                // 左侧图片区域 - 占据50%宽度
-                VStack {
-                    Image(panel.imageUrl)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.clear)
-                        .cornerRadius(12)
-                        .padding(20)
-                }
-                .frame(width: geometry.size.width * 0.5)
-                
-                // 右侧文本区域 - 占据50%宽度
-                VStack(spacing: 0) {
-                    textContent
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
-                    // 横屏页码显示在底部中央
-                    Text("· \(pageIndex + 1) ·")
-                        .font(.title3.bold())
-                        .foregroundColor(.primary)
-                        .padding(8)
-                        .background(Color.clear)
-                        .cornerRadius(8)
-                        .padding(.bottom, 20)
-                }
-                .frame(width: geometry.size.width * 0.5)
+        // 竖屏布局：图片在上，文本在下，页码在底部
+        VStack(spacing: 0) {
+            // 上方图片区域 - 占据50%高度
+            VStack {
+                Image(panel.imageUrl)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.clear)
+                    .cornerRadius(12)
+                    .padding(20)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            // 竖屏布局：图片在上，文本在下，页码在底部
+            .frame(height: geometry.size.height * 0.5)
+
+            // 下方文本区域 - 占据50%高度
             VStack(spacing: 0) {
-                // 上方图片区域 - 占据50%高度
-                VStack {
-                    Image(panel.imageUrl)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.clear)
-                        .cornerRadius(12)
-                        .padding(20)
-                }
-                .frame(height: geometry.size.height * 0.5)
-                
-                // 下方文本区域 - 占据50%高度
-                VStack(spacing: 0) {
-                    textContent
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
-                    // 底部页码
-                    Text("· \(pageIndex + 1) ·")
-                        .font(.title3.bold())
-                        .foregroundColor(.primary)
-                        .padding(8)
-                        .background(Color.clear)
-                        .cornerRadius(8)
-                        .padding(.bottom, 20)
-                }
-                .frame(height: geometry.size.height * 0.5)
+                textContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                // 底部页码
+                Text("· \(pageIndex + 1) ·")
+                    .font(.title3.bold())
+                    .foregroundColor(.primary)
+                    .padding(8)
+                    .background(Color.clear)
+                    .cornerRadius(8)
+                    .padding(.bottom, 20)
             }
-            .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(height: geometry.size.height * 0.5)
         }
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // 文本内容组件
@@ -426,10 +387,10 @@ struct ComicPanelView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("故事叙述")
-                            .font(isLandscape ? .title2.bold() : .title3.bold())
-                        
+                            .font(.title3.bold())
+
                         Text(narration)
-                            .font(isLandscape ? .title3 : .body)
+                            .font(.body)
                             .lineSpacing(8)
                     }
                     .padding()
@@ -445,7 +406,7 @@ struct ComicPanelView: View {
                         .foregroundColor(.gray.opacity(0.5))
                     Text("暂无文本描述")
                         .foregroundColor(.gray.opacity(0.5))
-                        .font(isLandscape ? .title3 : .body)
+                        .font(.body)
                 }
                 .background(Color.clear)
                 .cornerRadius(12)
@@ -460,102 +421,49 @@ struct QuestionsView: View {
     let geometry: GeometryProxy
     let pageIndex: Int
     let totalPages: Int
-    
-    // 判断是否为横屏
-    private var isLandscape: Bool {
-        geometry.size.width > geometry.size.height
-    }
-    
+
     var body: some View {
-        if isLandscape {
-            // 横屏布局
-            landscapeLayout
-        } else {
-            // 竖屏布局：页码在底部
-            VStack(spacing: 0) {
-                Spacer()
-                
-                VStack(spacing: 30) {
-                    Text("互动问题")
-                        .font(.largeTitle.bold())
-                        .foregroundColor(.primary)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        ForEach(questions, id: \.self) { question in
-                            HStack(alignment: .top, spacing: 12) {
-                                TypewriterView(
-                                    text: question,
-                                    typeSpeed: 0.10,
-                                    showCursor: false
-                                )
-                            }
-                            .padding()
-                            .background(Color.clear)
-                            .cornerRadius(12)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
-                .frame(maxWidth: geometry.size.width * 0.9)
-                
-                Spacer()
-                
-                // 底部页码
-                Text("· 完 ·")
-                    .font(.title2.bold())
-                    .foregroundColor(.primary)
-                    .padding(8)
-                    .background(Color.clear)
-                    .cornerRadius(8)
-                    .padding(.bottom, 20)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-    
-    // 横屏布局
-    private var landscapeLayout: some View {
-        HStack {
+        // 竖屏布局：页码在底部
+        VStack(spacing: 0) {
             Spacer()
-            
+
             VStack(spacing: 30) {
-                // 页码显示
-                Text("· 完 ·")
-                    .font(.title2.bold())
+                Text("互动问题")
+                    .font(.largeTitle.bold())
                     .foregroundColor(.primary)
-                    .padding(.top, 20)
-                
-                VStack(spacing: 30) {
-                    Text("互动问题")
-                        .font(.largeTitle.bold())
-                        .foregroundColor(.primary)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        ForEach(questions, id: \.self) { question in
-                            HStack(alignment: .top, spacing: 12) {
-                                TypewriterView(
-                                    text: question,
-                                    typeSpeed: 0.10,
-                                    showCursor: false
-                                )
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .lineSpacing(4)
-                            }
-                            .padding()
-                            .background(Color.clear)
-                            .cornerRadius(12)
+
+                VStack(alignment: .leading, spacing: 20) {
+                    ForEach(questions, id: \.self) { question in
+                        HStack(alignment: .top, spacing: 12) {
+                            TypewriterView(
+                                text: question,
+                                typeSpeed: 0.10,
+                                showCursor: false
+                            )
                         }
+                        .padding()
+                        .background(Color.clear)
+                        .cornerRadius(12)
                     }
-                    .padding(.horizontal, 20)
                 }
-                .frame(maxWidth: geometry.size.width * 0.7)
-                
-                Spacer()
+                .padding(.horizontal, 20)
             }
+            .frame(maxWidth: geometry.size.width * 0.9)
+
             Spacer()
+
+            // 底部页码
+            Text("· 完 ·")
+                .font(.title2.bold())
+                .foregroundColor(.primary)
+                .padding(8)
+                .background(Color.clear)
+                .cornerRadius(8)
+                .padding(.bottom, 20)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+
 }
 
 // MARK: - Preview Data
@@ -594,38 +502,10 @@ struct ComicResultView_Previews: PreviewProvider {
             ))
             .previewDisplayName("竖屏预览")
             .previewDevice("iPhone 14")
-            
-            // 横屏预览
-            ComicResultView(comicResult: ComicResult(
-                comicId: "preview-002",
-                deviceId: "preview-device",
-                originalVideoTitle: "预览视频",
-                creationDate: "2025-07-26",
-                panelCount: 2,
-                panels: [
-                    ComicPanel(
-                        panelNumber: 1,
-                        imageUrl: "Image1",
-                        narration: "小红在花园里发现了一朵神奇的花，这朵花会随着她的心情变化颜色。"
-                    ),
-                    ComicPanel(
-                        panelNumber: 2,
-                        imageUrl: "Image2",
-                        narration: "当她开心时，花朵绽放出金黄色的光芒；当她难过时，花朵变成了深蓝色。小红意识到，这朵花是她内心世界的镜子。"
-                    )
-                ],
-                finalQuestions: [
-                    "如果你有一朵能反映心情的花，你会用它来做什么？",
-                    "这个故事中的花朵象征着什么？"
-                ]
-            ))
-            .previewDisplayName("横屏预览")
-            .previewDevice("iPad Air (5th generation)")
-            .previewInterfaceOrientation(.landscapeLeft)
-            
+
             // 无问题页面预览
             ComicResultView(comicResult: ComicResult(
-                comicId: "preview-003",
+                comicId: "preview-002",
                 deviceId: "preview-device",
                 originalVideoTitle: "简单故事",
                 creationDate: "2025-07-26",
