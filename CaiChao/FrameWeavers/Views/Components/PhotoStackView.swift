@@ -5,57 +5,49 @@ struct PhotoStackView: View {
     let mainImageName: String
     let stackedImages: [String]
     let namespace: Namespace.ID
-
+    
+    private let cardSize = CGSize(width: 300, height: 200)
+    private let cornerRadius: CGFloat = 8
+    
     var body: some View {
         ZStack {
             // 堆叠的背景图片
             ForEach(stackedImages.indices, id: \.self) { index in
-                let imageName = stackedImages[index]
-                let offset = CGFloat(index) * 3
-                let rotation = Double.random(in: -8...8)
-
-                ZStack {
-                    Image(imageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                }
-                .frame(width: 300, height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .background(
-                    RoundedRectangle(cornerRadius: 8).fill(.white)
-                )
-                .shadow(color: .black.opacity(0.1), radius: 5, y: 2)
-                .rotationEffect(.degrees(rotation))
-                .offset(x: offset, y: -offset)
-                .zIndex(Double(index))
+                let offset = CGFloat(index) * 4
+                let rotation = Double((index * 7) % 15 - 7)
+                
+                cardView(imageName: stackedImages[index])
+                    .rotationEffect(.degrees(rotation))
+                    .offset(x: offset, y: -offset * 0.8)
+                    .zIndex(Double(index))
             }
-
+            
             // 主图卡片
-            ZStack {
-                if !mainImageName.isEmpty {
-                    Image(mainImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .matchedGeometryEffect(id: mainImageName, in: namespace)
-                }
+            if !mainImageName.isEmpty {
+                cardView(imageName: mainImageName)
+                    .matchedGeometryEffect(id: mainImageName, in: namespace)
+                    .rotationEffect(.degrees(1))
+                    .zIndex(Double(stackedImages.count + 1))
             }
-            .frame(width: 300, height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .background(
-                RoundedRectangle(cornerRadius: 8).fill(.white)
-            )
-            .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
-            .rotationEffect(.degrees(1))
-            .zIndex(Double(stackedImages.count + 1))
-
-            // 胶带
-            Rectangle()
-                .fill(Color.white.opacity(0.4))
-                .frame(width: 100, height: 25)
-                .rotationEffect(.degrees(-4))
-                .offset(y: -110)
-                .zIndex(Double(stackedImages.count + 2))
         }
         .frame(height: 250)
+    }
+    
+    @ViewBuilder
+    private func cardView(imageName: String) -> some View {
+        Image(imageName)
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(width: cardSize.width, height: cardSize.height)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(.white)
+            )
+            .shadow(
+                color: .black.opacity(imageName == mainImageName ? 0.2 : 0.15),
+                radius: imageName == mainImageName ? 10 : 8,
+                y: imageName == mainImageName ? 5 : 3
+            )
     }
 }

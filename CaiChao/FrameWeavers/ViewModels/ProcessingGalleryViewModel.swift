@@ -6,10 +6,10 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var mainImageName: String = "Image1"
     @Published var flyingImageInfo: FlyingImageInfo?
     @Published var hideSourceImageId: String?
-    @Published var currentScrollIndex: Int = 0
+    // 移除currentScrollIndex，现在使用持续滚动
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
 
-    private let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
+    let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
     
     var loopedImageNames: [String] {
         imageNames + imageNames + imageNames
@@ -19,7 +19,7 @@ class ProcessingGalleryViewModel: ObservableObject {
         mainImageName = imageNames.first ?? ""
     }
     
-    /// 触发一次图片跳跃动画
+    /// 触发一次图片跳跃动画（旧版本，保留兼容性）
     func triggerJumpAnimation(from frames: [String: CGRect]) {
         guard let centerImageId = findCenterImageId(from: frames),
               frames["photoStackTarget"] != nil else { return }
@@ -29,8 +29,16 @@ class ProcessingGalleryViewModel: ObservableObject {
 
         guard let sourceFrame = frames[centerImageId] else { return }
 
-        self.flyingImageInfo = FlyingImageInfo(id: centerImageId, sourceFrame: sourceFrame)
-        self.hideSourceImageId = centerImageId
+        triggerJumpAnimation(imageName: centerImageId, sourceFrame: sourceFrame)
+    }
+
+    /// 新的图片跳跃动画方法
+    func triggerJumpAnimation(imageName: String, sourceFrame: CGRect) {
+        // 如果图片已经在堆叠中或是当前主图片，跳过
+        if imageName == mainImageName || stackedImages.contains(imageName) { return }
+
+        self.flyingImageInfo = FlyingImageInfo(id: imageName, sourceFrame: sourceFrame)
+        self.hideSourceImageId = imageName
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
             // 将当前主图片添加到堆叠中（如果不为空且不在堆叠中）
@@ -39,7 +47,7 @@ class ProcessingGalleryViewModel: ObservableObject {
             }
 
             // 设置新的主图片
-            self.mainImageName = centerImageId
+            self.mainImageName = imageName
             self.flyingImageInfo = nil
             self.hideSourceImageId = nil
         }

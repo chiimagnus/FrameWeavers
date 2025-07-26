@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>帧织者动画 (优化版)</title>
+<style>
+    :root {
+        --film-aspect-ratio: 1.77; 
+        --film-frame-width: 300px; 
+        --film-frame-height: calc(var(--film-frame-width) / var(--film-aspect-ratio));
+        --scroll-duration: 30s; 
+        --jump-duration: 1.0s; /* 延长飞行时间，让动画更舒展 */
+    }
+
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #3d3a39;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEX////h393g3t3g3d3f3d3f3N3e3N3d3N3c293c2t3b2t3b2dza2dza2Nza1t3Z1t2aW8Z3AAAAEXRSTlMAwQYHCg4QFBcaJzQ7RUxsc3R9iN2GpgAAAWNJREFUeNrtl9mShCAQRT8GkQUB8f+/9MZZTOBsz0xPVRl4qkrBwLe3S5/qQ6qd6p2qG1Vn6s3qparN6sVqsZqjHlIL1QW1QP2g2qhOqS5Qd9Qd2remGro7ahTqiesdGgK1S90jNZBmSzNoSxqRZhINyDZpFbJGmk2sJztJ3yB7k/xQdkle5B/kFPIr2S35gLwhz5NdySfkG/InkD/kF/JLeS+8gPZIfiAXyS/kL/Jb+Q/8gt5O8SQLya/kH/Jb+S98g/5O9km5BPya/kD/JLeS98gX5N/iAXyU/kL/Jb+Q/8kv5Nfichj8g/5B/yS/k9/IN+Tf5g15K/iA/k9/I/+S38h/5JTyZxoF8kv5B/yS3k//IP+Td5g15J/iA/k9/I/+S38h/5JTybxoF8kv5B/yS3k//IP+Td5g15J/iA/k9/I/+S38h/5JTybxgF8kv5R/yS/k3/IP+Tf5g15L/iA/k9/I/+S38h/5JTybxgF8kv5B/yS3k//IP+Td5g15J/iD/k9/I/+S38hf5JfyZxv4C/gGLsFzJ6kAAAAASUVORK5CYII=');
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end; /* 让胶片默认靠下 */
+        height: 100vh;
+        overflow: hidden;
+        padding-bottom: 5vh;
+        box-sizing: border-box;
+    }
+
+    .animation-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+    
+    .stack-area {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        top: 15vh;
+        left: 50%;
+        transform: translateX(-50%);
+        /* border: 1px dashed #fff;  调试时可打开 */
+    }
+
+    .filmstrip-viewport {
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        padding: 20px 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+    }
+    
+    .filmstrip {
+        display: flex;
+        width: fit-content;
+        animation: scroll var(--scroll-duration) linear infinite;
+    }
+
+    @keyframes scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    .film-frame {
+        width: var(--film-frame-width);
+        height: var(--film-frame-height);
+        background-image: url('胶片@3x.png');
+        background-size: 100% 100%;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 18px 15px;
+        box-sizing: border-box;
+    }
+
+    .film-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.5s ease-in-out;
+    }
+
+    /* 当图片飞出后，原位置图片淡出 */
+    .film-frame img.jumped {
+        opacity: 0.1;
+    }
+
+    /* 飞行中的照片容器样式 */
+    .photo-flyer {
+        position: absolute;
+        padding: 15px;
+        padding-bottom: 55px; /* 宝丽来相纸下边框更宽 */
+        background-color: #f9f9f9;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border: 1px solid #ddd;
+        will-change: transform;
+        transition: transform var(--jump-duration) cubic-bezier(0.4, 0.0, 0.2, 1), opacity calc(var(--jump-duration) * 0.8);
+        z-index: 1000;
+    }
+    
+    .photo-flyer img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    /* 胶带样式 */
+    .photo-flyer .tape {
+        position: absolute;
+        width: 100px;
+        height: 25px;
+        background-color: rgba(255, 255, 240, 0.5); /* 半透明胶带感 */
+        border-left: 1px dashed rgba(0,0,0,0.1);
+        border-right: 1px dashed rgba(0,0,0,0.1);
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%) rotate(-3deg);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+</style>
+</head>
+<body>
+
+<div class="animation-container" id="animation-container">
+    <div class="stack-area" id="stack-area"></div>
+    <div class="filmstrip-viewport">
+        <div class="filmstrip" id="filmstrip"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filmstrip = document.getElementById('filmstrip');
+    const stackArea = document.getElementById('stack-area');
+    const animationContainer = document.getElementById('animation-container');
+
+    const imageUrls = [
+        "https://images.unsplash.com/photo-1549880181-56a44cf4a9a5?q=80&w=800",
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800",
+        "https://images.unsplash.com/photo-1483728642387-6c351b4013de?q=80&w=800",
+        "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=800",
+        "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=800",
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800"
+    ];
+
+    let stackedCount = 0;
+
+    function createFrames() {
+        const fragment = document.createDocumentFragment();
+        imageUrls.forEach(url => {
+            const frame = document.createElement('div');
+            frame.className = 'film-frame';
+            const img = document.createElement('img');
+            img.src = url;
+            frame.appendChild(img);
+            fragment.appendChild(frame);
+        });
+        return fragment;
+    }
+
+    filmstrip.appendChild(createFrames());
+    filmstrip.appendChild(createFrames()); // 复制一份用于无缝滚动
+
+    const allFrames = document.querySelectorAll('.film-frame');
+
+    function checkAndTriggerAnimation() {
+        const viewportCenterX = window.innerWidth / 2;
+
+        allFrames.forEach((frame) => {
+            if (frame.dataset.jumped) return; // 如果已触发，则跳过
+
+            const rect = frame.getBoundingClientRect();
+            const frameCenterX = rect.left + rect.width / 2;
+
+            // 触发区域设置得更小更精确
+            if (Math.abs(frameCenterX - viewportCenterX) < 20) {
+                frame.dataset.jumped = 'true';
+                jumpToStack(frame);
+            }
+        });
+        requestAnimationFrame(checkAndTriggerAnimation);
+    }
+
+    function jumpToStack(frame) {
+        const originalImg = frame.querySelector('img');
+        const startRect = originalImg.getBoundingClientRect();
+        
+        // 创建宝丽来样式的飞行器
+        const flyer = document.createElement('div');
+        flyer.className = 'photo-flyer';
+        flyer.innerHTML = `<div class="tape"></div><img src="${originalImg.src}" alt="">`;
+
+        // 设置飞行器的初始状态
+        flyer.style.left = `${startRect.left}px`;
+        flyer.style.top = `${startRect.top}px`;
+        flyer.style.width = `${startRect.width}px`;
+        flyer.style.height = `${startRect.height}px`;
+
+        animationContainer.appendChild(flyer);
+
+        // 隐藏原始图片
+        originalImg.classList.add('jumped');
+
+        // 计算终点位置
+        const stackRect = stackArea.getBoundingClientRect();
+        const targetWidth = 280; // 堆叠照片的最终宽度
+        const targetHeight = targetWidth * (startRect.height / startRect.width);
+
+        // 随机化堆叠效果
+        const randomRotate = (stackedCount % 2 === 0 ? 1 : -1) * (Math.random() * 5 + 5); // 5到10度的交错旋转
+        const offsetX = (stackRect.width - targetWidth) / 2;
+        const offsetY = (stackRect.height - targetHeight) / 2 + (Math.random() * 40 - 20); // 在中心上下随机偏移
+        
+        const finalLeft = stackRect.left + offsetX;
+        const finalTop = stackRect.top + offsetY;
+
+        // 使用 rAF 或 setTimeout 确保应用了初始样式，从而触发 transition
+        requestAnimationFrame(() => {
+            flyer.style.transform = `translate(${finalLeft - startRect.left}px, ${finalTop - startRect.top}px) rotate(${randomRotate}deg)`;
+            flyer.style.width = `${targetWidth}px`;
+            flyer.style.height = `${targetHeight}px`;
+        });
+        
+        // 动画结束后，将元素“固化”在堆叠区，而不是依赖 transform
+        flyer.addEventListener('transitionend', () => {
+            flyer.style.transition = 'none'; // 移除过渡，防止意外移动
+            flyer.style.transform = `rotate(${randomRotate}deg)`; // 只保留旋转
+            flyer.style.left = `${finalLeft}px`;
+            flyer.style.top = `${finalTop}px`;
+            stackArea.appendChild(flyer); // 将其移入堆叠区DOM，便于管理
+        }, { once: true });
+
+
+        stackedCount++;
+    }
+
+    requestAnimationFrame(checkAndTriggerAnimation);
+});
+</script>
+
+</body>
+</html>

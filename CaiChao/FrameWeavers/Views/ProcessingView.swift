@@ -8,10 +8,9 @@ struct ProcessingView: View {
     @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     @State private var frames: [String: CGRect] = [:]
     @Namespace private var galleryNamespace
+    @State private var showResultButton = false
     
-    // 定时器
-    let scrollTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
-    let jumpTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+    // 移除定时器，现在使用持续滚动动画
     
     var body: some View {
         NavigationStack {
@@ -20,47 +19,28 @@ struct ProcessingView: View {
                 Color(red: 0.91, green: 0.88, blue: 0.83).ignoresSafeArea()
                 
                 VStack(spacing: 40) {
-                    // 在所有等待状态下都显示胶片动画
-                    if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
+                    // 在所有状态下都显示胶片动画
+                    if viewModel.uploadStatus != .failed {
                         // 显示胶片动画
                         filmGalleryView
                     } else {
-                        // 显示传统进度界面
-                        traditionalProgressView
+                        // 只有失败状态显示错误信息
+                        failedView
                     }
                 }
                 .padding(.vertical, 50)
                 
-                // 飞行图片覆盖层
-                if let info = galleryViewModel.flyingImageInfo {
-                    Image(info.id)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .matchedGeometryEffect(id: info.id, in: galleryNamespace)
-                        .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                        .transition(.identity)
-                }
+                // 飞行图片覆盖层 - 使用独立的FlyingImageOverlay组件
+                FlyingImageOverlay(
+                    flyingImageInfo: galleryViewModel.flyingImageInfo,
+                    namespace: galleryNamespace
+                )
             }
         }
         .onPreferenceChange(FramePreferenceKey.self) { value in
             self.frames.merge(value, uniquingKeysWith: { $1 })
         }
-        .onReceive(scrollTimer) { _ in
-            // 在所有等待状态下都播放滚动动画
-            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
-                galleryViewModel.currentScrollIndex += 1
-            }
-        }
-        .onReceive(jumpTimer) { _ in
-            // 在所有等待状态下都播放跳跃动画
-            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
-                withAnimation(.easeInOut(duration: 1.2)) {
-                    galleryViewModel.triggerJumpAnimation(from: frames)
-                }
-            }
-        }
+        // 移除定时器监听，现在胶片自动持续滚动
         .onAppear {
             if viewModel.uploadStatus == .pending {
                 viewModel.uploadVideo()
@@ -68,8 +48,16 @@ struct ProcessingView: View {
         }
         .onChange(of: viewModel.uploadStatus) { _, newStatus in
             if newStatus == .completed {
+                // 1秒后自动跳转到结果页面
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     navigateToResults = true
+                }
+
+                // 5秒后显示查看结果按钮（作为备用选项）
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        showResultButton = true
+                    }
                 }
             }
         }
@@ -112,30 +100,46 @@ extension ProcessingView {
             // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
 
+            // 在completed状态下5秒后显示查看结果按钮
+            if viewModel.uploadStatus == .completed && showResultButton {
+                Button(action: {
+                    navigateToResults = true
+                }) {
+                    Text("查看结果")
+                        .font(.title2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .frame(width: 200, height: 50)
+                        .background(Color(hex: "#2F2617"))
+                        .cornerRadius(25)
+                }
+                .padding(.top, 20)
+                .transition(.opacity.combined(with: .scale))
+            }
+
             Spacer()
         }
     }
     
-    /// 传统进度视图
-    private var traditionalProgressView: some View {
+    /// 失败状态视图
+    private var failedView: some View {
         VStack(spacing: 30) {
-            if viewModel.uploadStatus == .pending {
-                ProgressView()
-                Text("准备中...")
-            } else if viewModel.uploadStatus == .uploading {
-                ProgressView(value: viewModel.uploadProgress)
-                Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
-            } else if viewModel.uploadStatus == .completed {
-                ProgressView(value: viewModel.uploadProgress)
-                Text("上传完毕... \(Int(viewModel.uploadProgress * 100))%")
-                Button("查看结果") {
-                    navigateToResults = true
-                }
-            } else if viewModel.uploadStatus == .failed {
-                Text("处理失败，请重试")
+            Text("处理失败，请重试")
+                .font(.title2)
+                .foregroundColor(.red)
+
+            Button(action: {
+                dismiss()
+            }) {
+                Text("返回")
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .frame(width: 200, height: 50)
+                    .background(Color(hex: "#2F2617"))
+                    .cornerRadius(25)
             }
         }
-        .font(.title2)
         .padding()
     }
     
