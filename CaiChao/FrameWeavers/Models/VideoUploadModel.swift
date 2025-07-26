@@ -195,8 +195,13 @@ struct TaskStatusResponse: Codable {
     let status: String
     let message: String
     let progress: Int
-    let files: [String]?
+    let stage: String?  // 添加stage字段
     let created_at: String
+
+    // 移除files字段，因为可能导致解析错误
+    enum CodingKeys: String, CodingKey {
+        case success, task_id, status, message, progress, stage, created_at
+    }
 }
 
 // MARK: - 任务取消响应
@@ -254,35 +259,35 @@ struct UploadProgress {
 // MARK: - 完整连环画生成请求
 struct CompleteComicRequest {
     let taskId: String
-    let videoPath: String  // 后端返回的视频路径
+    let videoPath: String  // 必须：后端返回的视频路径
+    let storyStyle: String  // 必须：故事风格关键词
     let targetFrames: Int
     let frameInterval: Double
     let significanceWeight: Double
     let qualityWeight: Double
     let stylePrompt: String
     let imageSize: String
-    let storyStyle: String
     let maxConcurrent: Int
 
     init(taskId: String,
          videoPath: String,
-         targetFrames: Int = 8,
-         frameInterval: Double = 1.0,
-         significanceWeight: Double = 0.6,
-         qualityWeight: Double = 0.4,
-         stylePrompt: String = "手绘漫画风格，温暖色调",
-         imageSize: String = "1920x1024",
-         storyStyle: String = "童话风格",
+         storyStyle: String = "温馨童话",  // 参考Python测试的默认值
+         targetFrames: Int = 12,  // 参考Python测试
+         frameInterval: Double = 2.0,  // 参考Python测试
+         significanceWeight: Double = 0.7,  // 参考Python测试
+         qualityWeight: Double = 0.3,  // 参考Python测试
+         stylePrompt: String = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",  // 参考Python测试
+         imageSize: String = "1780x1024",  // 参考Python测试
          maxConcurrent: Int = 50) {
         self.taskId = taskId
         self.videoPath = videoPath
+        self.storyStyle = storyStyle
         self.targetFrames = targetFrames
         self.frameInterval = frameInterval
         self.significanceWeight = significanceWeight
         self.qualityWeight = qualityWeight
         self.stylePrompt = stylePrompt
         self.imageSize = imageSize
-        self.storyStyle = storyStyle
         self.maxConcurrent = maxConcurrent
     }
 }

@@ -21,14 +21,14 @@ class ComicGenerationService {
         
         let parameters = [
             "task_id": request.taskId,
-            "video_path": request.videoPath,  // 添加视频路径参数
+            "video_path": request.videoPath,  // 必须：视频路径参数
+            "story_style": request.storyStyle,  // 必须：故事风格关键词
             "target_frames": String(request.targetFrames),
             "frame_interval": String(request.frameInterval),
             "significance_weight": String(request.significanceWeight),
             "quality_weight": String(request.qualityWeight),
             "style_prompt": request.stylePrompt,
             "image_size": request.imageSize,
-            "story_style": request.storyStyle,
             "max_concurrent": String(request.maxConcurrent)
         ]
         print("📝 ComicGenerationService: 请求参数: \(parameters)")
