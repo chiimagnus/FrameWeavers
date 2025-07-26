@@ -48,11 +48,21 @@ struct WelcomeView: View {
                         .frame(width: 250, height: 44)
                     
                     Text("开启一段故事织造")
-                        .font(.custom("万事全兴体", size: 24))
+                        .font(.custom("WSQuanXing", size: 24))
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))
                 }
             }
+            .onAppear {
+                // 打印所有中文字体
+                for family in UIFont.familyNames.sorted() {
+                    if family.contains("万事") || family.contains("全兴") {
+                        let names = UIFont.fontNames(forFamilyName: family)
+                        print("找到字体: \(family) - 名称: \(names)")
+                    }
+                }
+            }
+
 
             Text("""
             最多上传5段3分钟内的视频
