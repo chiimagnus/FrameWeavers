@@ -139,9 +139,9 @@ struct FilmstripFrameView: View {
                 } else {
                     // 有基础帧数据但URL无效时显示错误状态
                     Rectangle()
-                        .fill(Color.orange.opacity(0.3))
+                        .fill(Color.red.opacity(0.3))
                         .overlay(
-                            Text("URL无效")
+                            Text("文件不存在")
                                 .font(.caption)
                                 .foregroundColor(.white)
                         )
