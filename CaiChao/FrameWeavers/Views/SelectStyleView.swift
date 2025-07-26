@@ -24,7 +24,7 @@ struct SelectStyleView: View {
 
                 VStack(spacing: 30) {
                     Text("· 选择故事风格 ·")
-                        .font(.custom("Kaiti SC", size: 16))
+                        .font(.custom("STKaiti", size: 16))
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#2F2617"))
                         .padding(.bottom, 50)
@@ -58,7 +58,7 @@ struct SelectStyleView: View {
                                 selectedStyle = styleKey
                             }) {
                                 Text(styleText)
-                                    .font(.custom("Kaiti SC", size: 24))
+                                    .font(.custom("STKaiti", size: 24))
                                     .fontWeight(.bold)
                                     .foregroundColor(selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
                                     .padding(8)
@@ -87,7 +87,7 @@ struct SelectStyleView: View {
                                 .frame(width: 250, height: 44)
 
                             Text("开始生成")
-                                .font(.custom("Kaiti SC", size: 24))
+                                .font(.custom("STKaiti", size: 24))
                                 .fontWeight(.bold)
                                 .foregroundColor(
                                     selectedStyle.isEmpty ?
@@ -101,7 +101,7 @@ struct SelectStyleView: View {
                     
                     // 显示已选择的视频数量
                     Text("已选择 \(viewModel.selectedVideos.count) 个视频")
-                        .font(.custom("Kaiti SC", size: 14))
+                        .font(.custom("STKaiti", size: 14))
                         .foregroundColor(Color(hex: "#2F2617"))
                     
                     // 调试信息

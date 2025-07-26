@@ -141,7 +141,7 @@ struct TypewriterView: View {
 //             """,
 //             typeSpeed: 0.08
 //         )
-//         .font(.custom("Kaiti SC", size: 16))
+//         .font(.custom("STKaiti", size: 16))
 //         .fontWeight(.bold)
 //         .multilineTextAlignment(.center)
 //         .foregroundColor(Color(hex: "#2F2617"))

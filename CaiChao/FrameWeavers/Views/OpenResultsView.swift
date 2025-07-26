@@ -26,7 +26,7 @@ struct OpenResultsView: View {
                 
                 为了拯救被污染的自然，她必须与精灵签下契约，然而契约的代价，是她自己的生命力……
                 """)
-                    .font(.custom("Kaiti SC", size: 16))
+                    .font(.custom("STKaiti", size: 16))
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     // .frame(width: 275, height: 202.99998, alignment: .topLeading)
@@ -44,7 +44,7 @@ struct OpenResultsView: View {
                             .frame(width: 250, height: 44)
                         
                         Text("翻开画册")
-                            .font(.custom("Kaiti SC", size: 24))
+                            .font(.custom("STKaiti", size: 24))
                             .fontWeight(.bold)
                             .foregroundColor(Color(hex: "#855C23"))
                     }
