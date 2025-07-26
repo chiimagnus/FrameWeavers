@@ -59,7 +59,7 @@ struct WelcomeView: View {
                     .font(.custom("STKaiti", size: 16))
                     .foregroundColor(Color(hex: "#855C23"))
                     .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
+                    // .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .stroke(Color(hex: "#855C23"), lineWidth: 1)
