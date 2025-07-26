@@ -8,15 +8,44 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var hideSourceImageId: String?
     @Published var currentScrollIndex: Int = 0
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
+    @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
+    @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
-    
+
     var loopedImageNames: [String] {
-        imageNames + imageNames + imageNames
+        if isUsingBaseFrames && !baseFrames.isEmpty {
+            let frameIds = baseFrames.map { $0.id.uuidString }
+            return frameIds + frameIds + frameIds
+        } else {
+            return imageNames + imageNames + imageNames
+        }
     }
-    
+
+    var currentImageNames: [String] {
+        if isUsingBaseFrames && !baseFrames.isEmpty {
+            return baseFrames.map { $0.id.uuidString }
+        } else {
+            return imageNames
+        }
+    }
+
     init() {
         mainImageName = imageNames.first ?? ""
+    }
+
+    /// 设置基础帧数据
+    func setBaseFrames(_ frames: [BaseFrameData]) {
+        baseFrames = frames
+        isUsingBaseFrames = !frames.isEmpty
+        if let firstFrame = frames.first {
+            mainImageName = firstFrame.id.uuidString
+        }
+    }
+
+    /// 获取基础帧数据
+    func getBaseFrame(for id: String) -> BaseFrameData? {
+        return baseFrames.first { $0.id.uuidString == id }
     }
     
     /// 触发一次图片跳跃动画
@@ -54,7 +83,10 @@ class ProcessingGalleryViewModel: ObservableObject {
         // 过滤出有效的图片frame，并找到最接近屏幕中心的
         for (id, frame) in frames {
             // 确保frame不为零且图片名在列表中
-            guard imageNames.contains(id), frame != .zero else { continue }
+            let isValidId = isUsingBaseFrames ?
+                baseFrames.contains { $0.id.uuidString == id } :
+                imageNames.contains(id)
+            guard isValidId, frame != .zero else { continue }
 
             let distance = abs(frame.midX - screenCenter)
             if distance < minDistance {

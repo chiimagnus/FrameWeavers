@@ -27,14 +27,31 @@ struct ProcessingView: View {
                 
                 // 飞行图片覆盖层
                 if let info = galleryViewModel.flyingImageInfo {
-                    Image(info.id)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                    let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
+                    if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                        }
                         .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .matchedGeometryEffect(id: info.id, in: galleryNamespace)
                         .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
                         .transition(.identity)
+                    } else {
+                        Image(info.id)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .matchedGeometryEffect(id: info.id, in: galleryNamespace)
+                            .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
+                            .transition(.identity)
+                    }
                 }
             }
         }
@@ -67,6 +84,11 @@ struct ProcessingView: View {
                 }
             }
         }
+        .onChange(of: viewModel.baseFrames) { _, newFrames in
+            if !newFrames.isEmpty {
+                galleryViewModel.setBaseFrames(newFrames)
+            }
+        }
         .navigationDestination(isPresented: $navigateToResults) {
             if let result = viewModel.comicResult {
                 OpenResultsView(comicResult: result)
@@ -95,7 +117,8 @@ extension ProcessingView {
             PhotoStackView(
                 mainImageName: galleryViewModel.mainImageName,
                 stackedImages: galleryViewModel.stackedImages,
-                namespace: galleryNamespace
+                namespace: galleryNamespace,
+                galleryViewModel: galleryViewModel
             )
                 .anchorPreference(key: FramePreferenceKey.self, value: .bounds) { anchor in
                     return ["photoStackTarget": self.frames(from: anchor)]
