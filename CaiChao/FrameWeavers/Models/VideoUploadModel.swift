@@ -250,7 +250,166 @@ struct UploadProgress {
     let estimatedTimeRemaining: String?
 }
 
-// MARK: - 连环画结果
+// MARK: - 完整连环画生成请求
+struct CompleteComicRequest {
+    let taskId: String
+    let targetFrames: Int
+    let frameInterval: Double
+    let significanceWeight: Double
+    let qualityWeight: Double
+    let stylePrompt: String
+    let imageSize: String
+    let storyStyle: String
+    let maxConcurrent: Int
+
+    init(taskId: String,
+         targetFrames: Int = 8,
+         frameInterval: Double = 1.0,
+         significanceWeight: Double = 0.6,
+         qualityWeight: Double = 0.4,
+         stylePrompt: String = "手绘漫画风格，温暖色调",
+         imageSize: String = "1920x1024",
+         storyStyle: String = "童话风格",
+         maxConcurrent: Int = 50) {
+        self.taskId = taskId
+        self.targetFrames = targetFrames
+        self.frameInterval = frameInterval
+        self.significanceWeight = significanceWeight
+        self.qualityWeight = qualityWeight
+        self.stylePrompt = stylePrompt
+        self.imageSize = imageSize
+        self.storyStyle = storyStyle
+        self.maxConcurrent = maxConcurrent
+    }
+}
+
+// MARK: - 完整连环画生成响应
+struct CompleteComicResponse: Codable {
+    let success: Bool
+    let message: String
+    let taskId: String
+    let status: String
+    let progress: Int
+    let stage: String
+
+    enum CodingKeys: String, CodingKey {
+        case success = "success"
+        case message = "message"
+        case taskId = "task_id"
+        case status = "status"
+        case progress = "progress"
+        case stage = "stage"
+    }
+}
+
+// MARK: - 连环画结果响应
+struct ComicResultResponse: Codable {
+    let success: Bool
+    let message: String
+    let taskId: String
+    let results: ComicResults
+
+    enum CodingKeys: String, CodingKey {
+        case success = "success"
+        case message = "message"
+        case taskId = "task_id"
+        case results = "results"
+    }
+}
+
+struct ComicResults: Codable {
+    let successfulComics: [SuccessfulComic]
+    let totalProcessed: Int
+    let successCount: Int
+    let failureCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case successfulComics = "successful_comics"
+        case totalProcessed = "total_processed"
+        case successCount = "success_count"
+        case failureCount = "failure_count"
+    }
+}
+
+struct SuccessfulComic: Codable {
+    let videoName: String
+    let success: Bool
+    let comicData: ComicData
+
+    enum CodingKeys: String, CodingKey {
+        case videoName = "video_name"
+        case success = "success"
+        case comicData = "comic_data"
+    }
+}
+
+struct ComicData: Codable {
+    let storyInfo: StoryInfo
+    let pages: [ComicPage]
+    let interactiveQuestions: [InteractiveQuestion]
+
+    enum CodingKeys: String, CodingKey {
+        case storyInfo = "story_info"
+        case pages = "pages"
+        case interactiveQuestions = "interactive_questions"
+    }
+}
+
+struct StoryInfo: Codable {
+    let overallTheme: String
+    let title: String
+    let summary: String
+    let totalPages: Int
+    let videoName: String
+    let creationTime: String
+
+    enum CodingKeys: String, CodingKey {
+        case overallTheme = "overall_theme"
+        case title = "title"
+        case summary = "summary"
+        case totalPages = "total_pages"
+        case videoName = "video_name"
+        case creationTime = "creation_time"
+    }
+}
+
+struct ComicPage: Codable {
+    let pageIndex: Int
+    let storyText: String
+    let originalFramePath: String
+    let styledFramePath: String
+    let styledFilename: String
+    let frameIndex: Int
+    let styleApplied: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case pageIndex = "page_index"
+        case storyText = "story_text"
+        case originalFramePath = "original_frame_path"
+        case styledFramePath = "styled_frame_path"
+        case styledFilename = "styled_filename"
+        case frameIndex = "frame_index"
+        case styleApplied = "style_applied"
+    }
+}
+
+struct InteractiveQuestion: Codable {
+    let questionId: Int
+    let question: String
+    let options: [String]
+    let sceneDescription: String
+    let questionType: String
+
+    enum CodingKeys: String, CodingKey {
+        case questionId = "question_id"
+        case question = "question"
+        case options = "options"
+        case sceneDescription = "scene_description"
+        case questionType = "question_type"
+    }
+}
+
+// MARK: - 连环画结果（用于UI显示）
 struct ComicResult: Codable {
     let comicId: String
     let deviceId: String

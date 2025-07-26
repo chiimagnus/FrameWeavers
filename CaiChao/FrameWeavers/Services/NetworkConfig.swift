@@ -16,6 +16,8 @@ struct NetworkConfig {
         case uploadVideos           // 上传视频
         case taskStatus(taskId: String)  // 查询任务状态
         case taskCancel(taskId: String)  // 取消任务
+        case completeComic          // 完整连环画生成
+        case comicResult(taskId: String)  // 获取连环画结果
 
         var path: String {
             switch self {
@@ -25,6 +27,10 @@ struct NetworkConfig {
                 return "/api/task/status/\(taskId)"
             case .taskCancel(let taskId):
                 return "/api/task/cancel/\(taskId)"
+            case .completeComic:
+                return "/api/process/complete-comic"
+            case .comicResult(let taskId):
+                return "/api/comic/result/\(taskId)"
             }
         }
 
