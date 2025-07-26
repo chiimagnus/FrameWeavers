@@ -20,14 +20,8 @@ struct ProcessingView: View {
                 Color(red: 0.91, green: 0.88, blue: 0.83).ignoresSafeArea()
                 
                 VStack(spacing: 40) {
-                    // 在所有等待状态下都显示胶片动画
-                    if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
-                        // 显示胶片动画
-                        filmGalleryView
-                    } else {
-                        // 显示传统进度界面
-                        traditionalProgressView
-                    }
+                    // 始终显示胶片画廊视图
+                    filmGalleryView
                 }
                 .padding(.vertical, 50)
                 
@@ -112,32 +106,28 @@ extension ProcessingView {
             // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
 
+            // 上传完成时显示查看结果按钮
+            if viewModel.uploadStatus == .completed {
+                Button(action: {
+                    navigateToResults = true
+                }) {
+                    Text("查看结果")
+                        .font(.title2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color(hex: "#2F2617"))
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal, 40)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+
             Spacer()
         }
     }
-    
-    /// 传统进度视图
-    private var traditionalProgressView: some View {
-        VStack(spacing: 30) {
-            if viewModel.uploadStatus == .pending {
-                ProgressView()
-                Text("准备中...")
-            } else if viewModel.uploadStatus == .uploading {
-                ProgressView(value: viewModel.uploadProgress)
-                Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
-            } else if viewModel.uploadStatus == .completed {
-                ProgressView(value: viewModel.uploadProgress)
-                Text("上传完毕... \(Int(viewModel.uploadProgress * 100))%")
-                Button("查看结果") {
-                    navigateToResults = true
-                }
-            } else if viewModel.uploadStatus == .failed {
-                Text("处理失败，请重试")
-            }
-        }
-        .font(.title2)
-        .padding()
-    }
+
     
     /// Helper to convert anchor to global frame
     private func frames(from anchor: Anchor<CGRect>) -> CGRect {
