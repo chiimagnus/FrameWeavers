@@ -486,7 +486,7 @@ class DiversityFrameExtractor:
                     "https://api.ppinfra.com/v3/openai/chat/completions",
                     json=payload,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=30)
+                    timeout=aiohttp.ClientTimeout(total=300)
                 ) as response:
                     response_data = await response.json()
                     
