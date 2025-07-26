@@ -107,11 +107,10 @@ extension ProcessingView {
                 ProgressView(value: viewModel.uploadProgress)
                 Text("上传中... \(Int(viewModel.uploadProgress * 100))%")
             } else if viewModel.uploadStatus == .completed {
-                VStack {
-                    Text("处理完成！")
-                    Button("查看结果") {
-                        navigateToResults = true
-                    }
+                ProgressView(value: viewModel.uploadProgress)
+                Text("上传完毕... \(Int(viewModel.uploadProgress * 100))%")
+                Button("查看结果") {
+                    navigateToResults = true
                 }
             } else if viewModel.uploadStatus == .failed {
                 Text("处理失败，请重试")
