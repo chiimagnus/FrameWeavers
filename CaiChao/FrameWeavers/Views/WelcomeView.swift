@@ -79,7 +79,7 @@ struct WelcomeView: View {
         }
         .padding()
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingSampleAlbums) {
+        .fullScreenCover(isPresented: $showingSampleAlbums) {
             SampleAlbumsView()
         }
     }
