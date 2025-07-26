@@ -66,8 +66,10 @@ class BaseFrameService {
     func extractBaseFrames(taskId: String, interval: Double = 1.0) async throws -> BaseFrameExtractionResponse {
         let endpoint = "/api/extract/base-frames"
         let urlString = baseURL + endpoint
+        print("🌐 BaseFrameService: 请求URL: \(urlString)")
 
         guard let url = URL(string: urlString) else {
+            print("❌ BaseFrameService: 无效的URL: \(urlString)")
             throw NSError(domain: "BaseFrameService", code: -1, userInfo: [NSLocalizedDescriptionKey: "无效的URL"])
         }
 
@@ -75,6 +77,7 @@ class BaseFrameService {
             "task_id": taskId,
             "interval": String(interval)
         ]
+        print("📝 BaseFrameService: 请求参数: \(parameters)")
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -82,12 +85,28 @@ class BaseFrameService {
 
         let bodyString = parameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
         request.httpBody = bodyString.data(using: .utf8)
+        print("📤 BaseFrameService: 请求体: \(bodyString)")
 
         let (data, response) = try await URLSession.shared.data(for: request)
+        print("📥 BaseFrameService: 收到响应")
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw NSError(domain: "BaseFrameService", code: -2, userInfo: [NSLocalizedDescriptionKey: "服务器错误"])
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ BaseFrameService: 无效的HTTP响应")
+            throw NSError(domain: "BaseFrameService", code: -2, userInfo: [NSLocalizedDescriptionKey: "无效的HTTP响应"])
+        }
+
+        print("📊 BaseFrameService: HTTP状态码: \(httpResponse.statusCode)")
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            print("❌ BaseFrameService: 服务器错误，状态码: \(httpResponse.statusCode)")
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("📄 BaseFrameService: 错误响应内容: \(responseString)")
+            }
+            throw NSError(domain: "BaseFrameService", code: -2, userInfo: [NSLocalizedDescriptionKey: "服务器错误: \(httpResponse.statusCode)"])
+        }
+
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📄 BaseFrameService: 响应内容: \(responseString)")
         }
 
         let decoder = JSONDecoder()

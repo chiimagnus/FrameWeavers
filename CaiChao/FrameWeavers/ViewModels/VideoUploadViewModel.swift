@@ -297,6 +297,7 @@ class VideoUploadViewModel: ObservableObject {
     // MARK: - 基础帧提取
     private func extractBaseFrames() async {
         guard let taskId = currentTaskId else {
+            print("❌ 基础帧提取失败: 缺少任务ID")
             await MainActor.run {
                 self.uploadStatus = .failed
                 self.errorMessage = "缺少任务ID"
@@ -304,12 +305,19 @@ class VideoUploadViewModel: ObservableObject {
             return
         }
 
+        print("🎬 开始提取基础帧, taskId: \(taskId)")
+
         do {
             let response = try await baseFrameService.extractBaseFrames(taskId: taskId, interval: 1.0)
+            print("✅ 基础帧提取API调用成功")
+            print("📊 响应数据: success=\(response.success), message=\(response.message)")
+            print("📁 结果数量: \(response.results.count)")
 
             // 转换响应数据为BaseFrameData
             let frames = response.results.flatMap { result in
-                result.baseFramesPaths.enumerated().map { index, path in
+                print("🎞️ 视频: \(result.videoName), 基础帧数量: \(result.baseFramesCount)")
+                print("📸 基础帧路径: \(result.baseFramesPaths)")
+                return result.baseFramesPaths.enumerated().map { index, path in
                     BaseFrameData(
                         framePath: path,
                         frameIndex: index,
@@ -318,13 +326,17 @@ class VideoUploadViewModel: ObservableObject {
                 }
             }
 
+            print("🖼️ 转换后的基础帧数量: \(frames.count)")
+
             await MainActor.run {
                 self.baseFrames = frames
                 self.uploadStatus = .completed
                 self.comicResult = self.createMockComicResult()
+                print("✅ 基础帧数据已设置到ViewModel")
             }
 
         } catch {
+            print("❌ 基础帧提取失败: \(error)")
             await MainActor.run {
                 self.uploadStatus = .failed
                 self.errorMessage = "基础帧提取失败: \(error.localizedDescription)"

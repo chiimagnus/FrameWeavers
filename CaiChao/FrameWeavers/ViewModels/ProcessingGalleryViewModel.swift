@@ -37,11 +37,15 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     /// 设置基础帧数据
     func setBaseFrames(_ frames: [BaseFrameData]) {
+        print("🎨 ProcessingGalleryViewModel: 设置基础帧数据, 数量: \(frames.count)")
         baseFrames = frames
         isUsingBaseFrames = !frames.isEmpty
         if let firstFrame = frames.first {
             mainImageName = firstFrame.id.uuidString
+            print("🖼️ 设置主图片为: \(mainImageName)")
+            print("🔗 第一个基础帧URL: \(firstFrame.thumbnailURL?.absoluteString ?? "nil")")
         }
+        print("✅ isUsingBaseFrames: \(isUsingBaseFrames)")
     }
 
     /// 获取基础帧数据

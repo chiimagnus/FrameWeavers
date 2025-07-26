@@ -85,7 +85,9 @@ struct ProcessingView: View {
             }
         }
         .onChange(of: viewModel.baseFrames) { _, newFrames in
+            print("🔄 ProcessingView: baseFrames 发生变化, 数量: \(newFrames.count)")
             if !newFrames.isEmpty {
+                print("🎯 设置基础帧到 galleryViewModel")
                 galleryViewModel.setBaseFrames(newFrames)
             }
         }
