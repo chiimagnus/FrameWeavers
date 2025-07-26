@@ -3,7 +3,8 @@ import PhotosUI
 
 struct WelcomeView: View {
     @Binding var selectedItems: [PhotosPickerItem]
-    
+    @State private var showingSampleAlbums = false
+
     var body: some View {
         VStack(spacing: 40) {
             Image("icon-home")
@@ -63,5 +64,18 @@ struct WelcomeView: View {
                 .lineSpacing(10)
         }
         .padding()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("示例画册") {
+                    showingSampleAlbums = true
+                }
+                .font(.custom("STKaiti", size: 16))
+                .foregroundColor(Color(hex: "#855C23"))
+            }
+        }
+        .sheet(isPresented: $showingSampleAlbums) {
+            SampleAlbumsView()
+        }
     }
 }
