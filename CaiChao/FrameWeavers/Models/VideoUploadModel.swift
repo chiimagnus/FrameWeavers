@@ -185,6 +185,7 @@ struct RealUploadResponse: Codable {
     let task_id: String?
     let uploaded_files: Int?
     let invalid_files: [String]?
+    let video_path: String?  // 新增：后端返回的视频路径
 }
 
 // MARK: - 任务状态查询响应
@@ -253,6 +254,7 @@ struct UploadProgress {
 // MARK: - 完整连环画生成请求
 struct CompleteComicRequest {
     let taskId: String
+    let videoPath: String  // 后端返回的视频路径
     let targetFrames: Int
     let frameInterval: Double
     let significanceWeight: Double
@@ -263,6 +265,7 @@ struct CompleteComicRequest {
     let maxConcurrent: Int
 
     init(taskId: String,
+         videoPath: String,
          targetFrames: Int = 8,
          frameInterval: Double = 1.0,
          significanceWeight: Double = 0.6,
@@ -272,6 +275,7 @@ struct CompleteComicRequest {
          storyStyle: String = "童话风格",
          maxConcurrent: Int = 50) {
         self.taskId = taskId
+        self.videoPath = videoPath
         self.targetFrames = targetFrames
         self.frameInterval = frameInterval
         self.significanceWeight = significanceWeight

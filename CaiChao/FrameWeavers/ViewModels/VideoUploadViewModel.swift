@@ -15,6 +15,7 @@ class VideoUploadViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
     private var currentTaskId: String?  // 当前任务ID
+    private var currentVideoPath: String?  // 当前视频路径
     private var progressTimer: Timer?   // 进度查询定时器
     private let baseFrameService = BaseFrameService() // 基础帧服务
     private let comicGenerationService = ComicGenerationService() // 连环画生成服务
@@ -193,6 +194,12 @@ class VideoUploadViewModel: ObservableObject {
                         print("无效文件: \(invalidFiles)")
                     }
 
+                    // 保存视频路径
+                    if let videoPath = response.video_path {
+                        currentVideoPath = videoPath
+                        print("📹 保存视频路径: \(videoPath)")
+                    }
+
                     currentTaskId = taskId
                     uploadStatus = .processing
                     startProgressPolling(taskId: taskId)  // 开始轮询进度
@@ -357,12 +364,23 @@ class VideoUploadViewModel: ObservableObject {
             return
         }
 
+        guard let videoPath = currentVideoPath else {
+            print("❌ 没有有效的视频路径")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "没有有效的视频路径"
+            }
+            return
+        }
+
         print("🎬 开始生成完整连环画，任务ID: \(taskId)")
+        print("📹 使用视频路径: \(videoPath)")
 
         do {
             // 创建请求参数
             let request = CompleteComicRequest(
                 taskId: taskId,
+                videoPath: videoPath,  // 使用后端返回的视频路径
                 targetFrames: 6,  // 生成6个关键帧
                 frameInterval: 1.0,
                 significanceWeight: 0.6,
@@ -563,5 +581,6 @@ class VideoUploadViewModel: ObservableObject {
         progressTimer?.invalidate()
         progressTimer = nil
         currentTaskId = nil
+        currentVideoPath = nil  // 清理视频路径
     }
 }

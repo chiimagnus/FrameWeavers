@@ -21,6 +21,7 @@ class ComicGenerationService {
         
         let parameters = [
             "task_id": request.taskId,
+            "video_path": request.videoPath,  // 添加视频路径参数
             "target_frames": String(request.targetFrames),
             "frame_interval": String(request.frameInterval),
             "significance_weight": String(request.significanceWeight),
