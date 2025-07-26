@@ -351,30 +351,57 @@ struct ComicPanelView: View {
     }
 
     var body: some View {
-        ZStack {
-            if isLandscape {
-                // 横屏布局：图片在左，文本在右
+        if isLandscape {
+            // 横屏布局：图片在左，文本在右，页码在右上角
+            ZStack {
                 landscapeLayout
-            } else {
-                // 竖屏布局：图片在上，文本在下
-                portraitLayout
-            }
-            
-            // 页码显示
-            VStack {
-                HStack {
+                
+                // 横屏页码显示在右上角
+                VStack {
+                    HStack {
+                        Spacer()
+                        Text("· \(pageIndex + 1) ·")
+                            .font(.title3.bold())
+                            .foregroundColor(.primary)
+                            .padding(8)
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .cornerRadius(8)
+                            .padding(.top, 20)
+                            .padding(.trailing, 20)
+                    }
                     Spacer()
-                    Text("· \(pageIndex + 1) ·")
-                        .font(.title3.bold())
-                        .foregroundColor(.primary)
-                        .padding(8)
-                        .background(Color(.systemBackground).opacity(0.8))
-                        .cornerRadius(8)
-                        .padding(.top, 20)
-                        .padding(.trailing, 20)
                 }
-                Spacer()
             }
+        } else {
+            // 竖屏布局：图片在上，文本在下，页码在底部
+            VStack(spacing: 0) {
+                // 上方图片区域 - 占据约60%高度
+                Image(panel.imageUrl)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(
+                        width: geometry.size.width * 0.8,
+                        height: geometry.size.height * 0.6
+                    )
+                    .background(Color.clear) // 确保图片背景透明
+                    .cornerRadius(12)
+                    .clipped()
+
+                // 中间文本区域 - 占据约35%高度
+                textContent
+                    .frame(height: geometry.size.height * 0.35)
+
+                // 底部页码
+                Text("· \(pageIndex + 1) ·")
+                    .font(.title3.bold())
+                    .foregroundColor(.primary)
+                    .padding(8)
+                    .background(Color(.systemBackground).opacity(0.8))
+                    .cornerRadius(8)
+                    .padding(.bottom, 20)
+            }
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
@@ -396,29 +423,6 @@ struct ComicPanelView: View {
             // 右侧文本区域 - 占据约35%宽度
             textContent
                 .frame(width: geometry.size.width * 0.35)
-        }
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // 竖屏布局
-    private var portraitLayout: some View {
-        VStack(spacing: 20) {
-            // 上方图片区域 - 占据约60%高度
-            Image(panel.imageUrl)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(
-                    width: geometry.size.width * 0.8,
-                    height: geometry.size.height * 0.6
-                )
-                .background(Color.clear) // 确保图片背景透明
-                .cornerRadius(12)
-                .clipped()
-
-            // 下方文本区域 - 占据约35%高度
-            textContent
-                .frame(height: geometry.size.height * 0.35)
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -477,8 +481,50 @@ struct QuestionsView: View {
             // 横屏布局
             landscapeLayout
         } else {
-            // 竖屏布局
-            portraitLayout
+            // 竖屏布局：页码在底部
+            VStack(spacing: 0) {
+                Spacer()
+                
+                VStack(spacing: 30) {
+                    Text("互动问题")
+                        .font(.largeTitle.bold())
+                        .foregroundColor(.primary)
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(questions, id: \.self) { question in
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                                
+                                Text(question)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .lineSpacing(4)
+                            }
+                            .padding()
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .cornerRadius(12)
+                            .shadow(radius: 2)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .frame(maxWidth: geometry.size.width * 0.9)
+                
+                Spacer()
+                
+                // 底部页码
+                Text("· 完 ·")
+                    .font(.title2.bold())
+                    .foregroundColor(.primary)
+                    .padding(8)
+                    .background(Color(.systemBackground).opacity(0.8))
+                    .cornerRadius(8)
+                    .padding(.bottom, 20)
+            }
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
     
@@ -520,51 +566,6 @@ struct QuestionsView: View {
                     .padding(.horizontal, 20)
                 }
                 .frame(maxWidth: geometry.size.width * 0.7)
-                
-                Spacer()
-            }
-            Spacer()
-        }
-    }
-    
-    // 竖屏布局
-    private var portraitLayout: some View {
-        VStack {
-            Spacer()
-            
-            VStack(spacing: 30) {
-                // 页码显示
-                Text("· 完 ·")
-                    .font(.title2.bold())
-                    .foregroundColor(.primary)
-                    .padding(.top, 20)
-                
-                VStack(spacing: 30) {
-                    Text("互动问题")
-                        .font(.largeTitle.bold())
-                        .foregroundColor(.primary)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        ForEach(questions, id: \.self) { question in
-                            HStack(alignment: .top, spacing: 12) {
-                                Image(systemName: "questionmark.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
-                                
-                                Text(question)
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                    .lineSpacing(4)
-                            }
-                            .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
-                            .cornerRadius(12)
-                            .shadow(radius: 2)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
-                .frame(maxWidth: geometry.size.width * 0.9)
                 
                 Spacer()
             }
