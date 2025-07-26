@@ -344,7 +344,9 @@ def upload_videos():
             'task_id': task_id,
             'device_id': device_id,
             'uploaded_files': len(saved_files),
-            'invalid_files': invalid_files if invalid_files else None
+            'invalid_files': invalid_files if invalid_files else None,
+            'video_path': saved_files[0]['filepath'] if saved_files else None,
+            'files': saved_files
         }), 200
         
     except Exception as e:
@@ -1533,9 +1535,95 @@ def generate_story_for_comic(keyframes_result, video_file, task_id, params):
             'error': f'故事生成异常: {str(e)}'
         }
 
-def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
-    """为连环画风格化关键帧"""
+def stylize_single_frame(frame_data, styled_dir, params):
+    """
+    处理单个关键帧的风格化
+    这是从原始方法中提取出来的单帧处理逻辑，用于并发执行
+    
+    Args:
+        frame_data: 包含帧索引和路径的字典 {'index': i, 'path': frame_path}
+        styled_dir: 风格化图像保存目录
+        params: 风格化参数
+    
+    Returns:
+        dict: 风格化结果
+    """
+    i = frame_data['index']
+    frame_path = frame_data['path']
+    
     try:
+        print(f"[INFO] 并发处理第 {i+1} 个关键帧: {frame_path}")
+        filename = os.path.basename(frame_path)
+        
+        # 检查文件是否存在
+        if not os.path.exists(frame_path):
+            print(f"[WARNING] 关键帧文件不存在: {frame_path}")
+            return {
+                'original_path': frame_path,
+                'styled_path': frame_path,
+                'styled_filename': filename,
+                'index': i,
+                'style_failed': True,
+                'error': '原始文件不存在'
+            }
+        
+        # 执行风格化处理
+        style_result = style_transform_image(
+            image_path=frame_path,
+            style_prompt=params.get('style_prompt'),
+            image_size=params.get('image_size')
+        )
+        
+        if style_result['success']:
+            # 保存风格化后的图像
+            styled_filename = f"styled_{filename}"
+            styled_path = os.path.join(styled_dir, styled_filename)
+            
+            # 保存风格化图像数据
+            with open(styled_path, 'wb') as f:
+                f.write(style_result['image_data'])
+            
+            print(f"[INFO] 风格化图像已保存: {styled_path}")
+            print(f"[INFO] 风格化成功: {filename}")
+            
+            return {
+                'original_path': frame_path,
+                'styled_path': styled_path,
+                'styled_filename': styled_filename,
+                'index': i,
+                'style_failed': False,
+                'styled_image_url': style_result['styled_image_url']
+            }
+        else:
+            print(f"[ERROR] 风格化失败: {style_result['error']}")
+            return {
+                'original_path': frame_path,
+                'styled_path': frame_path,
+                'styled_filename': filename,
+                'index': i,
+                'style_failed': True,
+                'error': style_result['error']
+            }
+            
+    except Exception as frame_error:
+        print(f"[ERROR] 处理帧 {i} 风格化时出错: {str(frame_error)}")
+        return {
+            'original_path': frame_path,
+            'styled_path': frame_path,
+            'styled_filename': os.path.basename(frame_path),
+            'index': i,
+            'style_failed': True,
+            'error': str(frame_error)
+        }
+
+def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
+    """为连环画风格化关键帧 - 并发优化版本"""
+    try:
+        # 需要导入并发处理模块
+        import concurrent.futures
+        from concurrent.futures import ThreadPoolExecutor
+        import time
+        
         styled_frames = []
         
         # 从关键帧结果中获取路径信息
@@ -1563,87 +1651,95 @@ def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
                         key_frame_paths.append(photo_path)
         
         print(f"[INFO] 风格化处理：找到 {len(key_frame_paths)} 个关键帧路径")
+        print(f"[INFO] 使用并发处理，最大并发数：5")
         
         # 创建风格化输出目录
         styled_dir = os.path.join(keyframes_result['output_dir'], 'styled')
         os.makedirs(styled_dir, exist_ok=True)
         
-        for i, frame_path in enumerate(key_frame_paths):
-            try:
-                print(f"[INFO] 处理第 {i+1}/{len(key_frame_paths)} 个关键帧: {frame_path}")
-                filename = os.path.basename(frame_path)
-                
-                # 检查文件是否存在
-                if not os.path.exists(frame_path):
-                    print(f"[WARNING] 关键帧文件不存在: {frame_path}")
-                    # 使用原图
-                    styled_frames.append({
-                        'original_path': frame_path,
-                        'styled_path': frame_path,
-                        'styled_filename': filename,
-                        'index': i,
-                        'style_failed': True,
-                        'error': '原始文件不存在'
-                    })
-                    continue
-                
-                # 执行风格化处理
-                style_result = style_transform_image(
-                    image_path=frame_path,
-                    style_prompt=params.get('style_prompt'),
-                    image_size=params.get('image_size')
-                )
-                
-                if style_result['success']:
-                    # 保存风格化后的图像
-                    styled_filename = f"styled_{filename}"
-                    styled_path = os.path.join(styled_dir, styled_filename)
-                    
-                    # 保存风格化图像数据
-                    with open(styled_path, 'wb') as f:
-                        f.write(style_result['image_data'])
-                    
-                    print(f"[INFO] 风格化图像已保存: {styled_path}")
-                    print(f"[INFO] 风格化成功: {filename}")
-                    
-                    styled_frames.append({
-                        'original_path': frame_path,
-                        'styled_path': styled_path,
-                        'styled_filename': styled_filename,
-                        'index': i,
-                        'style_failed': False,
-                        'styled_image_url': style_result['styled_image_url']
-                    })
-                else:
-                    print(f"[ERROR] 风格化失败: {style_result['error']}")
-                    # 使用原图
-                    styled_frames.append({
-                        'original_path': frame_path,
-                        'styled_path': frame_path,
-                        'styled_filename': filename,
-                        'index': i,
-                        'style_failed': True,
-                        'error': style_result['error']
-                    })
-                    
-            except Exception as frame_error:
-                print(f"[ERROR] 处理帧 {i} 风格化时出错: {str(frame_error)}")
-                # 出错时使用原图
-                styled_frames.append({
-                    'original_path': frame_path,
-                    'styled_path': frame_path,
-                    'styled_filename': os.path.basename(frame_path),
-                    'index': i,
-                    'style_failed': True,
-                    'error': str(frame_error)
-                })
+        # 准备并发处理的帧数据
+        frame_tasks = [
+            {'index': i, 'path': frame_path}
+            for i, frame_path in enumerate(key_frame_paths)
+        ]
         
-        print(f"[INFO] 风格化处理完成，成功处理 {len([f for f in styled_frames if not f['style_failed']])} 个关键帧")
+        # 记录开始时间
+        start_time = time.time()
+        
+        # 使用线程池进行并发处理，最大并发数为5
+        max_workers = min(len(key_frame_paths), 5)  # 确保不会超过实际帧数
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            print(f"[INFO] 启动线程池，工作线程数：{max_workers}")
+            
+            # 提交所有风格化任务
+            future_to_frame = {
+                executor.submit(stylize_single_frame, frame_data, styled_dir, params): frame_data
+                for frame_data in frame_tasks
+            }
+            
+            # 收集所有结果
+            styled_frames = [None] * len(key_frame_paths)  # 预分配列表，保持顺序
+            completed_count = 0
+            
+            for future in concurrent.futures.as_completed(future_to_frame):
+                frame_data = future_to_frame[future]
+                frame_index = frame_data['index']
+                
+                try:
+                    result = future.result(timeout=620)  # 设置620秒超时
+                    styled_frames[frame_index] = result  # 按索引放置，保持原始顺序
+                    completed_count += 1
+                    
+                    # 显示进度
+                    success_status = "成功" if not result['style_failed'] else "失败"
+                    print(f"[INFO] 进度: {completed_count}/{len(key_frame_paths)} - 帧{frame_index} {success_status}")
+                    
+                except concurrent.futures.TimeoutError:
+                    print(f"[ERROR] 帧 {frame_index} 处理超时")
+                    styled_frames[frame_index] = {
+                        'original_path': frame_data['path'],
+                        'styled_path': frame_data['path'],
+                        'styled_filename': os.path.basename(frame_data['path']),
+                        'index': frame_index,
+                        'style_failed': True,
+                        'error': '处理超时'
+                    }
+                    completed_count += 1
+                    
+                except Exception as exc:
+                    print(f"[ERROR] 帧 {frame_index} 处理异常: {exc}")
+                    styled_frames[frame_index] = {
+                        'original_path': frame_data['path'],
+                        'styled_path': frame_data['path'],
+                        'styled_filename': os.path.basename(frame_data['path']),
+                        'index': frame_index,
+                        'style_failed': True,
+                        'error': str(exc)
+                    }
+                    completed_count += 1
+        
+        # 统计处理结果
+        end_time = time.time()
+        processing_time = end_time - start_time
+        successful_frames = len([f for f in styled_frames if f and not f['style_failed']])
+        
+        print(f"[INFO] 并发风格化处理完成！")
+        print(f"[INFO] 总处理时间: {processing_time:.2f} 秒")
+        print(f"[INFO] 成功处理: {successful_frames}/{len(key_frame_paths)} 个关键帧")
+        print(f"[INFO] 平均每帧处理时间: {processing_time/len(key_frame_paths):.2f} 秒")
         
         return {
             'success': True,
             'styled_frames': styled_frames,
-            'styled_dir': styled_dir
+            'styled_dir': styled_dir,
+            'processing_stats': {
+                'total_frames': len(key_frame_paths),
+                'successful_frames': successful_frames,
+                'failed_frames': len(key_frame_paths) - successful_frames,
+                'processing_time': processing_time,
+                'concurrent_workers': max_workers
+            }
         }
         
     except Exception as e:
@@ -1789,6 +1885,35 @@ def too_large(e):
         'success': False,
         'message': '文件过大，请选择小于1GB的视频文件'
     }), 413
+
+# 添加直接访问frames目录的路由
+@app.route('/frames/<path:subpath>')
+def serve_frames(subpath):
+    """
+    直接服务frames目录下的静态文件
+    这个路由允许通过 /frames/... 路径直接访问图片文件
+    """
+    try:
+        # 构建完整的文件路径
+        full_path = os.path.join(app.config['FRAMES_FOLDER'], subpath)
+        
+        # 检查文件是否存在
+        if os.path.exists(full_path) and os.path.isfile(full_path):
+            # 获取目录和文件名
+            directory = os.path.dirname(full_path)
+            filename = os.path.basename(full_path)
+            return send_from_directory(directory, filename)
+        else:
+            return jsonify({
+                'success': False,
+                'message': '文件不存在'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'访问文件时发生错误: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
