@@ -29,23 +29,14 @@ struct ProcessingView: View {
                 if let info = galleryViewModel.flyingImageInfo {
                     let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            case .failure(_):
-                                Rectangle()
-                                    .fill(Color.red.opacity(0.3))
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .overlay(ProgressView().scaleEffect(0.5))
-                            @unknown default:
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                            }
+                        CustomAsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(ProgressView().scaleEffect(0.5))
                         }
                         .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))

@@ -31,9 +31,18 @@ struct BaseFrameData: Identifiable, Hashable {
             if let url = self.thumbnailURL {
                 Task {
                     do {
-                        let (_, response) = try await URLSession.shared.data(from: url)
+                        // 创建带有正确头部的请求
+                        var request = URLRequest(url: url)
+                        request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
+                        request.setValue("*/*", forHTTPHeaderField: "Accept")
+                        request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+                        request.setValue("keep-alive", forHTTPHeaderField: "Connection")
+
+                        let (data, response) = try await URLSession.shared.data(for: request)
                         if let httpResponse = response as? HTTPURLResponse {
                             print("🌐 URL测试: \(fullURL) - 状态码: \(httpResponse.statusCode)")
+                            print("📊 响应头: \(httpResponse.allHeaderFields)")
+                            print("📦 数据大小: \(data.count) bytes")
                         }
                     } catch {
                         print("❌ URL测试失败: \(fullURL) - 错误: \(error.localizedDescription)")

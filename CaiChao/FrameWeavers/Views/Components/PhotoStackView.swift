@@ -25,31 +25,17 @@ struct PhotoStackView: View {
 
                 ZStack {
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            case .failure(_):
-                                Rectangle()
-                                    .fill(Color.red.opacity(0.3))
-                                    .overlay(
-                                        Text("加载失败")
-                                            .font(.caption)
-                                            .foregroundColor(.white)
-                                    )
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .overlay(
-                                        ProgressView()
-                                            .scaleEffect(0.5)
-                                    )
-                            @unknown default:
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                            }
+                        CustomAsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(
+                                    ProgressView()
+                                        .scaleEffect(0.5)
+                                )
                         }
                     } else if baseFrame == nil {
                         // 只有在没有基础帧数据时才显示本地图片
@@ -83,31 +69,17 @@ struct PhotoStackView: View {
                 if !mainImageName.isEmpty {
                     let mainBaseFrame = galleryViewModel?.getBaseFrame(for: mainImageName)
                     if let baseFrame = mainBaseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            case .failure(_):
-                                Rectangle()
-                                    .fill(Color.red.opacity(0.3))
-                                    .overlay(
-                                        Text("加载失败")
-                                            .font(.caption)
-                                            .foregroundColor(.white)
-                                    )
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .overlay(
-                                        ProgressView()
-                                            .scaleEffect(0.5)
-                                    )
-                            @unknown default:
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                            }
+                        CustomAsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(
+                                    ProgressView()
+                                        .scaleEffect(0.5)
+                                )
                         }
                         .matchedGeometryEffect(id: mainImageName, in: namespace)
                     } else if mainBaseFrame == nil {
