@@ -100,15 +100,15 @@ struct SelectStyleView: View {
                     .disabled(selectedStyle.isEmpty)
                     .opacity(selectedStyle.isEmpty ? 0.6 : 1.0)
                     
-                    // 显示已选择的视频数量
-                    Text("已选择 \(viewModel.selectedVideos.count) 个视频")
-                        .font(.custom("STKaiti", size: 14))
-                        .foregroundColor(Color(hex: "#2F2617"))
+                    // // 显示已选择的视频数量
+                    // Text("已选择 \(viewModel.selectedVideos.count) 个视频")
+                    //     .font(.custom("STKaiti", size: 14))
+                    //     .foregroundColor(Color(hex: "#2F2617"))
                     
-                    // 调试信息
-                    Text("状态: \(viewModel.uploadStatus.rawValue)")
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                    // // 调试信息
+                    // Text("状态: \(viewModel.uploadStatus.rawValue)")
+                    //     .font(.caption)
+                    //     .foregroundColor(.gray)
                 }
             }
             .navigationDestination(isPresented: $navigateToProcessing) {
