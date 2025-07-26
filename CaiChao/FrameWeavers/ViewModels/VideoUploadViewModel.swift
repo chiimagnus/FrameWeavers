@@ -15,8 +15,10 @@ class VideoUploadViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
     private var currentTaskId: String?  // 当前任务ID
+    private var currentVideoPath: String?  // 当前视频路径
     private var progressTimer: Timer?   // 进度查询定时器
     private let baseFrameService = BaseFrameService() // 基础帧服务
+    private let comicGenerationService = ComicGenerationService() // 连环画生成服务
 
     // 兼容性属性，返回第一个选中的视频
     var selectedVideo: URL? {
@@ -192,6 +194,12 @@ class VideoUploadViewModel: ObservableObject {
                         print("无效文件: \(invalidFiles)")
                     }
 
+                    // 保存视频路径
+                    if let videoPath = response.video_path {
+                        currentVideoPath = videoPath
+                        print("📹 保存视频路径: \(videoPath)")
+                    }
+
                     currentTaskId = taskId
                     uploadStatus = .processing
                     startProgressPolling(taskId: taskId)  // 开始轮询进度
@@ -330,10 +338,11 @@ class VideoUploadViewModel: ObservableObject {
 
             await MainActor.run {
                 self.baseFrames = frames
-                self.uploadStatus = .completed
-                self.comicResult = self.createMockComicResult()
                 print("✅ 基础帧数据已设置到ViewModel")
             }
+
+            // 开始生成完整连环画
+            await generateCompleteComic()
 
         } catch {
             print("❌ 基础帧提取失败: \(error)")
@@ -343,7 +352,207 @@ class VideoUploadViewModel: ObservableObject {
             }
         }
     }
-    
+
+    // MARK: - 生成完整连环画
+    private func generateCompleteComic() async {
+        guard let taskId = currentTaskId else {
+            print("❌ 没有有效的任务ID")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "没有有效的任务ID"
+            }
+            return
+        }
+
+        guard let videoPath = currentVideoPath else {
+            print("❌ 没有有效的视频路径")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "没有有效的视频路径"
+            }
+            return
+        }
+
+        print("🎬 开始生成完整连环画，任务ID: \(taskId)")
+        print("📹 使用视频路径: \(videoPath)")
+
+        do {
+            // 创建请求参数，严格参考Python测试文件
+            let request = CompleteComicRequest(
+                taskId: taskId,
+                videoPath: videoPath,  // 必须：使用后端返回的视频路径
+                storyStyle: "温馨童话",  // 必须：故事风格关键词
+                targetFrames: 12,  // 参考Python测试
+                frameInterval: 2.0,  // 参考Python测试
+                significanceWeight: 0.7,  // 参考Python测试
+                qualityWeight: 0.3,  // 参考Python测试
+                stylePrompt: "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",  // 参考Python测试
+                imageSize: "1780x1024",  // 参考Python测试
+                maxConcurrent: 50
+            )
+
+            // 启动连环画生成
+            let response = try await comicGenerationService.startCompleteComicGeneration(request: request)
+            print("✅ 连环画生成已启动: \(response.message)")
+
+            await MainActor.run {
+                self.uploadStatus = .processing
+            }
+
+            // 开始轮询任务状态，等待完成
+            await pollComicGenerationStatus(taskId: taskId)
+
+        } catch {
+            print("❌ 连环画生成失败: \(error)")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "连环画生成失败: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    // MARK: - 轮询连环画生成状态
+    private func pollComicGenerationStatus(taskId: String) async {
+        let maxWaitTime: TimeInterval = 3000.0  // 最多等待3000秒（50分钟）
+        let interval: TimeInterval = 2.0  // 每2秒查询一次，参考Python实现
+        let startTime = Date()
+        var lastProgress = -1
+        var consecutiveErrors = 0  // 连续错误计数
+        let maxConsecutiveErrors = 10  // 最多允许10次连续错误
+
+        // 阶段描述映射，参考Python实现
+        let stageDescriptions = [
+            "initializing": "初始化中",
+            "extracting_keyframes": "正在提取关键帧",
+            "generating_story": "正在生成故事",
+            "stylizing_frames": "正在风格化处理",
+            "completed": "已完成"
+        ]
+
+        while Date().timeIntervalSince(startTime) < maxWaitTime {
+            do {
+                // 查询任务状态
+                let statusUrl = NetworkConfig.Endpoint.taskStatus(taskId: taskId).url
+                let (data, response) = try await URLSession.shared.data(from: statusUrl)
+
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
+                    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+                    consecutiveErrors += 1
+                    print("❌ 状态查询失败，HTTP状态码: \(statusCode)，连续错误: \(consecutiveErrors)")
+
+                    // 打印错误响应内容以便调试
+                    if let errorString = String(data: data, encoding: .utf8) {
+                        print("📄 错误响应内容: \(errorString)")
+                    }
+
+                    // 如果连续错误太多，或者是400错误且进度已经较高，尝试获取最终结果
+                    if consecutiveErrors >= maxConsecutiveErrors ||
+                       (statusCode == 400 && lastProgress >= 70) {
+                        print("⚠️ 连续错误过多或高进度400错误，尝试获取最终结果")
+                        await fetchComicResult(taskId: taskId)
+                        return
+                    }
+
+                    do {
+                        try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                    } catch {
+                        print("⚠️ 等待间隔失败: \(error)")
+                    }
+                    continue
+                }
+
+                let statusResponse = try JSONDecoder().decode(TaskStatusResponse.self, from: data)
+
+                // 成功获取状态，重置错误计数
+                consecutiveErrors = 0
+
+                // 只在进度变化时打印，参考Python实现
+                if statusResponse.progress != lastProgress {
+                    let stage = statusResponse.stage ?? "unknown"
+                    let stageDesc = stageDescriptions[stage] ?? stage
+                    print("📈 \(statusResponse.progress)% - \(stageDesc)")
+                    lastProgress = statusResponse.progress
+
+                    await MainActor.run {
+                        self.uploadProgress = Double(statusResponse.progress) / 100.0
+                    }
+                }
+
+                // 检查完成状态，参考Python实现
+                if statusResponse.status == "complete_comic_completed" {
+                    print("✅ 连环画生成完成！")
+                    await fetchComicResult(taskId: taskId)
+                    return
+                } else if statusResponse.status == "complete_comic_failed" || statusResponse.status == "error" {
+                    print("❌ 连环画生成失败: \(statusResponse.message)")
+                    await MainActor.run {
+                        self.uploadStatus = .failed
+                        self.errorMessage = "连环画生成失败: \(statusResponse.message)"
+                    }
+                    return
+                }
+
+                // 等待下次查询
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                } catch {
+                    print("⚠️ 等待间隔失败: \(error)")
+                    // 如果sleep失败，继续循环
+                }
+
+            } catch {
+                print("⚠️ 查询状态异常: \(error)")
+                // 继续尝试，参考Python实现
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                } catch {
+                    print("⚠️ 等待间隔失败: \(error)")
+                    // 如果连sleep都失败了，直接跳出循环
+                    break
+                }
+            }
+        }
+
+        // 超时处理
+        print("⏰ 连环画生成监控超时（3000秒）")
+        await MainActor.run {
+            self.uploadStatus = .failed
+            self.errorMessage = "连环画生成监控超时，请稍后重试"
+        }
+    }
+
+    // MARK: - 获取连环画结果
+    private func fetchComicResult(taskId: String) async {
+        do {
+            print("📖 获取连环画结果...")
+            let resultResponse = try await comicGenerationService.getComicResult(taskId: taskId)
+
+            if let comicResult = comicGenerationService.convertToComicResult(from: resultResponse, taskId: taskId) {
+                print("✅ 连环画结果转换成功，共\(comicResult.panels.count)页")
+
+                await MainActor.run {
+                    self.comicResult = comicResult
+                    self.uploadStatus = .completed
+                    self.uploadProgress = 1.0
+                }
+            } else {
+                print("❌ 连环画结果转换失败")
+                await MainActor.run {
+                    self.uploadStatus = .failed
+                    self.errorMessage = "连环画结果转换失败"
+                }
+            }
+
+        } catch {
+            print("❌ 获取连环画结果失败: \(error)")
+            await MainActor.run {
+                self.uploadStatus = .failed
+                self.errorMessage = "获取连环画结果失败: \(error.localizedDescription)"
+            }
+        }
+    }
+
     private func createMockComicResult() -> ComicResult {
         let videoTitle = selectedVideos.isEmpty ? "测试视频.mp4" : selectedVideos.map { $0.lastPathComponent }.joined(separator: ", ")
 
@@ -421,5 +630,6 @@ class VideoUploadViewModel: ObservableObject {
         progressTimer?.invalidate()
         progressTimer = nil
         currentTaskId = nil
+        currentVideoPath = nil  // 清理视频路径
     }
 }

@@ -141,29 +141,35 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
     SampleFlowView(comicResult: ComicResult(
         comicId: "preview-001",
         deviceId: "preview-device",
-        originalVideoTitle: "预览视频",
+        originalVideoTitle: "小猫的冒险之旅",
         creationDate: "2025-07-26",
-        panelCount: 3,
+        panelCount: 4,
         panels: [
             ComicPanel(
                 panelNumber: 1,
-                imageUrl: "Image1",
-                narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。"
+                imageUrl: "2-第1页",
+                narration: "在一个宁静的小镇上，住着一只名叫小花的橘猫。她总是对窗外的世界充满好奇，梦想着有一天能够走出家门，去探索那个未知的大世界。"
             ),
             ComicPanel(
                 panelNumber: 2,
-                imageUrl: "Image2",
-                narration: "突然，一只可爱的小狗从草丛中跳了出来。"
+                imageUrl: "2-第2页",
+                narration: "终于有一天，主人忘记关门了。小花悄悄溜了出去，踏上了她的第一次冒险。街道上的一切都是那么新奇，每一个角落都藏着惊喜。"
             ),
             ComicPanel(
                 panelNumber: 3,
-                imageUrl: "Image3",
-                narration: "小明决定带着这只小狗一起回家。"
+                imageUrl: "2-第3页",
+                narration: "在公园里，小花遇到了一群友善的流浪猫。他们教会了她如何在野外生存，如何寻找食物，如何躲避危险。小花学会了很多从未想过的技能。"
+            ),
+            ComicPanel(
+                panelNumber: 4,
+                imageUrl: "2-第4页",
+                narration: "当夜幕降临时，小花想起了温暖的家。她带着满满的回忆和新朋友们的祝福，踏上了回家的路。从此，她既珍惜家的温暖，也不忘记外面世界的精彩。"
             )
         ],
         finalQuestions: [
-            "你觉得小明为什么会选择这个名字？",
-            "如果你是小明，你会如何处理？"
+            "你觉得小花最大的收获是什么？",
+            "如果你是小花，你会选择留在外面还是回家？",
+            "这个故事告诉我们关于勇气和成长的什么道理？"
         ]
     ))
 }

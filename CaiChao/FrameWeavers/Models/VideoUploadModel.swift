@@ -185,6 +185,7 @@ struct RealUploadResponse: Codable {
     let task_id: String?
     let uploaded_files: Int?
     let invalid_files: [String]?
+    let video_path: String?  // 新增：后端返回的视频路径
 }
 
 // MARK: - 任务状态查询响应
@@ -194,8 +195,13 @@ struct TaskStatusResponse: Codable {
     let status: String
     let message: String
     let progress: Int
-    let files: [String]?
+    let stage: String?  // 添加stage字段
     let created_at: String
+
+    // 移除files字段，因为可能导致解析错误
+    enum CodingKeys: String, CodingKey {
+        case success, task_id, status, message, progress, stage, created_at
+    }
 }
 
 // MARK: - 任务取消响应
@@ -250,7 +256,169 @@ struct UploadProgress {
     let estimatedTimeRemaining: String?
 }
 
-// MARK: - 连环画结果
+// MARK: - 完整连环画生成请求
+struct CompleteComicRequest {
+    let taskId: String
+    let videoPath: String  // 必须：后端返回的视频路径
+    let storyStyle: String  // 必须：故事风格关键词
+    let targetFrames: Int
+    let frameInterval: Double
+    let significanceWeight: Double
+    let qualityWeight: Double
+    let stylePrompt: String
+    let imageSize: String
+    let maxConcurrent: Int
+
+    init(taskId: String,
+         videoPath: String,
+         storyStyle: String = "温馨童话",  // 参考Python测试的默认值
+         targetFrames: Int = 12,  // 参考Python测试
+         frameInterval: Double = 2.0,  // 参考Python测试
+         significanceWeight: Double = 0.7,  // 参考Python测试
+         qualityWeight: Double = 0.3,  // 参考Python测试
+         stylePrompt: String = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",  // 参考Python测试
+         imageSize: String = "1780x1024",  // 参考Python测试
+         maxConcurrent: Int = 50) {
+        self.taskId = taskId
+        self.videoPath = videoPath
+        self.storyStyle = storyStyle
+        self.targetFrames = targetFrames
+        self.frameInterval = frameInterval
+        self.significanceWeight = significanceWeight
+        self.qualityWeight = qualityWeight
+        self.stylePrompt = stylePrompt
+        self.imageSize = imageSize
+        self.maxConcurrent = maxConcurrent
+    }
+}
+
+// MARK: - 完整连环画生成响应
+struct CompleteComicResponse: Codable {
+    let success: Bool
+    let message: String
+    let taskId: String
+    let status: String
+    let progress: Int
+    let stage: String
+
+    enum CodingKeys: String, CodingKey {
+        case success = "success"
+        case message = "message"
+        case taskId = "task_id"
+        case status = "status"
+        case progress = "progress"
+        case stage = "stage"
+    }
+}
+
+// MARK: - 连环画结果响应
+struct ComicResultResponse: Codable {
+    let success: Bool
+    let message: String
+    let taskId: String
+    let results: ComicResults
+
+    enum CodingKeys: String, CodingKey {
+        case success = "success"
+        case message = "message"
+        case taskId = "task_id"
+        case results = "results"
+    }
+}
+
+struct ComicResults: Codable {
+    let successfulComics: [SuccessfulComic]
+    let totalProcessed: Int
+    let successCount: Int
+    let failureCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case successfulComics = "successful_comics"
+        case totalProcessed = "total_processed"
+        case successCount = "success_count"
+        case failureCount = "failure_count"
+    }
+}
+
+struct SuccessfulComic: Codable {
+    let videoName: String
+    let success: Bool
+    let comicData: ComicData
+
+    enum CodingKeys: String, CodingKey {
+        case videoName = "video_name"
+        case success = "success"
+        case comicData = "comic_data"
+    }
+}
+
+struct ComicData: Codable {
+    let storyInfo: StoryInfo
+    let pages: [ComicPage]
+    let interactiveQuestions: [InteractiveQuestion]
+
+    enum CodingKeys: String, CodingKey {
+        case storyInfo = "story_info"
+        case pages = "pages"
+        case interactiveQuestions = "interactive_questions"
+    }
+}
+
+struct StoryInfo: Codable {
+    let overallTheme: String
+    let title: String
+    let summary: String
+    let totalPages: Int
+    let videoName: String
+    let creationTime: String
+
+    enum CodingKeys: String, CodingKey {
+        case overallTheme = "overall_theme"
+        case title = "title"
+        case summary = "summary"
+        case totalPages = "total_pages"
+        case videoName = "video_name"
+        case creationTime = "creation_time"
+    }
+}
+
+struct ComicPage: Codable {
+    let pageIndex: Int
+    let storyText: String
+    let originalFramePath: String
+    let styledFramePath: String
+    let styledFilename: String
+    let frameIndex: Int
+    let styleApplied: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case pageIndex = "page_index"
+        case storyText = "story_text"
+        case originalFramePath = "original_frame_path"
+        case styledFramePath = "styled_frame_path"
+        case styledFilename = "styled_filename"
+        case frameIndex = "frame_index"
+        case styleApplied = "style_applied"
+    }
+}
+
+struct InteractiveQuestion: Codable {
+    let questionId: Int
+    let question: String
+    let options: [String]
+    let sceneDescription: String
+    let questionType: String
+
+    enum CodingKeys: String, CodingKey {
+        case questionId = "question_id"
+        case question = "question"
+        case options = "options"
+        case sceneDescription = "scene_description"
+        case questionType = "question_type"
+    }
+}
+
+// MARK: - 连环画结果（用于UI显示）
 struct ComicResult: Codable {
     let comicId: String
     let deviceId: String

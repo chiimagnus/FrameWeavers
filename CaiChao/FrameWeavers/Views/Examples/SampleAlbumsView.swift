@@ -42,10 +42,83 @@ struct SampleAlbumsView: View {
         ),
         SampleAlbum(
             id: "sample-002",
-            title: "空白画册 #2",
-            description: "即将到来的精彩故事",
+            title: "小猫的冒险之旅",
+            description: "一只勇敢小猫的奇妙探险",
             coverImage: "封面",
-            comicResult: nil
+            comicResult: ComicResult(
+                comicId: "sample-002",
+                deviceId: "sample-device",
+                originalVideoTitle: "小猫的冒险之旅",
+                creationDate: "2025-07-26",
+                panelCount: 4,
+                panels: [
+                    ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "2-第1页",
+                        narration: "有些旅程，从一张牌、一个无关紧要的输赢开始。窗外的世界向后飞驰，而前方的未知，在笑声中悄然展开。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 2,
+                        imageUrl: "2-第2页",
+                        narration: "她曾以为，旅途的意义在于抵达。直到她捧着那束向日葵，在陌生的绿意前停下脚步，才发现，有些风景，是为了让你与自己重逢。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 3,
+                        imageUrl: "2-第3页",
+                        narration: "而那些不期而遇的浪漫，就像街角突然出现的玫瑰，提醒着她，这世界总有人在笨拙而热烈地爱着你。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 4,
+                        imageUrl: "2-第4页",
+                        narration: "记忆里最滚烫的，往往是街头巷尾的烟火气。一串烤红薯的香甜，和朋友分享的蓝色围巾，共同织就了那个回不去的午后。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 5,
+                        imageUrl: "2-第5页",
+                        narration: "他们曾一起走向那座名为“大理”的城，走向历史的深处。每个人都以为是在奔赴一场盛大的风景，其实，不过是奔赴一场早已注定的相遇。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 6,
+                        imageUrl: "2-第6页",
+                        narration: "在沉睡的文物之间，她试图寻找时间的答案。每一个凝视，都是一场跨越千年的对话。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 7,
+                        imageUrl: "2-第7页",
+                        narration: "现代的我和古老的谜，在这趟旅途中反复交织。一面是率性的牛仔，一面是肃穆的东方，共同拼凑出完整的灵魂。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 8,
+                        imageUrl: "2-第8页",
+                        narration: "后来，所有的风景与奇遇，都定格在了一张用力的自拍里。笑容是真的，友谊是真的，那个在市集里喧闹的黄昏，也是真的。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 9,
+                        imageUrl: "2-第9页",
+                        narration: "人们在网红打卡点寻找诗和远方，而他在路边，用一束鲜花，等待着他的全世界。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 10,
+                        imageUrl: "2-第10页",
+                        narration: "旅途的最后，是一场告别的雪。快门留住了青春的温度，却留不住那终将融化的时光。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 11,
+                        imageUrl: "2-第11页",
+                        narration: "直到凌晨两点五十五分，手机屏幕里的吉光片羽才泄露了秘密——所有鲜活的过往，都已成为睡前的浏览记录。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 12,
+                        imageUrl: "2-第12页",
+                        narration: "指尖最终停在了查询页面。目的地四川，时间十月三日，状态却是“暂无车辆信息”。原来，这场盛大的回忆，只是一场无法启程的计划。"
+                    )
+                ],
+                finalQuestions: [
+                    "如果让你从这段旅程中选一个瞬间定格成永恒，你会选择哪个画面？",
+                    "这些故事里藏着许多“笨拙而热烈”的爱——街角玫瑰、路边鲜花、蓝色围巾...你生命中有过这样被悄悄爱着的时刻吗？",
+                    "最后那条“无法启程的四川之旅”像不像我们人生中某些注定错过的美好？"
+                ]
+            )
         ),
         SampleAlbum(
             id: "sample-003",

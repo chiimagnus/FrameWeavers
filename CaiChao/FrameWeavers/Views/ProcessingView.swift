@@ -90,7 +90,7 @@ struct ProcessingView: View {
         }
         .onChange(of: viewModel.uploadStatus) { _, newStatus in
             if newStatus == .completed {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                DispatchQueue.main.asyncAfter(deadline: .now()) { // + 10
                     navigateToResults = true
                 }
             }
