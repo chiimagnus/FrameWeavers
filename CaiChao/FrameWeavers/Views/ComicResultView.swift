@@ -104,6 +104,7 @@ struct ComicPageViewController: UIViewControllerRepresentable {
                 return ComicPanelViewController(
                     panel: parent.comicResult.panels[index],
                     pageIndex: index,
+                    totalPages: parent.totalPages,
                     geometry: parent.geometry
                 )
             } else {
@@ -111,6 +112,7 @@ struct ComicPageViewController: UIViewControllerRepresentable {
                 return QuestionsViewController(
                     questions: parent.comicResult.finalQuestions,
                     pageIndex: index,
+                    totalPages: parent.totalPages,
                     geometry: parent.geometry
                 )
             }
@@ -168,9 +170,11 @@ class ComicBaseViewController: UIViewController {
 // 单个漫画页面视图控制器
 class ComicPanelViewController: ComicBaseViewController {
     let panel: ComicPanel
+    let totalPages: Int
     
-    init(panel: ComicPanel, pageIndex: Int, geometry: GeometryProxy) {
+    init(panel: ComicPanel, pageIndex: Int, totalPages: Int, geometry: GeometryProxy) {
         self.panel = panel
+        self.totalPages = totalPages
         super.init(pageIndex: pageIndex, geometry: geometry)
     }
     
@@ -203,7 +207,9 @@ class ComicPanelViewController: ComicBaseViewController {
         let hostingController = UIHostingController(
             rootView: ComicPanelView(
                 panel: panel,
-                geometry: geometry
+                geometry: geometry,
+                pageIndex: pageIndex,
+                totalPages: totalPages
             )
         )
 
@@ -254,9 +260,11 @@ class ComicPanelViewController: ComicBaseViewController {
 // 互动问题页面视图控制器
 class QuestionsViewController: ComicBaseViewController {
     let questions: [String]
+    let totalPages: Int
     
-    init(questions: [String], pageIndex: Int, geometry: GeometryProxy) {
+    init(questions: [String], pageIndex: Int, totalPages: Int, geometry: GeometryProxy) {
         self.questions = questions
+        self.totalPages = totalPages
         super.init(pageIndex: pageIndex, geometry: geometry)
     }
     
@@ -272,7 +280,12 @@ class QuestionsViewController: ComicBaseViewController {
     private func setupView() {
         // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
-            rootView: QuestionsView(questions: questions, geometry: geometry)
+            rootView: QuestionsView(
+                questions: questions,
+                geometry: geometry,
+                pageIndex: pageIndex,
+                totalPages: totalPages
+            )
         )
 
         // 设置 hostingController 透明背景
@@ -329,6 +342,8 @@ extension Notification.Name {
 struct ComicPanelView: View {
     let panel: ComicPanel
     let geometry: GeometryProxy
+    let pageIndex: Int
+    let totalPages: Int
 
     // 判断是否为横屏
     private var isLandscape: Bool {
@@ -336,12 +351,30 @@ struct ComicPanelView: View {
     }
 
     var body: some View {
-        if isLandscape {
-            // 横屏布局：图片在左，文本在右
-            landscapeLayout
-        } else {
-            // 竖屏布局：图片在上，文本在下
-            portraitLayout
+        ZStack {
+            if isLandscape {
+                // 横屏布局：图片在左，文本在右
+                landscapeLayout
+            } else {
+                // 竖屏布局：图片在上，文本在下
+                portraitLayout
+            }
+            
+            // 页码显示
+            VStack {
+                HStack {
+                    Spacer()
+                    Text("· \(pageIndex + 1) ·")
+                        .font(.title3.bold())
+                        .foregroundColor(.primary)
+                        .padding(8)
+                        .background(Color(.systemBackground).opacity(0.8))
+                        .cornerRadius(8)
+                        .padding(.top, 20)
+                        .padding(.trailing, 20)
+                }
+                Spacer()
+            }
         }
     }
 
@@ -431,6 +464,8 @@ struct ComicPanelView: View {
 struct QuestionsView: View {
     let questions: [String]
     let geometry: GeometryProxy
+    let pageIndex: Int
+    let totalPages: Int
     
     // 判断是否为横屏
     private var isLandscape: Bool {
@@ -453,32 +488,41 @@ struct QuestionsView: View {
             Spacer()
             
             VStack(spacing: 30) {
-                Text("互动问题")
-                    .font(.largeTitle.bold())
+                // 页码显示
+                Text("· 完 ·")
+                    .font(.title2.bold())
                     .foregroundColor(.primary)
+                    .padding(.top, 20)
                 
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(questions, id: \.self) { question in
-                        HStack(alignment: .top, spacing: 12) {
-                            Image(systemName: "questionmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.blue)
-                            
-                            Text(question)
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .lineSpacing(4)
+                VStack(spacing: 30) {
+                    Text("互动问题")
+                        .font(.largeTitle.bold())
+                        .foregroundColor(.primary)
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(questions, id: \.self) { question in
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                                
+                                Text(question)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .lineSpacing(4)
+                            }
+                            .padding()
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .cornerRadius(12)
+                            .shadow(radius: 2)
                         }
-                        .padding()
-                        .background(Color(.systemBackground).opacity(0.8))
-                        .cornerRadius(12)
-                        .shadow(radius: 2)
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
+                .frame(maxWidth: geometry.size.width * 0.7)
+                
+                Spacer()
             }
-            .frame(maxWidth: geometry.size.width * 0.7)
-            
             Spacer()
         }
     }
@@ -489,32 +533,41 @@ struct QuestionsView: View {
             Spacer()
             
             VStack(spacing: 30) {
-                Text("互动问题")
-                    .font(.largeTitle.bold())
+                // 页码显示
+                Text("· 完 ·")
+                    .font(.title2.bold())
                     .foregroundColor(.primary)
+                    .padding(.top, 20)
                 
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(questions, id: \.self) { question in
-                        HStack(alignment: .top, spacing: 12) {
-                            Image(systemName: "questionmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.blue)
-                            
-                            Text(question)
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .lineSpacing(4)
+                VStack(spacing: 30) {
+                    Text("互动问题")
+                        .font(.largeTitle.bold())
+                        .foregroundColor(.primary)
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(questions, id: \.self) { question in
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                                
+                                Text(question)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .lineSpacing(4)
+                            }
+                            .padding()
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .cornerRadius(12)
+                            .shadow(radius: 2)
                         }
-                        .padding()
-                        .background(Color(.systemBackground).opacity(0.8))
-                        .cornerRadius(12)
-                        .shadow(radius: 2)
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
+                .frame(maxWidth: geometry.size.width * 0.9)
+                
+                Spacer()
             }
-            .frame(maxWidth: geometry.size.width * 0.9)
-            
             Spacer()
         }
     }
