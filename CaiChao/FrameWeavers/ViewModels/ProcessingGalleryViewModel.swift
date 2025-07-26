@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Foundation
 
 /// 处理画廊的视图模型
 class ProcessingGalleryViewModel: ObservableObject {

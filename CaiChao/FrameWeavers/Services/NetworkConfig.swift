@@ -5,7 +5,7 @@ struct NetworkConfig {
     // 基础URL配置 - 根据运行环境自动选择
     static let baseURL: String = {
         #if targetEnvironment(simulator)
-        return "http://127.0.0.1:5001"
+        return "https://e8065295b2fd.ngrok-free.app"
         #else
         return "https://e8065295b2fd.ngrok-free.app"
         #endif

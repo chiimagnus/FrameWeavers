@@ -1,6 +1,100 @@
 import Foundation
 import UIKit
 
+// MARK: - 基础帧数据模型
+struct BaseFrameData: Identifiable, Hashable {
+    let id = UUID()
+    let framePath: String
+    let frameIndex: Int
+    let timestamp: Double
+    let thumbnailURL: URL?
+
+    init(framePath: String, frameIndex: Int, timestamp: Double) {
+        self.framePath = framePath
+        self.frameIndex = frameIndex
+        self.timestamp = timestamp
+        // 构建完整的图片URL
+        if framePath.hasPrefix("http") {
+            self.thumbnailURL = URL(string: framePath)
+        } else {
+            // 如果是相对路径，需要拼接服务器地址
+            let baseURL = NetworkConfig.baseURL
+            self.thumbnailURL = URL(string: "\(baseURL)/\(framePath)")
+        }
+    }
+}
+
+// MARK: - 基础帧提取响应模型
+struct BaseFrameExtractionResponse: Codable {
+    let success: Bool
+    let message: String
+    let taskId: String
+    let results: [BaseFrameResult]
+
+    enum CodingKeys: String, CodingKey {
+        case success = "success"
+        case message = "message"
+        case taskId = "task_id"
+        case results = "results"
+    }
+}
+
+// MARK: - 基础帧结果详情
+struct BaseFrameResult: Codable, Identifiable {
+    let id = UUID()
+    let videoName: String
+    let baseFramesCount: Int
+    let baseFramesPaths: [String]
+    let outputDir: String
+
+    enum CodingKeys: String, CodingKey {
+        case videoName = "video_name"
+        case baseFramesCount = "base_frames_count"
+        case baseFramesPaths = "base_frames_paths"
+        case outputDir = "output_dir"
+    }
+}
+
+// MARK: - 基础帧服务
+class BaseFrameService {
+    private let baseURL: String
+
+    init(baseURL: String = NetworkConfig.baseURL) {
+        self.baseURL = baseURL
+    }
+
+    func extractBaseFrames(taskId: String, interval: Double = 1.0) async throws -> BaseFrameExtractionResponse {
+        let endpoint = "/api/extract/base-frames"
+        let urlString = baseURL + endpoint
+
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "BaseFrameService", code: -1, userInfo: [NSLocalizedDescriptionKey: "无效的URL"])
+        }
+
+        let parameters = [
+            "task_id": taskId,
+            "interval": String(interval)
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        let bodyString = parameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
+        request.httpBody = bodyString.data(using: .utf8)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "BaseFrameService", code: -2, userInfo: [NSLocalizedDescriptionKey: "服务器错误"])
+        }
+
+        let decoder = JSONDecoder()
+        return try decoder.decode(BaseFrameExtractionResponse.self, from: data)
+    }
+}
+
 enum UploadStatus: String {
     case pending = "待上传"
     case uploading = "上传中"
