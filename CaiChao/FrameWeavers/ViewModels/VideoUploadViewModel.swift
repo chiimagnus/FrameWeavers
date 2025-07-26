@@ -436,7 +436,11 @@ class VideoUploadViewModel: ObservableObject {
                 guard let httpResponse = response as? HTTPURLResponse,
                       httpResponse.statusCode == 200 else {
                     print("❌ 状态查询失败，HTTP状态码: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
-                    try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                    do {
+                        try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                    } catch {
+                        print("⚠️ 等待间隔失败: \(error)")
+                    }
                     continue
                 }
 
@@ -469,12 +473,23 @@ class VideoUploadViewModel: ObservableObject {
                 }
 
                 // 等待下次查询
-                try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                } catch {
+                    print("⚠️ 等待间隔失败: \(error)")
+                    // 如果sleep失败，继续循环
+                }
 
             } catch {
                 print("⚠️ 查询状态异常: \(error)")
                 // 继续尝试，参考Python实现
-                try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                } catch {
+                    print("⚠️ 等待间隔失败: \(error)")
+                    // 如果连sleep都失败了，直接跳出循环
+                    break
+                }
             }
         }
 
