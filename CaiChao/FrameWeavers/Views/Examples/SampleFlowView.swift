@@ -59,8 +59,8 @@ struct SampleFlowView: View {
                     OpenResultsView(comicResult: comicResult)
                 }
             }
-            .navigationBarBackButtonHidden(true)
         }
+        .navigationBarBackButtonHidden(true)
     }
 
 }
