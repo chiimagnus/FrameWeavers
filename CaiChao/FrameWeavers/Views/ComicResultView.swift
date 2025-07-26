@@ -364,7 +364,7 @@ struct ComicPanelView: View {
                             .font(.title3.bold())
                             .foregroundColor(.primary)
                             .padding(8)
-                            .background(Color(.systemBackground).opacity(0.8))
+                            .background(Color.clear)
                             .cornerRadius(8)
                             .padding(.top, 20)
                             .padding(.trailing, 20)
@@ -396,7 +396,7 @@ struct ComicPanelView: View {
                     .font(.title3.bold())
                     .foregroundColor(.primary)
                     .padding(8)
-                    .background(Color(.systemBackground).opacity(0.8))
+                    .background(Color.clear)
                     .cornerRadius(8)
                     .padding(.bottom, 20)
             }
@@ -491,19 +491,14 @@ struct QuestionsView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(questions, id: \.self) { question in
                             HStack(alignment: .top, spacing: 12) {
-                                Image(systemName: "questionmark.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
-                                
                                 Text(question)
                                     .font(.body)
                                     .foregroundColor(.primary)
                                     .lineSpacing(4)
                             }
                             .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
+                            .background(Color.clear)
                             .cornerRadius(12)
-                            .shadow(radius: 2)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -517,7 +512,7 @@ struct QuestionsView: View {
                     .font(.title2.bold())
                     .foregroundColor(.primary)
                     .padding(8)
-                    .background(Color(.systemBackground).opacity(0.8))
+                    .background(Color.clear)
                     .cornerRadius(8)
                     .padding(.bottom, 20)
             }
@@ -546,19 +541,14 @@ struct QuestionsView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(questions, id: \.self) { question in
                             HStack(alignment: .top, spacing: 12) {
-                                Image(systemName: "questionmark.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
-                                
                                 Text(question)
                                     .font(.body)
                                     .foregroundColor(.primary)
                                     .lineSpacing(4)
                             }
                             .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
+                            .background(Color.clear)
                             .cornerRadius(12)
-                            .shadow(radius: 2)
                         }
                     }
                     .padding(.horizontal, 20)
