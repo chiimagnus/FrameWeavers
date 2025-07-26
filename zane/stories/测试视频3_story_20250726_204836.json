@@ -1,0 +1,135 @@
+{
+  "story_info": {
+    "task_id": "test_task_1753533922",
+    "video_name": "测试视频3.mp4",
+    "video_path": "D:\\PRODUCT\\FrameWeavers\\zane\\测试视频3.mp4",
+    "processing_time": "2025-07-26T20:48:36.282748",
+    "overall_theme": "三位闺蜜在阳光与夜色交织的城市里，以花束与笑容庆祝一段旅程的圆满收束，洋溢着青春的温馨与自由。",
+    "total_narrations": 4,
+    "total_interactive_questions": 5
+  },
+  "final_narrations": [
+    {
+      "frame_index": 5,
+      "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0006.jpg",
+      "story_text": "就在这条被阳光擦得亮晶晶的马路边，粉红的玫瑰忽然变成一座小小的城堡，三位旅人把笑声叠成云梯，一阶阶登上去，发现原来‘家’可以是一束花、两把伞、三张笑脸——简单得像个童话，却盛得下整个世界的温柔。"
+    },
+    {
+      "frame_index": 7,
+      "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0008.jpg",
+      "story_text": "绿墙上的小橙花悄悄为她别上一枚阳光勋章，她把向日葵捧成一盏灯，灯芯里跳动着一句悄悄话：‘亲爱的旅人，别怕黑夜，因为你心里已经住着一个会发光的小小太阳。’"
+    },
+    {
+      "frame_index": 15,
+      "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0016.jpg",
+      "story_text": "夜市的灯火像从天空撒下来的星星糖，她轻轻咬下一口烤串，热腾腾的香气立刻变成一只橘色小猫，蹭着她的鼻尖说：‘孤单的时候，就来找我们吧，把每一盏霓虹都当作暖炉，把每一次呼吸都写成故事。’"
+    },
+    {
+      "frame_index": 46,
+      "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0047.jpg",
+      "story_text": "蓝色巴士摇响铃铛，像老邮差带来一封离别的信，却把最鲜艳的花瓣偷偷塞进他们的口袋——青春没有终点，它只是换了个名字，叫‘下一次花开’；而此刻，他们站在时光的胶片里，举着玫瑰与笑脸，把再见涂成了会唱歌的颜色。"
+    }
+  ],
+  "interactive_questions": [
+    {
+      "id": 1,
+      "type": "memory_recall",
+      "question": "这个故事中哪个画面给你留下了最深的印象？",
+      "intent": "引导用户回忆深刻画面"
+    },
+    {
+      "id": 2,
+      "type": "emotional_reflection",
+      "question": "观看这个故事时，你的心情发生了怎样的变化？",
+      "intent": "探索情感变化过程"
+    },
+    {
+      "id": 3,
+      "type": "personal_connection",
+      "question": "这个故事让你想起了自己的哪些经历？",
+      "intent": "建立个人连接"
+    },
+    {
+      "id": 4,
+      "type": "theme_thinking",
+      "question": "关于'三位闺蜜在阳光与夜色交织的城市里，以花束与笑容庆祝一段旅程的圆满收束，洋溢着青春的温馨与自由。'这个主题，你有什么新的思考？",
+      "intent": "深化主题理解"
+    },
+    {
+      "id": 5,
+      "type": "detail_observation",
+      "question": "在故事的细节中，你发现了什么特别有意思的地方？",
+      "intent": "关注故事细节"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0006.jpg",
+        "story_text": "旅程高潮：三人齐聚马路边，花束与笑声宣告友情的胜利。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0008.jpg",
+        "story_text": "个人静像：主角在绿墙前独照向日葵，象征她内心找到的光与希望。"
+      },
+      {
+        "frame_index": 15,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0016.jpg",
+        "story_text": "夜色烟火：夜市小吃与霓虹把旅程的烟火气息推向高潮，生活味扑面而来。"
+      },
+      {
+        "frame_index": 46,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0047.jpg",
+        "story_text": "告别定格：公路边的合影与驶离的巴士，将记忆封存为永恒的青春合影。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0006.jpg",
+        "story_text": "在这一刻，我不再是独自赶路的人，而是被爱重重包围的孩子，仿佛所有的漂泊都只是为了换来这束粉红玫瑰与几声肆无忌惮的笑。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0008.jpg",
+        "story_text": "我把向日葵贴紧胸口，听见花瓣深处传来的轻声耳语：原来真正的光不在远方，而在学会相信自己的那一秒。"
+      },
+      {
+        "frame_index": 15,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0016.jpg",
+        "story_text": "夜市的烟火气扑面而来，我咬下第一口烤串，忽然发现——孤独也能在陌生人的灯火里被慢慢烤软，化成嘴角那一丝真实的温度。"
+      },
+      {
+        "frame_index": 46,
+        "frame_path": "frames\\test_task_1753533922_1753533925\\base_frame_0047.jpg",
+        "story_text": "快门按下的瞬间，我听见青春在身后关上车门，那辆蓝色巴士带走了旅程，却把最鲜艳的回忆留在我们仍举着花朵的手心里。"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-26T20:46:27.095945",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 27.74829888343811,
+    "soul_writer_time": 54.63405227661133,
+    "master_editor_time": 90.44748449325562,
+    "interactive_completed": true,
+    "interactive_time": 129.18778681755066,
+    "end_time": "2025-07-26T20:48:36.282748",
+    "total_time": 129.18778681755066,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-26T20:48:36.282748"
+  }
+}

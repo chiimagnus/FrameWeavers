@@ -35,12 +35,12 @@ os.makedirs(STORIES_FOLDER, exist_ok=True)
 # 任务状态存储
 task_status = {}
 
-def style_transform_image(image_url, style_prompt=None, image_size=None):
+def style_transform_image(image_path, style_prompt=None, image_size=None):
     """
-    对图像进行风格化处理
+    对图像进行风格化处理 - 基于ModelScope API
     
     Args:
-        image_url (str): 图像的URL地址
+        image_path (str): 本地图像文件路径
         style_prompt (str): 风格化提示词，如果为None则使用默认值
         image_size (str): 输出图像尺寸，如果为None则使用默认值
     
@@ -48,18 +48,72 @@ def style_transform_image(image_url, style_prompt=None, image_size=None):
         dict: 包含处理结果的字典
     """
     try:
+        import requests
+        import json
+        from PIL import Image
+        from io import BytesIO
+        import base64
+        
         # 使用配置文件中的默认值
         if style_prompt is None:
             style_prompt = config.DEFAULT_STYLE_PROMPT
         if image_size is None:
             image_size = config.DEFAULT_IMAGE_SIZE
         
-        # 构建请求数据
+        print(f"[INFO] 开始风格化处理本地图像: {image_path}")
+        print(f"[INFO] 风格提示词: {style_prompt}")
+        
+        # 检查本地文件是否存在
+        if not os.path.exists(image_path):
+            return {
+                'success': False,
+                'error': f'本地图像文件不存在: {image_path}'
+            }
+        
+        # 预处理图像：压缩大图像以避免API限制
+        from PIL import Image as PILImage
+        
+        # 先读取并可能压缩图像
+        with PILImage.open(image_path) as img:
+            # 转换为RGB模式（如果是RGBA）
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # 如果图像太大，压缩到合理尺寸
+            max_size = (1024, 1024)  # 最大尺寸限制
+            if img.size[0] > max_size[0] or img.size[1] > max_size[1]:
+                print(f"[INFO] 压缩图像从 {img.size} 到适合API的尺寸")
+                img.thumbnail(max_size, PILImage.Resampling.LANCZOS)
+            
+            # 保存为高质量JPEG以减小文件大小
+            from io import BytesIO
+            temp_buffer = BytesIO()
+            img.save(temp_buffer, format='JPEG', quality=85, optimize=True)
+            image_data = temp_buffer.getvalue()
+        
+        # 检查文件大小
+        max_size_mb = 5  # 5MB限制
+        if len(image_data) > max_size_mb * 1024 * 1024:
+            print(f"[WARNING] 图像文件过大 ({len(image_data)/1024/1024:.1f}MB)，尝试进一步压缩")
+            # 进一步压缩
+            with PILImage.open(image_path) as img:
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                img.thumbnail((512, 512), PILImage.Resampling.LANCZOS)
+                temp_buffer = BytesIO()
+                img.save(temp_buffer, format='JPEG', quality=70, optimize=True)
+                image_data = temp_buffer.getvalue()
+        
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        image_url = f"data:image/jpeg;base64,{image_base64}"
+        
+        print(f"[INFO] 图像处理完成，压缩后大小: {len(image_data)/1024:.1f}KB")
+        
+        # 构建请求数据（按照ModelScope API格式）
         payload = {
             'model': config.MODELSCOPE_MODEL,
             'prompt': style_prompt,
-            'image_url': image_url,
-            'size': image_size
+            'image_url': image_url
         }
         
         # 构建请求头
@@ -69,7 +123,7 @@ def style_transform_image(image_url, style_prompt=None, image_size=None):
         }
         
         # 发送风格化请求
-        print(f"[INFO] 开始风格化处理图像: {image_url}")
+        print(f"[INFO] 调用ModelScope API进行风格化...")
         response = requests.post(
             config.MODELSCOPE_API_URL, 
             data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), 
@@ -79,27 +133,62 @@ def style_transform_image(image_url, style_prompt=None, image_size=None):
         
         # 检查响应状态
         if response.status_code != 200:
+            print(f"[ERROR] ModelScope API请求失败，状态码: {response.status_code}")
+            print(f"[ERROR] 响应内容: {response.text}")
+            print(f"[INFO] 风格化失败，返回原图作为降级处理")
+            
+            # 降级处理：返回原图
+            with open(image_path, 'rb') as f:
+                original_image_data = f.read()
+            
             return {
-                'success': False,
-                'error': f'API请求失败，状态码: {response.status_code}, 响应: {response.text}'
+                'success': True,  # 标记为成功，但使用原图
+                'styled_image': None,
+                'styled_image_url': '',
+                'image_data': original_image_data,  # 使用原图数据
+                'original_path': image_path,
+                'style_prompt': style_prompt,
+                'fallback_used': True,  # 标记使用了降级处理
+                'api_error': f'状态码: {response.status_code}, 响应: {response.text}'
             }
         
         # 解析响应数据
-        response_data = response.json()
+        try:
+            response_data = response.json()
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] 响应JSON解析失败: {e}")
+            return {
+                'success': False,
+                'error': f'API响应JSON解析失败: {e}, 响应: {response.text}'
+            }
         
         # 检查响应数据格式
         if 'images' not in response_data or len(response_data['images']) == 0:
+            print(f"[ERROR] API响应格式错误: {response_data}")
+            print(f"[INFO] 响应格式错误，返回原图作为降级处理")
+            
+            # 降级处理：返回原图
+            with open(image_path, 'rb') as f:
+                original_image_data = f.read()
+            
             return {
-                'success': False,
-                'error': f'API响应格式错误: {response_data}'
+                'success': True,  # 标记为成功，但使用原图
+                'styled_image': None,
+                'styled_image_url': '',
+                'image_data': original_image_data,  # 使用原图数据
+                'original_path': image_path,
+                'style_prompt': style_prompt,
+                'fallback_used': True,  # 标记使用了降级处理
+                'api_error': f'响应格式错误: {response_data}'
             }
         
         # 获取风格化后的图像URL
         styled_image_url = response_data['images'][0]['url']
+        print(f"[INFO] 获取到风格化图像URL: {styled_image_url}")
         
         # 下载风格化后的图像
-        print(f"[INFO] 下载风格化后的图像: {styled_image_url}")
-        image_response = requests.get(styled_image_url, timeout=30)
+        print(f"[INFO] 下载风格化后的图像...")
+        image_response = requests.get(styled_image_url, timeout=60)
         
         if image_response.status_code != 200:
             return {
@@ -109,14 +198,43 @@ def style_transform_image(image_url, style_prompt=None, image_size=None):
         
         # 转换为PIL图像对象
         styled_image = Image.open(BytesIO(image_response.content))
+        print(f"[INFO] 风格化图像下载成功，尺寸: {styled_image.size}")
         
         return {
             'success': True,
             'styled_image': styled_image,
             'styled_image_url': styled_image_url,
-            'original_url': image_url,
+            'image_data': image_response.content,  # 原始图像数据，用于保存
+            'original_path': image_path,
             'style_prompt': style_prompt
         }
+        
+    except Exception as e:
+        print(f"[ERROR] 风格化处理异常: {str(e)}")
+        print(f"[INFO] 处理异常，返回原图作为降级处理")
+        import traceback
+        traceback.print_exc()
+        
+        # 降级处理：返回原图
+        try:
+            with open(image_path, 'rb') as f:
+                original_image_data = f.read()
+            
+            return {
+                'success': True,  # 标记为成功，但使用原图
+                'styled_image': None,
+                'styled_image_url': '',
+                'image_data': original_image_data,  # 使用原图数据
+                'original_path': image_path,
+                'style_prompt': style_prompt,
+                'fallback_used': True,  # 标记使用了降级处理
+                'exception_error': str(e)
+            }
+        except:
+            return {
+                'success': False,
+                'error': f'风格化处理异常且无法读取原图: {str(e)}'
+            }
         
     except requests.exceptions.Timeout:
         return {
@@ -768,14 +886,27 @@ def generate_story():
                 'message': '输入数据格式错误，需要包含video_info和keyframes字段'
             }), 400
         
-        # 验证关键帧数据
+                # 验证关键帧数据
         keyframes = input_data['keyframes']
         if not isinstance(keyframes, list) or len(keyframes) == 0:
             return jsonify({
                 'success': False,
                 'message': '关键帧数据不能为空'
             }), 400
+
+        # 处理可选的文体风格参数
+        style = input_data.get('style', None)
+        if style and not isinstance(style, str):
+            return jsonify({
+                'success': False,
+                'message': '文体风格参数必须是字符串类型'
+            }), 400
         
+        # 将风格参数添加到输入数据中
+        if style:
+            input_data['style'] = style.strip()
+            print(f"[INFO] 使用文体风格: {style}")
+
         # 为输入数据添加task_id（如果没有的话）
         if 'task_id' not in input_data['video_info']:
             input_data['video_info']['task_id'] = str(uuid.uuid4())
@@ -829,7 +960,39 @@ def generate_story():
             'message': f'故事生成请求失败: {str(e)}'
         }), 500
 
-# 10. 获取故事生成结果API（保留用于兼容性，但现在故事生成是同步的）
+# 10. 获取可用文体风格列表API
+@app.route('/api/story/styles', methods=['GET'])
+def get_story_styles():
+    """获取可用的文体风格列表"""
+    try:
+        from story_generation_agents import MasterEditorAgent, LLMClient
+        
+        # 创建一个临时的MasterEditorAgent实例来获取风格模板
+        temp_llm_client = LLMClient()
+        temp_agent = MasterEditorAgent(temp_llm_client)
+        
+        styles = []
+        for style_name, style_data in temp_agent.style_templates.items():
+            styles.append({
+                'name': style_name,
+                'description': style_data['description']
+            })
+        
+        return jsonify({
+            'success': True,
+            'message': '获取文体风格列表成功',
+            'styles': styles,
+            'total_count': len(styles)
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] 获取文体风格列表失败: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'获取文体风格列表失败: {str(e)}'
+        }), 500
+
+# 11. 获取故事生成结果API（保留用于兼容性，但现在故事生成是同步的）
 @app.route('/api/story/result/<task_id>', methods=['GET'])
 def get_story_result(task_id):
     """获取故事生成结果（兼容性API）"""
@@ -1062,6 +1225,632 @@ def process_style_transform():
         return jsonify({
             'success': False,
             'message': f'风格化处理失败: {str(e)}'
+        }), 500
+
+# 13. 完整连环画生成API - 集成接口
+@app.route('/api/process/complete-comic', methods=['POST'])
+def process_complete_comic():
+    """
+    完整连环画生成API - 一键完成关键帧提取、故事生成、风格化处理
+    
+    前置条件：前端已完成视频上传API和基础帧提取API调用
+    
+    接受参数：
+    - video_path: 视频文件路径（前端直接传入）
+    - task_id: 任务ID（从前面的API调用中获得）
+    - story_style: 故事风格关键词（前端指定）
+    - 其他处理参数...
+    
+    这个接口将三个核心模块集成到一个流程中：
+    1. 关键帧提取 - 从视频中智能提取关键帧
+    2. 故事生成 - 为每个关键帧生成故事文本和互动提问
+    3. 风格化处理 - 对关键帧进行艺术风格化处理
+    
+    返回完整的连环画数据，前端只需调用一次即可获得最终结果
+    """
+    try:
+        print("[INFO] 收到完整连环画生成请求")
+        
+        # 获取必要参数
+        video_path = request.form.get('video_path')
+        task_id = request.form.get('task_id')
+        story_style = request.form.get('story_style', '诗意散文')  # 故事风格关键词
+        
+        # 验证必要参数
+        if not video_path:
+            return jsonify({
+                'success': False,
+                'message': '缺少视频路径参数 video_path'
+            }), 400
+            
+        if not task_id:
+            return jsonify({
+                'success': False,
+                'message': '缺少任务ID参数 task_id'
+            }), 400
+        
+        # 验证视频文件存在
+        if not os.path.exists(video_path):
+            return jsonify({
+                'success': False,
+                'message': f'视频文件不存在: {video_path}'
+            }), 400
+        
+        # 验证任务ID存在（可选，根据实际需求）
+        if task_id not in task_status:
+            print(f"[WARNING] 任务ID {task_id} 不在状态管理中，创建新状态记录")
+            # 为直接调用创建基础状态记录
+            task_status[task_id] = {
+                'status': 'ready_for_comic',
+                'message': '准备生成连环画...',
+                'progress': 0,
+                'created_at': datetime.now().isoformat()
+            }
+        
+        print(f"[INFO] 视频路径: {video_path}")
+        print(f"[INFO] 任务ID: {task_id}")
+        print(f"[INFO] 故事风格: {story_style}")
+        
+        # 获取处理参数
+        params = {
+            'target_frames': int(request.form.get('target_frames', 8)),
+            'frame_interval': float(request.form.get('frame_interval', 1.0)),
+            'significance_weight': float(request.form.get('significance_weight', 0.6)),
+            'quality_weight': float(request.form.get('quality_weight', 0.4)),
+            'style_prompt': request.form.get('style_prompt'),  # 可选
+            'image_size': request.form.get('image_size'),      # 可选
+            'story_style': story_style,                        # 故事风格关键词
+            'max_concurrent': int(request.form.get('max_concurrent', 50))
+        }
+        
+        print(f"[INFO] 处理参数: {params}")
+        
+        # 更新任务状态
+        task_status[task_id]['status'] = 'complete_comic_processing'
+        task_status[task_id]['message'] = '开始完整连环画生成...'
+        task_status[task_id]['progress'] = 0
+        task_status[task_id]['stage'] = 'initializing'
+        
+        # 创建视频文件信息（基于传入的路径）
+        video_filename = os.path.basename(video_path)
+        video_name = os.path.splitext(video_filename)[0]
+        
+        video_file_info = {
+            'original_name': video_filename,
+            'saved_name': video_filename,
+            'filepath': video_path,
+            'size': os.path.getsize(video_path)
+        }
+        
+        print(f"[INFO] 开始处理视频: {video_name}")
+
+        # 开始异步处理
+        def async_complete_comic_processing():
+            """异步执行完整连环画生成"""
+            try:
+                # 阶段1: 关键帧提取 (0-30%)
+                task_status[task_id]['stage'] = 'extracting_keyframes'
+                task_status[task_id]['message'] = '正在提取关键帧...'
+                task_status[task_id]['progress'] = 10
+                
+                keyframes_result = extract_keyframes_for_comic(
+                    video_path, task_id, video_name, params
+                )
+                
+                if not keyframes_result['success']:
+                    task_status[task_id]['status'] = 'complete_comic_failed'
+                    task_status[task_id]['message'] = f'关键帧提取失败: {keyframes_result["error"]}'
+                    task_status[task_id]['error'] = keyframes_result["error"]
+                    return
+                
+                # 阶段2: 故事生成 (30-70%)
+                task_status[task_id]['stage'] = 'generating_story'
+                task_status[task_id]['message'] = '正在生成故事...'
+                task_status[task_id]['progress'] = 40
+                
+                story_result = generate_story_for_comic(
+                    keyframes_result, video_file_info, task_id, params
+                )
+                
+                if not story_result['success']:
+                    task_status[task_id]['status'] = 'complete_comic_failed'
+                    task_status[task_id]['message'] = f'故事生成失败: {story_result["error"]}'
+                    task_status[task_id]['error'] = story_result["error"]
+                    return
+                
+                # 阶段3: 风格化处理 (70-100%)
+                task_status[task_id]['stage'] = 'stylizing_frames'
+                task_status[task_id]['message'] = '正在风格化处理...'
+                task_status[task_id]['progress'] = 70
+                
+                stylized_result = stylize_frames_for_comic(
+                    keyframes_result, story_result, task_id, params
+                )
+                
+                if not stylized_result['success']:
+                    task_status[task_id]['status'] = 'complete_comic_failed'
+                    task_status[task_id]['message'] = f'风格化处理失败: {stylized_result["error"]}'
+                    task_status[task_id]['error'] = stylized_result["error"]
+                    return
+                
+                # 整合最终结果
+                comic_result = integrate_comic_result(
+                    keyframes_result, story_result, stylized_result, video_file_info
+                )
+                
+                # 更新最终状态
+                task_status[task_id]['status'] = 'complete_comic_completed'
+                task_status[task_id]['progress'] = 100
+                task_status[task_id]['message'] = '完整连环画生成完成'
+                task_status[task_id]['stage'] = 'completed'
+                task_status[task_id]['complete_comic_results'] = [comic_result]  # 单个视频结果
+                task_status[task_id]['completed_time'] = datetime.now().strftime('%Y%m%d_%H%M%S')
+                
+                print(f"[INFO] 任务 {task_id} 完整连环画生成完成")
+                
+            except Exception as e:
+                print(f"[ERROR] 完整连环画生成异常: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                
+                task_status[task_id]['status'] = 'complete_comic_failed'
+                task_status[task_id]['message'] = f'完整连环画生成失败: {str(e)}'
+                task_status[task_id]['error'] = str(e)
+        
+        # 启动异步处理线程
+        processing_thread = threading.Thread(target=async_complete_comic_processing)
+        processing_thread.daemon = True
+        processing_thread.start()
+        
+        # 返回任务启动成功响应
+        return jsonify({
+            'success': True,
+            'message': '完整连环画生成已启动',
+            'task_id': task_id,
+            'status': 'complete_comic_processing',
+            'progress': 0,
+            'stage': 'initializing',
+            'video_path': video_path,
+            'story_style': story_style
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] 完整连环画生成请求异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'完整连环画生成请求失败: {str(e)}'
+        }), 500
+
+def extract_keyframes_for_comic(video_path, task_id, video_name, params):
+    """为连环画提取关键帧"""
+    try:
+        # 🔧 解决OpenCV中文路径问题：使用安全的英文路径策略
+        import re
+        import hashlib
+        
+        # 策略1：使用任务ID + 时间戳作为目录名（纯英文数字）
+        import time
+        timestamp = int(time.time())
+        safe_dir_name = f"{task_id}_{timestamp}"
+        
+        print(f"[INFO] 原始视频名称: {video_name}")
+        print(f"[INFO] 安全目录名称: {safe_dir_name}")
+        
+        # 创建视频专属的输出目录（使用安全名称）
+        output_dir = os.path.join(app.config['FRAMES_FOLDER'], safe_dir_name)
+        
+        # 确保路径正规化
+        output_dir = os.path.normpath(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        print(f"[INFO] 输出目录: {output_dir}")
+        
+        # 验证目录创建成功且可写
+        if not os.path.exists(output_dir):
+            raise ValueError(f"无法创建输出目录: {output_dir}")
+        
+        if not os.access(output_dir, os.W_OK):
+            raise ValueError(f"输出目录不可写: {output_dir}")
+        
+        print(f"[INFO] 目录验证成功，开始创建抽帧器")
+        
+        # 创建抽帧器
+        extractor = DiversityFrameExtractor(output_dir=output_dir)
+        
+        print(f"[INFO] 抽帧器创建成功，开始关键帧提取")
+        print(f"[INFO] 提取参数: target_frames={params['target_frames']}, interval={params['frame_interval']}")
+        
+        # 执行关键帧提取
+        result = run_async_task(
+            extractor.unified_smart_extraction_async(
+                video_path=video_path,
+                target_key_frames=params['target_frames'],
+                base_frame_interval=params['frame_interval'],
+                significance_weight=params['significance_weight'],
+                quality_weight=params['quality_weight'],
+                max_concurrent=params['max_concurrent']
+            )
+        )
+        
+        print(f"[INFO] 关键帧提取完成，结果: success={result.get('success', False)}")
+        
+        if result['success']:
+            print(f"[INFO] 关键帧提取成功: {len(result['selected_frames'])} 个关键帧")
+            return {
+                'success': True,
+                'keyframes': result['selected_frames'],
+                'key_frame_paths': result['key_frame_paths'],
+                'json_file_path': result['json_file_path'],
+                'output_dir': output_dir,
+                'processing_stats': result['processing_stats'],
+                'original_video_name': video_name,  # 保留原始名称用于显示
+                'safe_dir_name': safe_dir_name      # 记录安全目录名
+            }
+        else:
+            error_msg = result.get('error', '关键帧提取失败')
+            print(f"[ERROR] 关键帧提取失败: {error_msg}")
+            return {
+                'success': False,
+                'error': error_msg
+            }
+            
+    except Exception as e:
+        error_msg = f'关键帧提取异常: {str(e)}'
+        print(f"[ERROR] {error_msg}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': error_msg
+        }
+
+def generate_story_for_comic(keyframes_result, video_file, task_id, params):
+    """为连环画生成故事"""
+    try:
+        # 准备故事生成的输入数据
+        input_data = {
+            'video_info': {
+                'task_id': task_id,
+                'video_name': video_file['original_name'],  # 修正字段名
+                'video_path': video_file['filepath']        # 修正字段名  
+            },
+            'keyframes': []
+        }
+        
+        # 添加文体风格（如果指定）
+        if params.get('story_style'):
+            input_data['style'] = params['story_style']
+        
+        # 构建关键帧数据 - 直接使用关键帧提取的结果
+        for keyframe in keyframes_result['keyframes']:
+            keyframe_data = {
+                'index': keyframe.get('index', 1),  # 使用原始索引
+                'filename': keyframe.get('filename', ''),
+                'photo_path': keyframe.get('photo_path', ''),
+                'combined_score': keyframe.get('combined_score', 0.0),
+                'significance_score': keyframe.get('significance_score', 0.0),
+                'quality_score': keyframe.get('quality_score', 0.0),
+                'description': keyframe.get('description', ''),
+                'timestamp': keyframe.get('timestamp', 0.0),
+                'frame_position': keyframe.get('frame_position', 0)
+            }
+            input_data['keyframes'].append(keyframe_data)
+        
+        # 如果关键帧数据中缺少描述，尝试从JSON文件中读取
+        json_file_path = keyframes_result.get('json_file_path')
+        if json_file_path and os.path.exists(json_file_path):
+            try:
+                with open(json_file_path, 'r', encoding='utf-8') as f:
+                    json_data = json.load(f)
+                    json_keyframes = json_data.get('keyframes', [])
+                    
+                    # 更新描述信息
+                    for i, keyframe_data in enumerate(input_data['keyframes']):
+                        if i < len(json_keyframes) and json_keyframes[i].get('description'):
+                            keyframe_data['description'] = json_keyframes[i]['description']
+                            keyframe_data['photo_path'] = json_keyframes[i].get('photo_path', keyframe_data['photo_path'])
+                            
+                print(f"[INFO] 从JSON文件成功读取了关键帧描述信息")
+            except Exception as e:
+                print(f"[WARNING] 读取关键帧JSON文件失败: {e}")
+        
+        print(f"[INFO] 开始故事生成，输入数据包含 {len(input_data['keyframes'])} 个关键帧")
+        
+        # 导入故事生成系统
+        from story_generation_agents import StoryGenerationSystem
+        
+        # 创建故事生成系统实例
+        system = StoryGenerationSystem(output_dir=app.config['STORIES_FOLDER'])
+        
+        # 同步执行故事生成
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            result = loop.run_until_complete(system.generate_story(input_data))
+        finally:
+            loop.close()
+        
+        if result['success']:
+            print(f"[INFO] 故事生成成功")
+            return {
+                'success': True,
+                'story_data': result,  # 直接使用result，因为它已经包含了所有故事数据
+                'story_file_path': result.get('json_file_path', '')
+            }
+        else:
+            return {
+                'success': False,
+                'error': result.get('error', '故事生成失败')
+            }
+            
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'故事生成异常: {str(e)}'
+        }
+
+def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
+    """为连环画风格化关键帧"""
+    try:
+        styled_frames = []
+        
+        # 从关键帧结果中获取路径信息
+        key_frame_paths = keyframes_result.get('key_frame_paths', [])
+        
+        # 如果没有key_frame_paths，从keyframes数据中构建路径
+        if not key_frame_paths:
+            output_dir = keyframes_result.get('output_dir', '')
+            keyframes = keyframes_result.get('keyframes', [])
+            key_frame_paths = []
+            
+            for keyframe in keyframes:
+                if 'photo_path' in keyframe:
+                    # 使用绝对路径或相对于输出目录的路径
+                    photo_path = keyframe['photo_path']
+                    if not os.path.isabs(photo_path) and output_dir:
+                        # 如果是相对路径，转换为绝对路径
+                        photo_path = os.path.join(output_dir, os.path.basename(photo_path))
+                    key_frame_paths.append(photo_path)
+                elif 'filename' in keyframe:
+                    # 根据文件名构建路径
+                    filename = keyframe['filename']
+                    if output_dir:
+                        photo_path = os.path.join(output_dir, filename)
+                        key_frame_paths.append(photo_path)
+        
+        print(f"[INFO] 风格化处理：找到 {len(key_frame_paths)} 个关键帧路径")
+        
+        # 创建风格化输出目录
+        styled_dir = os.path.join(keyframes_result['output_dir'], 'styled')
+        os.makedirs(styled_dir, exist_ok=True)
+        
+        for i, frame_path in enumerate(key_frame_paths):
+            try:
+                print(f"[INFO] 处理第 {i+1}/{len(key_frame_paths)} 个关键帧: {frame_path}")
+                filename = os.path.basename(frame_path)
+                
+                # 检查文件是否存在
+                if not os.path.exists(frame_path):
+                    print(f"[WARNING] 关键帧文件不存在: {frame_path}")
+                    # 使用原图
+                    styled_frames.append({
+                        'original_path': frame_path,
+                        'styled_path': frame_path,
+                        'styled_filename': filename,
+                        'index': i,
+                        'style_failed': True,
+                        'error': '原始文件不存在'
+                    })
+                    continue
+                
+                # 执行风格化处理
+                style_result = style_transform_image(
+                    image_path=frame_path,
+                    style_prompt=params.get('style_prompt'),
+                    image_size=params.get('image_size')
+                )
+                
+                if style_result['success']:
+                    # 保存风格化后的图像
+                    styled_filename = f"styled_{filename}"
+                    styled_path = os.path.join(styled_dir, styled_filename)
+                    
+                    # 保存风格化图像数据
+                    with open(styled_path, 'wb') as f:
+                        f.write(style_result['image_data'])
+                    
+                    print(f"[INFO] 风格化图像已保存: {styled_path}")
+                    
+                    # 检查是否使用了降级处理
+                    if style_result.get('fallback_used'):
+                        print(f"[WARNING] 风格化API失败，使用原图: {filename}")
+                        styled_frames.append({
+                            'original_path': frame_path,
+                            'styled_path': styled_path,  # 保存的是原图数据
+                            'styled_filename': styled_filename,
+                            'index': i,
+                            'style_failed': True,  # 标记为失败但有降级
+                            'fallback_used': True,
+                            'api_error': style_result.get('api_error', style_result.get('exception_error', ''))
+                        })
+                    else:
+                        print(f"[INFO] 风格化成功: {filename}")
+                        styled_frames.append({
+                            'original_path': frame_path,
+                            'styled_path': styled_path,
+                            'styled_filename': styled_filename,
+                            'index': i,
+                            'style_failed': False,
+                            'styled_image_url': style_result['styled_image_url']
+                        })
+                else:
+                    print(f"[ERROR] 风格化失败: {style_result['error']}")
+                    # 使用原图
+                    styled_frames.append({
+                        'original_path': frame_path,
+                        'styled_path': frame_path,
+                        'styled_filename': filename,
+                        'index': i,
+                        'style_failed': True,
+                        'error': style_result['error']
+                    })
+                    
+            except Exception as frame_error:
+                print(f"[ERROR] 处理帧 {i} 风格化时出错: {str(frame_error)}")
+                # 出错时使用原图
+                styled_frames.append({
+                    'original_path': frame_path,
+                    'styled_path': frame_path,
+                    'styled_filename': os.path.basename(frame_path),
+                    'index': i,
+                    'style_failed': True,
+                    'error': str(frame_error)
+                })
+        
+        print(f"[INFO] 风格化处理完成，成功处理 {len([f for f in styled_frames if not f['style_failed']])} 个关键帧")
+        
+        return {
+            'success': True,
+            'styled_frames': styled_frames,
+            'styled_dir': styled_dir
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'风格化处理异常: {str(e)}'
+        }
+
+def integrate_comic_result(keyframes_result, story_result, stylized_result, video_file):
+    """整合连环画最终结果"""
+    try:
+        story_data = story_result['story_data']
+        styled_frames = stylized_result['styled_frames']
+        
+        # 构建完整的连环画数据
+        comic_pages = []
+        
+        # 获取故事文本数据
+        final_narrations = story_data.get('final_narrations', [])
+        
+        for i, narration in enumerate(final_narrations):
+            # 查找对应的风格化帧
+            styled_frame = next(
+                (sf for sf in styled_frames if sf['index'] == i), 
+                None
+            )
+            
+            page = {
+                'page_index': i,
+                'story_text': narration.get('story_text', ''),
+                'original_frame_path': narration.get('frame_path', ''),
+                'styled_frame_path': styled_frame['styled_path'] if styled_frame else narration.get('frame_path', ''),
+                'styled_filename': styled_frame['styled_filename'] if styled_frame else os.path.basename(narration.get('frame_path', '')),
+                'frame_index': narration.get('frame_index', i),
+                'style_applied': styled_frame and not styled_frame.get('style_failed', False) if styled_frame else False
+            }
+            comic_pages.append(page)
+        
+        # 构建最终结果
+        final_result = {
+            'video_name': video_file['original_name'],
+            'success': True,
+            'comic_data': {
+                'story_info': {
+                    'overall_theme': story_data.get('overall_theme', ''),
+                    'title': story_data.get('overall_theme', ''),  # 使用主题作为标题
+                    'summary': story_data.get('overall_theme', ''),  # 使用主题作为概要
+                    'total_pages': len(comic_pages),
+                    'video_name': video_file['original_name'],
+                    'creation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                },
+                'pages': comic_pages,
+                'interactive_questions': story_data.get('interactive_questions', [])
+            },
+            'processing_info': {
+                'keyframes_extracted': len(keyframes_result['keyframes']),
+                'story_generated': len(final_narrations),
+                'frames_stylized': len([sf for sf in styled_frames if not sf.get('style_failed', False)]),
+                'keyframes_output_dir': keyframes_result['output_dir'],
+                'story_file_path': story_result.get('story_file_path', ''),
+                'styled_frames_dir': stylized_result['styled_dir']
+            }
+        }
+        
+        print(f"[INFO] 连环画结果整合完成: {len(comic_pages)} 页")
+        return final_result
+        
+    except Exception as e:
+        return {
+            'video_name': video_file['original_name'],
+            'success': False,
+            'error': f'结果整合失败: {str(e)}'
+        }
+
+# 14. 获取完整连环画结果API
+@app.route('/api/comic/result/<task_id>', methods=['GET'])
+def get_complete_comic_result(task_id):
+    """获取完整连环画生成结果"""
+    try:
+        if task_id not in task_status:
+            return jsonify({
+                'success': False,
+                'message': '任务不存在'
+            }), 404
+        
+        task_info = task_status[task_id]
+        
+        # 检查任务状态
+        if task_info['status'] not in ['complete_comic_completed', 'complete_comic_failed']:
+            return jsonify({
+                'success': False,
+                'message': '连环画生成尚未完成',
+                'status': task_info['status'],
+                'progress': task_info.get('progress', 0),
+                'stage': task_info.get('stage', 'unknown'),
+                'current_message': task_info.get('message', '')
+            }), 202  # 202 表示正在处理中
+        
+        if task_info['status'] == 'complete_comic_failed':
+            return jsonify({
+                'success': False,
+                'message': '连环画生成失败',
+                'error': task_info.get('error', '未知错误')
+            }), 500
+        
+        # 返回完整连环画结果
+        complete_results = task_info.get('complete_comic_results', [])
+        
+        # 过滤成功的结果
+        successful_results = [r for r in complete_results if r.get('success', False)]
+        failed_results = [r for r in complete_results if not r.get('success', False)]
+        
+        return jsonify({
+            'success': True,
+            'message': '连环画生成完成',
+            'task_id': task_id,
+            'results': {
+                'successful_comics': successful_results,
+                'failed_comics': failed_results,
+                'total_processed': len(complete_results),
+                'success_count': len(successful_results),
+                'failure_count': len(failed_results)
+            },
+            'task_info': {
+                'status': task_info['status'],
+                'completed_time': task_info.get('completed_time', ''),
+                'total_processing_time': task_info.get('completed_time', '')
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] 获取连环画结果异常: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'获取连环画结果失败: {str(e)}'
         }), 500
 
 # 13. 文件过大错误处理
