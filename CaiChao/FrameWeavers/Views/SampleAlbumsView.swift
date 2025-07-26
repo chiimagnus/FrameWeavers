@@ -116,12 +116,12 @@ struct SampleAlbum: Identifiable {
 // 单个画册行视图
 struct SampleAlbumRowView: View {
     let album: SampleAlbum
-    
+
     var body: some View {
         if let comicResult = album.comicResult {
             // 有内容的画册 - 可以点击
             NavigationLink {
-                OpenResultsView(comicResult: comicResult)
+                SampleFlowView(comicResult: comicResult)
             } label: {
                 albumRowContent
             }
