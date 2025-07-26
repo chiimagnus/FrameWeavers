@@ -51,6 +51,20 @@ struct WelcomeView: View {
                         .foregroundColor(Color(hex: "#855C23"))
                 }
             }
+            
+            Button(action: {
+                showingSampleAlbums = true
+            }) {
+                Text("示例画册")
+                    .font(.custom("STKaiti", size: 16))
+                    .foregroundColor(Color(hex: "#855C23"))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color(hex: "#855C23"), lineWidth: 1)
+                    )
+            }
 
             Text("""
             最多上传5段3分钟内的视频
@@ -65,15 +79,6 @@ struct WelcomeView: View {
         }
         .padding()
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("示例画册") {
-                    showingSampleAlbums = true
-                }
-                .font(.custom("STKaiti", size: 16))
-                .foregroundColor(Color(hex: "#855C23"))
-            }
-        }
         .sheet(isPresented: $showingSampleAlbums) {
             SampleAlbumsView()
         }
