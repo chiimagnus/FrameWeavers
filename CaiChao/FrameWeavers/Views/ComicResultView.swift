@@ -338,15 +338,30 @@ extension Notification.Name {
     static let comicPagePrevious = Notification.Name("comicPagePrevious")
 }
 
-// 单独的漫画页面视图组件 - 竖屏布局
+// 单独的漫画页面视图组件 - 支持横竖屏布局
 struct ComicPanelView: View {
     let panel: ComicPanel
     let geometry: GeometryProxy
     let pageIndex: Int
     let totalPages: Int
 
+    // 判断是否为横屏
+    private var isLandscape: Bool {
+        geometry.size.width > geometry.size.height
+    }
+
     var body: some View {
-        // 竖屏布局：图片在上，文本在下，页码在底部
+        if isLandscape {
+            // 横屏布局：图片在左，文本在右
+            landscapeLayout
+        } else {
+            // 竖屏布局：图片在上，文本在下
+            portraitLayout
+        }
+    }
+
+    // 竖屏布局
+    private var portraitLayout: some View {
         VStack(spacing: 0) {
             // 上方图片区域 - 占据50%高度
             VStack {
@@ -376,6 +391,65 @@ struct ComicPanelView: View {
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // 横屏布局
+    private var landscapeLayout: some View {
+        HStack(spacing: 10) {
+            // 左侧图片区域 - 占据45%宽度，确保在安全区域内
+            VStack {
+                AsyncImageView(imageUrl: panel.imageUrl)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.clear)
+                    .cornerRadius(8)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 20)
+            }
+            .frame(width: geometry.size.width * 0.45)
+            .frame(maxHeight: geometry.size.height * 0.8) // 限制高度，留出安全区域
+
+            // 右侧文本区域 - 占据45%宽度
+            VStack(spacing: 0) {
+                // 文本内容区域
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let narration = panel.narration {
+                            Text(narration)
+                                .font(.custom("STKaiti", size: 14))
+                                .foregroundColor(Color(hex: "#2F2617"))
+                                .lineSpacing(6)
+                                .multilineTextAlignment(.leading)
+                        } else {
+                            VStack {
+                                Image(systemName: "text.bubble")
+                                    .font(.title2)
+                                    .foregroundColor(.gray.opacity(0.5))
+                                Text("暂无文本描述")
+                                    .foregroundColor(.gray.opacity(0.5))
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .background(Color.clear)
+                .cornerRadius(8)
+
+                // 页码
+                Text("· \(pageIndex + 1) ·")
+                    .font(.custom("STKaiti", size: 14))
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .padding(.vertical, 8)
+            }
+            .frame(width: geometry.size.width * 0.45)
+            .frame(maxHeight: geometry.size.height * 0.8) // 限制高度
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
     }
 
     // 文本内容组件
@@ -418,46 +492,56 @@ struct QuestionsView: View {
     let pageIndex: Int
     let totalPages: Int
 
+    // 判断是否为横屏
+    private var isLandscape: Bool {
+        geometry.size.width > geometry.size.height
+    }
+
     var body: some View {
-        // 竖屏布局：页码在底部
         VStack(spacing: 0) {
             Spacer()
 
-            VStack(spacing: 30) {
+            VStack(spacing: isLandscape ? 15 : 30) {
                 Text("互动问题")
-                    .font(.custom("STKaiti", size: 28))
+                    .font(.custom("STKaiti", size: isLandscape ? 20 : 28))
                     .foregroundColor(Color(hex: "#855C23"))
 
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(questions, id: \.self) { question in
-                        HStack(alignment: .top, spacing: 12) {
-                            TypewriterView(
-                                text: question,
-                                typeSpeed: 0.10,
-                                showCursor: false
-                            )
-                            .font(.custom("STKaiti", size: 18))
-                            .foregroundColor(Color(hex: "#2F2617"))
+                ScrollView {
+                    VStack(alignment: .leading, spacing: isLandscape ? 12 : 20) {
+                        ForEach(questions, id: \.self) { question in
+                            HStack(alignment: .top, spacing: 12) {
+                                TypewriterView(
+                                    text: question,
+                                    typeSpeed: 0.10,
+                                    showCursor: false
+                                )
+                                .font(.custom("STKaiti", size: isLandscape ? 14 : 18))
+                                .foregroundColor(Color(hex: "#2F2617"))
+                            }
+                            .padding(isLandscape ? 8 : 16)
+                            .background(Color.clear)
                         }
-                        .padding()
-                        .background(Color.clear)
                     }
+                    .padding(.horizontal, isLandscape ? 30 : 20)
                 }
-                .padding(.horizontal, 20)
+                .frame(maxHeight: isLandscape ? geometry.size.height * 0.6 : .infinity)
             }
-            .frame(maxWidth: geometry.size.width * 0.9)
+            .frame(maxWidth: geometry.size.width * (isLandscape ? 0.85 : 0.9))
+            .frame(maxHeight: isLandscape ? geometry.size.height * 0.8 : .infinity)
 
             Spacer()
 
             // 底部页码
             Text("· 完 ·")
-                .font(.custom("STKaiti", size: 16))
+                .font(.custom("STKaiti", size: isLandscape ? 14 : 16))
                 .foregroundColor(Color(hex: "#2F2617"))
                 .padding(8)
                 .background(Color.clear)
-                .padding(.bottom, 20)
+                .padding(.bottom, isLandscape ? 10 : 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, isLandscape ? 20 : 0)
+        .padding(.vertical, isLandscape ? 10 : 0)
     }
 
 }
@@ -499,6 +583,41 @@ struct ComicResultView_Previews: PreviewProvider {
             ))
             .previewDisplayName("竖屏预览")
             .previewDevice("iPhone 14")
+
+            // 横屏预览
+            ComicResultView(comicResult: ComicResult(
+                comicId: "preview-001",
+                deviceId: "preview-device",
+                title: "小明与阳光的友谊",
+                originalVideoTitle: "预览视频",
+                creationDate: "2025-07-26",
+                panelCount: 3,
+                panels: [
+                    ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image1",
+                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 2,
+                        imageUrl: "Image2",
+                        narration: "突然，一只可爱的小狗从草丛中跳了出来，摇着尾巴看着小明。小明蹲下身，轻轻抚摸着小狗的头，小狗开心地舔着他的手。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 3,
+                        imageUrl: "Image3",
+                        narration: "小明决定带着这只小狗一起回家，他想给小狗取个名字叫\"阳光\"。从那天起，阳光成为了小明最好的朋友，他们一起度过了许多快乐的时光。"
+                    )
+                ],
+                finalQuestions: [
+                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
+                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
+                    "这个故事告诉我们什么关于友谊和善良的道理？"
+                ]
+            ))
+            .previewDisplayName("横屏预览")
+            .previewDevice("iPhone 14")
+            .previewInterfaceOrientation(.landscapeLeft)
 
             // 无问题页面预览
             ComicResultView(comicResult: ComicResult(
