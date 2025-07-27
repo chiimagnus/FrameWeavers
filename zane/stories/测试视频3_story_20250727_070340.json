@@ -1,0 +1,255 @@
+{
+  "story_info": {
+    "task_id": "test_task_1753570693",
+    "video_name": "测试视频3.mp4",
+    "video_path": "D:\\PRODUCT\\FrameWeavers\\zane\\测试视频3.mp4",
+    "processing_time": "2025-07-27T07:03:40.610011",
+    "overall_theme": "一场以「花」为线索的青春漫游：从城市街头的邂逅，到舌尖与夜色中的温柔慰藉，再到古迹与博物馆的灵性沉淀，最终在海边晚霞中确认友情与自我——明亮、轻盈，却暗藏对时间流逝的感怀。",
+    "total_narrations": 12,
+    "total_interactive_questions": 5
+  },
+  "final_narrations": [
+    {
+      "frame_index": 5,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0006.jpg",
+      "story_text": "清晨的街角像刚翻开的童话书页，粉色玫瑰在风里轻轻踮脚，替那位戴贝雷帽的小姐向世界宣布：快乐是一首可以递出去的歌。"
+    },
+    {
+      "frame_index": 7,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0008.jpg",
+      "story_text": "藤蔓墙后的小仙女把一束向日葵抱成满月，悄悄告诉安静的光斑：如果心里藏着太阳，影子也会开花。"
+    },
+    {
+      "frame_index": 10,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0011.jpg",
+      "story_text": "竹编餐桌是森林遗落的魔毯，炸鱼、西瓜与紫兰花排成彩虹，筷子轻轻一响，就把冬天变成了会唱歌的夏天。"
+    },
+    {
+      "frame_index": 12,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0013.jpg",
+      "story_text": "夕照把小镇镀成蜜糖色，两位花束小精灵在街心交换香气——粉花说勇敢，黄花说别哭，于是傍晚学会了微笑。"
+    },
+    {
+      "frame_index": 13,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0014.jpg",
+      "story_text": "夜的小火炉哗啦啦唱起油星歌谣，烤肉串像一串小太阳被递出窗口，把寒风也烤成了软绵绵的云。"
+    },
+    {
+      "frame_index": 16,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0017.jpg",
+      "story_text": "古老的城楼披上金线织的晚礼服，对每一个仰望的孩子眨眼：别怕长大，我的砖缝里住着不会老的星光。"
+    },
+    {
+      "frame_index": 19,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0020.jpg",
+      "story_text": "巨象从绿野画册里缓步而出，耳朵一扇就掀起菠萝味的风，它用长鼻子悄悄说：欢迎来到会呼吸的梦境。"
+    },
+    {
+      "frame_index": 20,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0021.jpg",
+      "story_text": "金色大佛坐在光里轻轻打盹，睫毛下漏出一句摇篮曲：把好奇放进口袋，剩下的故事让慈悲替你讲完。"
+    },
+    {
+      "frame_index": 22,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0023.jpg",
+      "story_text": "宝瓶与佛像守着最后一盏暖灯，像两位老祖父交换秘密：真正的宝藏不在远方，在低头就能看见的倒影里。"
+    },
+    {
+      "frame_index": 23,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0024.jpg",
+      "story_text": "红灯笼把笑声染成草莓味，三个小伙伴在光晕里做鬼脸，让时间也忍不住停下来一起合了张影。"
+    },
+    {
+      "frame_index": 39,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0040.jpg",
+      "story_text": "摄影师哥哥蹲成一朵小蘑菇，用镜头把乌云悄悄裁掉，只留下花墙和玫瑰对过路的雨说：请先学会温柔再落下来。"
+    },
+    {
+      "frame_index": 45,
+      "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0046.jpg",
+      "story_text": "大海铺开蓝宝石的信纸，三位旅人并肩写下最后一行字：只要心里有光，连海风也舍不得把我们吹散。"
+    }
+  ],
+  "interactive_questions": [
+    {
+      "id": 1,
+      "type": "memory_recall",
+      "question": "这个故事中哪个画面给你留下了最深的印象？",
+      "intent": "引导用户回忆深刻画面"
+    },
+    {
+      "id": 2,
+      "type": "emotional_reflection",
+      "question": "观看这个故事时，你的心情发生了怎样的变化？",
+      "intent": "探索情感变化过程"
+    },
+    {
+      "id": 3,
+      "type": "personal_connection",
+      "question": "这个故事让你想起了自己的哪些经历？",
+      "intent": "建立个人连接"
+    },
+    {
+      "id": 4,
+      "type": "theme_thinking",
+      "question": "关于'一场以「花」为线索的青春漫游：从城市街头的邂逅，到舌尖与夜色中的温柔慰藉，再到古迹与博物馆的灵性沉淀，最终在海边晚霞中确认友情与自我——明亮、轻盈，却暗藏对时间流逝的感怀。'这个主题，你有什么新的思考？",
+      "intent": "深化主题理解"
+    },
+    {
+      "id": 5,
+      "type": "detail_observation",
+      "question": "在故事的细节中，你发现了什么特别有意思的地方？",
+      "intent": "关注故事细节"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0006.jpg",
+        "story_text": "序章：街头的玫瑰笑容拉开旅程，青春与城市的朝气同步盛放。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0008.jpg",
+        "story_text": "停顿：向日葵的安静守望，提示旅程中需要被倾听的内在声音。"
+      },
+      {
+        "frame_index": 10,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0011.jpg",
+        "story_text": "味蕾章节：共享餐桌的丰盛，把友情熬成最温暖的日常烟火。"
+      },
+      {
+        "frame_index": 12,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0013.jpg",
+        "story_text": "傍晚交心：夕照下的双向花束，成为互赠勇气的信物。"
+      },
+      {
+        "frame_index": 13,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0014.jpg",
+        "story_text": "夜航插曲：街头烤肉的香气与霓虹，提醒漫游者城市亦有守护的体温。"
+      },
+      {
+        "frame_index": 16,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0017.jpg",
+        "story_text": "古迹仰望：被灯光勾勒的城楼，将个人故事嵌入千年时间的纵深。"
+      },
+      {
+        "frame_index": 19,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0020.jpg",
+        "story_text": "异域之门：热带丛林与巨象的布景，让想象开始自由迁徙。"
+      },
+      {
+        "frame_index": 20,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0021.jpg",
+        "story_text": "凝视圣境：佛像与人群同框，完成从好奇到敬畏的心灵校准。"
+      },
+      {
+        "frame_index": 22,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0023.jpg",
+        "story_text": "静默收束：金色宝瓶与佛像的镜像，暗示旅程的终极答案是向内观照。"
+      },
+      {
+        "frame_index": 23,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0024.jpg",
+        "story_text": "狂欢定格：灯笼下的搞怪合影，为所有严肃找到年轻而明亮的出口。"
+      },
+      {
+        "frame_index": 39,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0040.jpg",
+        "story_text": "浪漫备用镜头：单车花墙前的摄影师，把旅程剪辑成可随时回放的柔软记忆。"
+      },
+      {
+        "frame_index": 45,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0046.jpg",
+        "story_text": "终章：海边的三人剪影，定格「毛毛缝中的那抹光」——青春不散场，光仍在。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0006.jpg",
+        "story_text": "当粉色玫瑰抵住胸口，她第一次确信——被爱拥抱的，其实是我渴望被看见的那部分自己。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0008.jpg",
+        "story_text": "向日葵沉甸甸地躺在掌心，像她把所有未说出口的仰望都悄悄折进了花芯。"
+      },
+      {
+        "frame_index": 10,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0011.jpg",
+        "story_text": "辣酱的红是掩饰还是坦白？他在咀嚼的间隙突然明白：共享的恐惧与渴望才是今晚真正的调味料。"
+      },
+      {
+        "frame_index": 12,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0013.jpg",
+        "story_text": "夕阳把影子拉得很长，她却只在意花束在臂弯里轻微颤抖——那是她决定不再回头的重量。"
+      },
+      {
+        "frame_index": 13,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0014.jpg",
+        "story_text": "每一串烤肉落下油脂的噼啪声，都像她替母亲数着的离家日子——烟火越旺，心里的裂缝越安静。"
+      },
+      {
+        "frame_index": 16,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0017.jpg",
+        "story_text": "城楼的金光把历史的威严碾成细沙，落在他睫毛上，像一场迟到的赦免。"
+      },
+      {
+        "frame_index": 19,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0020.jpg",
+        "story_text": "巨象的耳朵微微扇动那秒，她听见自己童年躲在衣柜里幻想的丛林轰然活了过来。"
+      },
+      {
+        "frame_index": 20,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0021.jpg",
+        "story_text": "佛像俯视众生的慈悲，在她仰望的瞳孔里折射成一句质问：你准备把多少自我献给永恒？"
+      },
+      {
+        "frame_index": 22,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0023.jpg",
+        "story_text": "金色宝瓶上映出他模糊的倒影——一个既想跪下去又怕跪下去的灵魂，被自己的光困在原地。"
+      },
+      {
+        "frame_index": 23,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0024.jpg",
+        "story_text": "灯笼把他们的笑容染得发烫，仿佛只有此刻的玩笑能替他们压住“散场之后怎么办”这句未出口的叹息。"
+      },
+      {
+        "frame_index": 39,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0040.jpg",
+        "story_text": "他在取景器里把乌云裁掉，只剩花墙与玫瑰——这是他能给世界、也是给自己的最后一份温柔谎言。"
+      },
+      {
+        "frame_index": 45,
+        "frame_path": "frames\\test_task_1753570693_1753570695\\base_frame_0046.jpg",
+        "story_text": "海风把“毛毛缝中的那抹光”吹得摇晃，他们并肩站着，像三根不肯被吹灭的火柴。"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-27T06:59:33.687797",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 89.18501138687134,
+    "soul_writer_time": 146.8163001537323,
+    "master_editor_time": 209.28513145446777,
+    "interactive_completed": true,
+    "interactive_time": 246.9222137928009,
+    "end_time": "2025-07-27T07:03:40.610011",
+    "total_time": 246.9222137928009,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-27T07:03:40.610011"
+  }
+}

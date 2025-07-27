@@ -2052,7 +2052,7 @@ if __name__ == '__main__':
     try:
         print(f"[INFO] 启动Flask服务器，访问地址: http://localhost:{port}")
         print(f"[INFO] 按 Ctrl+C 停止服务器")
-        app.run(debug=True, host='0.0.0.0', port=port, threaded=True)
+        app.run(debug=True, host='0.0.0.0', port=port, threaded=True,use_reloader=False)
     except KeyboardInterrupt:
         print(f"\n[INFO] 服务器已停止")
     except Exception as e:

@@ -1,0 +1,255 @@
+{
+  "story_info": {
+    "task_id": "test_task_1753569839",
+    "video_name": "测试视频3.mp4",
+    "video_path": "D:\\PRODUCT\\FrameWeavers\\zane\\测试视频3.mp4",
+    "processing_time": "2025-07-27T06:48:39.561296",
+    "overall_theme": "一次由春日花束点燃的轻快旅程——在古城、夜市与海岸之间，用朋友、情人与陌生人的微笑串连出「此刻即永恒」的温暖基调。",
+    "total_narrations": 12,
+    "total_interactive_questions": 5
+  },
+  "final_narrations": [
+    {
+      "frame_index": 5,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0006.jpg",
+      "story_text": "粉玫瑰像一封会说话的邀请函，在金色阳光的护送下，悄悄把三位旅者推上那座名叫“告别平凡”的桥；风儿轻轻掀开他们的袖口，提醒他们：新的故事，就从今天的笑容开始。"
+    },
+    {
+      "frame_index": 7,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0008.jpg",
+      "story_text": "晨光踮起脚尖在绿叶间跳舞，向日葵把脸转向她，像一面金色的小镜子，温柔地说：你值得这样灿烂的光；她听见心底的小鹿轻轻回应——简单的小确幸，就是童话里最亮的宝石。"
+    },
+    {
+      "frame_index": 12,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0013.jpg",
+      "story_text": "黄昏把天空熬成一杯香甜的葡萄汁，又把三个人的影子拉得像会唱歌的丝带；粉花与黄花在风里击掌，替他们喊出小小宣言——慢点也好，快些也罢，只要并肩，路就会唱歌。"
+    },
+    {
+      "frame_index": 13,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0014.jpg",
+      "story_text": "夜市的灯火像一串串温柔的星星落进人间，小贩姐姐递出的烤肉串带着火苗的祝福；她悄悄问路过的旅者——你愿意相信一颗陌生却滚烫的心吗？"
+    },
+    {
+      "frame_index": 15,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0016.jpg",
+      "story_text": "霓虹在夜色里撒下甜甜的糖霜，她咬下一口滋滋作响的烤肉，听见味蕾大声宣布：这就是活着的味道呀！连围巾上的蓝也笑弯了腰。"
+    },
+    {
+      "frame_index": 16,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0017.jpg",
+      "story_text": "古老的城门披着金光的斗篷，像一位慈祥的巨人俯身注视小小旅者；他在影子里听见自己的心跳变成了一句话——我虽渺小，却被千年的故事轻轻拥抱。"
+    },
+    {
+      "frame_index": 17,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0018.jpg",
+      "story_text": "烤得金黄的蝉蛹排排坐，像一队顽皮的小精灵在绿叶舞台上眨眼睛；他深吸一口香气，胸口蹦出“我终于敢越界”的欢喜，把笑声撒进夜市的烟火里。"
+    },
+    {
+      "frame_index": 20,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0021.jpg",
+      "story_text": "洞穴轻轻张开温柔的怀抱，金色佛像在柔光里低声讲故事——把喧嚣留在门外，把好奇留在心里；旅者们屏住呼吸，脚步变成了最轻的羽毛。"
+    },
+    {
+      "frame_index": 22,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0023.jpg",
+      "story_text": "小佛像双手合十，像一颗安静的小星星，烛光替它眨眼；她悄悄把未说出口的祈愿塞进灯芯——请让今天永远不要回答明天，让此刻像糖一样慢慢化开。"
+    },
+    {
+      "frame_index": 25,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0026.jpg",
+      "story_text": "红灯笼在古街上排成温暖的小月亮，他们的背影被光剪成一幅温柔的剪纸；风替灯笼低语：慢点走呀，夜还长，故事正甜。"
+    },
+    {
+      "frame_index": 35,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0036.jpg",
+      "story_text": "雨丝像银线轻轻缝补天空的裂缝，伞下的她低头读书，任车流唱一首灰色的摇篮曲；心里的欢笑被雨声轻轻放回口袋，只剩一句小声的“然后呢”在纸页间悄悄发芽。"
+    },
+    {
+      "frame_index": 45,
+      "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0046.jpg",
+      "story_text": "大海把天空的蔚蓝借给镜头，海鸥按下翅膀做快门；三位年轻的笑靥被海风镶上银边，化成一张会发光的合照，在浪花的祝福里悄悄说：这就是我们的永远。"
+    }
+  ],
+  "interactive_questions": [
+    {
+      "id": 1,
+      "type": "memory_recall",
+      "question": "这个故事中哪个画面给你留下了最深的印象？",
+      "intent": "引导用户回忆深刻画面"
+    },
+    {
+      "id": 2,
+      "type": "emotional_reflection",
+      "question": "观看这个故事时，你的心情发生了怎样的变化？",
+      "intent": "探索情感变化过程"
+    },
+    {
+      "id": 3,
+      "type": "personal_connection",
+      "question": "这个故事让你想起了自己的哪些经历？",
+      "intent": "建立个人连接"
+    },
+    {
+      "id": 4,
+      "type": "theme_thinking",
+      "question": "关于'一次由春日花束点燃的轻快旅程——在古城、夜市与海岸之间，用朋友、情人与陌生人的微笑串连出「此刻即永恒」的温暖基调。'这个主题，你有什么新的思考？",
+      "intent": "深化主题理解"
+    },
+    {
+      "id": 5,
+      "type": "detail_observation",
+      "question": "在故事的细节中，你发现了什么特别有意思的地方？",
+      "intent": "关注故事细节"
+    }
+  ],
+  "intermediate_results": {
+    "architect_output": [
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0006.jpg",
+        "story_text": "序章：花束作为友谊的邀请函，把三位旅者推上「告别平凡」的桥。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0008.jpg",
+        "story_text": "独白的温柔停顿：晨光与向日葵映照旅者内心对「简单的美好」的确认。"
+      },
+      {
+        "frame_index": 12,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0013.jpg",
+        "story_text": "并肩前行：黄昏的粉与黄把旅程推进到「我们仍在路上」的动感节拍。"
+      },
+      {
+        "frame_index": 13,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0014.jpg",
+        "story_text": "烟火人间：夜市小贩的烤串递出城市的第一口温度，陌生善意开始发酵。"
+      },
+      {
+        "frame_index": 15,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0016.jpg",
+        "story_text": "味蕾狂欢：夜色与烤肉香把旅者拉进「此刻尽情」的狂欢节点。"
+      },
+      {
+        "frame_index": 16,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0017.jpg",
+        "story_text": "历史的凝视：灯光下的古城门让旅者瞬间明白「我们不过是时间长河里的过客」。"
+      },
+      {
+        "frame_index": 17,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0018.jpg",
+        "story_text": "猎奇逗趣：烤昆虫摊成为旅途中「最敢尝试」的小高潮，笑声与惊呼并存。"
+      },
+      {
+        "frame_index": 20,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0021.jpg",
+        "story_text": "文化深潜：洞穴展览把旅程从感官转向精神，佛像静默地凝视这群好奇的年轻人。"
+      },
+      {
+        "frame_index": 22,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0023.jpg",
+        "story_text": "静默祈福：金色佛像前的合十瞬间，把狂欢沉淀为「愿此刻永存」的温柔愿望。"
+      },
+      {
+        "frame_index": 25,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0026.jpg",
+        "story_text": "归途慢板：灯笼下的古街让旅者的背影化成一幅「人间值得」的剪影。"
+      },
+      {
+        "frame_index": 35,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0036.jpg",
+        "story_text": "雨幕沉思：阴天与车流拉回现实，提醒旅者「狂欢终会散场，但记忆不会」。"
+      },
+      {
+        "frame_index": 45,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0046.jpg",
+        "story_text": "终章定格：海边自拍把旅程封存成一张「青春在此合影」的永恒照片。"
+      }
+    ],
+    "emotional_output": [
+      {
+        "frame_index": 5,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0006.jpg",
+        "story_text": "在粉玫瑰的轻颤里，她把“再见平凡”的渴望悄悄藏进呼吸。"
+      },
+      {
+        "frame_index": 7,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0008.jpg",
+        "story_text": "向日葵像一面镜子，照出她心底最柔软的确认——“我值得这样的光”。"
+      },
+      {
+        "frame_index": 12,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0013.jpg",
+        "story_text": "黄昏把他们的影子拉长，心里却生出一句无声的呼喊：“别停，路还远。”"
+      },
+      {
+        "frame_index": 13,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0014.jpg",
+        "story_text": "递出的那一串烤肉带着她的体温，也递出一个问题——“你愿意相信陌生吗？”"
+      },
+      {
+        "frame_index": 15,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0016.jpg",
+        "story_text": "肉串的热气掠过指尖，她忽然明白：此刻的贪婪，只是想证明自己真的活着。"
+      },
+      {
+        "frame_index": 16,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0017.jpg",
+        "story_text": "站在城楼下仰望，他在灯影里听见自己的心跳说：“我渺小，却正被历史看见。”"
+      },
+      {
+        "frame_index": 17,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0018.jpg",
+        "story_text": "面对一排焦脆的蝉蛹，他胸口涌起的不是恶心，而是“我终于敢越界”的狂喜。"
+      },
+      {
+        "frame_index": 20,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0021.jpg",
+        "story_text": "佛像的金光映在她瞳孔里，那一刻她听见静默在对她说：“把喧嚣留在门外。”"
+      },
+      {
+        "frame_index": 22,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0023.jpg",
+        "story_text": "合十的指尖微微发抖，她把未说出口的祈愿偷偷塞进烛光——“请让今天永远不要回答明天。”"
+      },
+      {
+        "frame_index": 25,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0026.jpg",
+        "story_text": "灯笼在他们的背影上跳动，像替他们说出那句说不出口的温柔：“慢点走，夜还长。”"
+      },
+      {
+        "frame_index": 35,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0036.jpg",
+        "story_text": "雨声把一切欢笑拉回地面，她低头读书，只为掩饰那句在心里回荡的“然后呢？”"
+      },
+      {
+        "frame_index": 45,
+        "frame_path": "frames\\test_task_1753569839_1753569841\\base_frame_0046.jpg",
+        "story_text": "快门按下的瞬间，她把海风、笑声和微微发酸的鼻头一起封进一句无声的告白——“这就是我们的永恒。”"
+      }
+    ]
+  },
+  "processing_stats": {
+    "start_time": "2025-07-27T06:45:24.429202",
+    "architect_completed": true,
+    "soul_writer_completed": true,
+    "master_editor_completed": true,
+    "errors": [],
+    "architect_time": 62.65318584442139,
+    "soul_writer_time": 120.32689261436462,
+    "master_editor_time": 195.1230926513672,
+    "interactive_completed": true,
+    "interactive_time": 195.1320984363556,
+    "end_time": "2025-07-27T06:48:39.560314",
+    "total_time": 195.1320984363556,
+    "success": true
+  },
+  "generation_metadata": {
+    "system_version": "1.0",
+    "agents_used": [
+      "architect",
+      "soul_writer",
+      "master_editor"
+    ],
+    "export_time": "2025-07-27T06:48:39.561296"
+  }
+}
