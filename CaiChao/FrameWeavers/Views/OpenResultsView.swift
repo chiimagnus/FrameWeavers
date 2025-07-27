@@ -32,7 +32,7 @@ struct OpenResultsView: View {
 
                 VStack(spacing: 16) {
                     // 显示连环画标题
-                    Text(comicResult.originalVideoTitle)
+                    Text(comicResult.title)
                         .font(.custom("WSQuanXing", size: 24))
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))

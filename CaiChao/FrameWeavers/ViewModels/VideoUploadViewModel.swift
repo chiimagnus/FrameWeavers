@@ -559,6 +559,7 @@ class VideoUploadViewModel: ObservableObject {
         return ComicResult(
             comicId: "mock-comic-123",
             deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "mock-device",
+            title: "海滩上的温暖时光",  // 添加故事标题
             originalVideoTitle: videoTitle,
             creationDate: ISO8601DateFormatter().string(from: Date()),
             panelCount: 4,

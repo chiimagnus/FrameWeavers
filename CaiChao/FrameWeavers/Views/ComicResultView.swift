@@ -470,6 +470,7 @@ struct ComicResultView_Previews: PreviewProvider {
             ComicResultView(comicResult: ComicResult(
                 comicId: "preview-001",
                 deviceId: "preview-device",
+                title: "小明与阳光的友谊",  // 添加故事标题
                 originalVideoTitle: "预览视频",
                 creationDate: "2025-07-26",
                 panelCount: 3,
@@ -503,6 +504,7 @@ struct ComicResultView_Previews: PreviewProvider {
             ComicResultView(comicResult: ComicResult(
                 comicId: "preview-002",
                 deviceId: "preview-device",
+                title: "公园里的宁静时光",  // 添加故事标题
                 originalVideoTitle: "简单故事",
                 creationDate: "2025-07-26",
                 panelCount: 1,

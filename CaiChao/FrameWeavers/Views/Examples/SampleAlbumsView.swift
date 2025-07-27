@@ -13,6 +13,7 @@ struct SampleAlbumsView: View {
             comicResult: ComicResult(
                 comicId: "sample-001",
                 deviceId: "sample-device",
+                title: "时光里的温暖记忆",  // 添加故事标题
                 originalVideoTitle: "时光里的温暖记忆",
                 creationDate: "2025-07-26",
                 panelCount: 3,
@@ -48,6 +49,7 @@ struct SampleAlbumsView: View {
             comicResult: ComicResult(
                 comicId: "sample-002",
                 deviceId: "sample-device",
+                title: "小猫的冒险之旅",  // 添加故事标题
                 originalVideoTitle: "小猫的冒险之旅",
                 creationDate: "2025-07-26",
                 panelCount: 4,
