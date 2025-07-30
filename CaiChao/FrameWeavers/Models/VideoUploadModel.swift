@@ -426,7 +426,8 @@ struct InteractiveQuestion: Codable {
 struct ComicResult: Codable {
     let comicId: String
     let deviceId: String
-    let originalVideoTitle: String
+    let title: String  // 故事标题
+    let originalVideoTitle: String  // 原始视频文件名
     let creationDate: String
     let panelCount: Int
     let panels: [ComicPanel]

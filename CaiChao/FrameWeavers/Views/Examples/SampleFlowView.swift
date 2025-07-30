@@ -141,6 +141,7 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
     SampleFlowView(comicResult: ComicResult(
         comicId: "preview-001",
         deviceId: "preview-device",
+        title: "小猫的冒险之旅",  // 添加故事标题
         originalVideoTitle: "小猫的冒险之旅",
         creationDate: "2025-07-26",
         panelCount: 4,

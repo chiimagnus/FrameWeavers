@@ -145,7 +145,8 @@ class ComicGenerationService {
         return ComicResult(
             comicId: taskId,
             deviceId: DeviceIDGenerator.generateDeviceID(),
-            originalVideoTitle: storyInfo.videoName,
+            title: storyInfo.title,  // 使用故事标题
+            originalVideoTitle: storyInfo.videoName,  // 保留原始视频文件名
             creationDate: storyInfo.creationTime,
             panelCount: panels.count,
             panels: panels,
