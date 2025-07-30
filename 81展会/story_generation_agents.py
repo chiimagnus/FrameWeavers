@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import logging
 from openai import OpenAI
-from config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL, DEFAULT_TEMPERATURE, DEFAULT_MAX_TOKENS
+from config import MOONSHOT_API_KEY, MOONSHOT_BASE_URL, MOONSHOT_MODEL, DEFAULT_TEMPERATURE, DEFAULT_MAX_TOKENS
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -44,12 +44,12 @@ class StoryResult:
     processing_stats: Dict[str, Any]
 
 class LLMClient:
-    """大语言模型客户端 - 使用DeepSeek Chat"""
+    """大语言模型客户端 - 使用Moonshot AI (Kimi)"""
     
     def __init__(self, api_key: str = None, base_url: str = None, model: str = None):
-        self.api_key = api_key or DEEPSEEK_API_KEY
-        self.base_url = base_url or DEEPSEEK_BASE_URL
-        self.model = model or DEEPSEEK_MODEL
+        self.api_key = api_key or MOONSHOT_API_KEY
+        self.base_url = base_url or MOONSHOT_BASE_URL
+        self.model = model or MOONSHOT_MODEL
         self.client = OpenAI(
             api_key=self.api_key,
             base_url=self.base_url
@@ -74,7 +74,7 @@ class LLMClient:
                 "content": prompt
             })
             
-            logger.info(f"正在调用DeepSeek API，模型: {self.model}")
+            logger.info(f"正在调用Moonshot AI API，模型: {self.model}")
             
             # 异步调用API
             loop = asyncio.get_event_loop()
@@ -89,7 +89,7 @@ class LLMClient:
             )
             
             response = completion.choices[0].message.content
-            logger.info(f"DeepSeek API调用成功，返回内容长度: {len(response)}")
+            logger.info(f"Moonshot AI API调用成功，返回内容长度: {len(response)}")
             return response
             
         except Exception as e:

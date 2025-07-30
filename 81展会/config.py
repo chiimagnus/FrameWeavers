@@ -4,15 +4,10 @@
 
 import os
 
-# Moonshot AI (Kimi) API配置 - 已弃用，改用DeepSeek
+# Moonshot AI (Kimi) API配置
 MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY", "sk-nGQ50WHDiQYGkOP66oRpJcEnPIOuu3zgFh4bM7qqkcuXs9Th")
 MOONSHOT_BASE_URL = "https://api.moonshot.cn/v1"
 MOONSHOT_MODEL = "kimi-k2-0711-preview"
-
-# DeepSeek API配置 - 新的主要LLM服务
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "sk-93d348fe6f67439ba9d69d5a533bf979")
-DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
-DEEPSEEK_MODEL = "deepseek-chat"
 
 # 系统配置
 DEFAULT_TEMPERATURE = 0.7
@@ -24,10 +19,6 @@ LOG_LEVEL = "INFO"
 # 备用配置（当主API不可用时）
 ENABLE_FALLBACK = True
 FALLBACK_DELAY = 2.0  # 秒
-
-# ImgBB图床API配置
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "c0e8f3e6f8a0c6ce9c2c7e3f1b8f4c9e")  # 请替换为实际的API密钥
-IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY
 
 # ModelScope风格化处理API配置
 MODELSCOPE_API_URL = "https://api-inference.modelscope.cn/v1/images/generations"

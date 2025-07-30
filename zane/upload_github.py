@@ -2,8 +2,21 @@ import requests
 import base64
 import json
 
-def upload_to_github(image_path, github_token, repo_owner, repo_name, file_path):
+def upload_to_github(image_path, github_token=None, repo_owner=None, repo_name=None, file_path=None):
     """上传图片到GitHub仓库并返回raw URL"""
+    from config import GITHUB_TOKEN, GITHUB_REPO_OWNER, GITHUB_REPO_NAME
+    
+    # 使用环境变量作为默认值
+    github_token = github_token or GITHUB_TOKEN
+    repo_owner = repo_owner or GITHUB_REPO_OWNER
+    repo_name = repo_name or GITHUB_REPO_NAME
+    
+    if not all([github_token, repo_owner, repo_name]):
+        raise ValueError("GitHub配置不完整，请检查环境变量：GITHUB_TOKEN, GITHUB_REPO_OWNER, GITHUB_REPO_NAME")
+    
+    if not file_path:
+        import os
+        file_path = f"images/{os.path.basename(image_path)}"
     
     # 读取图片并转换为base64
     with open(image_path, "rb") as file:

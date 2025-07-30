@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, abort
+from flask import Flask, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -17,15 +17,6 @@ import traceback
 import psutil  # 添加系统监控库
 import gc  # 添加垃圾回收库
 import atexit  # 添加程序退出处理库
-import concurrent.futures
-from pathlib import Path
-
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
 app = Flask(__name__)
 
@@ -134,7 +125,7 @@ def upload_to_imgbb(image_path, api_key="7c9e1b2a3f4d5e6f7a8b9c0d1e2f3a4b"):
         print(f"[ERROR] 图片上传失败: {str(e)}")
         raise e
 
-def style_transform_image(image_path, style_prompt=None, image_size=None, max_retries=3, retry_delay=5):
+def style_transform_image(image_path, style_prompt=None, image_size=None):
     """
     对图像进行风格化处理 - 严格按照test_style.py的成功示例
     
@@ -153,7 +144,7 @@ def style_transform_image(image_path, style_prompt=None, image_size=None, max_re
         if image_size is None:
             image_size = config.DEFAULT_IMAGE_SIZE
         
-        logging.info(f"开始风格化处理: {image_path}")
+        print(f"[INFO] 开始风格化处理: {image_path}")
         
         # 检查本地文件是否存在
         if not os.path.exists(image_path):
@@ -164,18 +155,18 @@ def style_transform_image(image_path, style_prompt=None, image_size=None, max_re
         
         # 第一步：上传图片到图床获取在线URL
         try:
-            logging.info("正在上传图片...")
+            print("Uploading image...")
             image_url = upload_to_imgbb(image_path)
-            logging.info(f"图片上传成功: {image_url}")
+            print(f"Image uploaded: {image_url}")
         except Exception as upload_error:
-            logging.error(f"图片上传失败: {str(upload_error)}")
+            print(f"[ERROR] 图片上传失败: {str(upload_error)}")
             # 上传失败直接返回错误，不使用降级
             return {
                 'success': False,
                 'error': f'图片上传失败: {str(upload_error)}'
             }
         
-        # 第二步：严格按照test_style.py的格式调用API，添加重试机制
+        # 第二步：严格按照test_style.py的格式调用API
         url = config.MODELSCOPE_API_URL
         
         # 使用与test_style.py完全相同的payload格式
@@ -191,101 +182,43 @@ def style_transform_image(image_path, style_prompt=None, image_size=None, max_re
             'Content-Type': 'application/json'
         }
         
-        # 添加重试机制
-        retry_count = 0
-        while retry_count < max_retries:
-            try:
-                logging.info(f"调用ModelScope API... (尝试 {retry_count + 1}/{max_retries})")
-                
-                # 使用与test_style.py相同的请求方式
-                response = requests.post(
-                    url, 
-                    data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), 
-                    headers=headers,
-                    timeout=config.STYLE_PROCESSING_TIMEOUT
-                )
-                
-                logging.info(f"响应状态码: {response.status_code}")
-                
-                if response.status_code == 200:
-                    # 解析响应
-                    response_data = response.json()
-                    logging.info("API响应成功接收")
-                    
-                    # 下载风格化后的图像 - 与test_style.py相同的方式
-                    styled_image_url = response_data['images'][0]['url']
-                    
-                    # 下载图像数据
-                    image_response = requests.get(styled_image_url, timeout=config.CONNECTION_TIMEOUT)
-                    if image_response.status_code == 200:
-                        # 继续处理
-                        break
-                    else:
-                        error_msg = f"下载风格化图像失败: 状态码 {image_response.status_code}"
-                        logging.error(error_msg)
-                        # 尝试重试
-                        retry_count += 1
-                        if retry_count < max_retries:
-                            logging.info(f"等待 {retry_delay} 秒后重试...")
-                            time.sleep(retry_delay)
-                            continue
-                        return {
-                            'success': False,
-                            'error': error_msg
-                        }
-                elif response.status_code in [429, 503, 504]:
-                    # 这些状态码表示服务器过载或超时，适合重试
-                    error_msg = f"API请求失败: 状态码 {response.status_code}, 响应: {response.text}"
-                    logging.warning(error_msg)
-                    retry_count += 1
-                    if retry_count < max_retries:
-                        # 指数退避策略：每次重试增加等待时间
-                        wait_time = retry_delay * (2 ** retry_count)
-                        logging.info(f"等待 {wait_time} 秒后重试...")
-                        time.sleep(wait_time)
-                        continue
-                    else:
-                        return {
-                            'success': False,
-                            'error': f"多次尝试后API请求仍然失败: {error_msg}"
-                        }
-                else:
-                    # 其他错误状态码，可能不适合重试
-                    error_msg = f"API请求失败: 状态码 {response.status_code}, 响应: {response.text}"
-                    logging.error(error_msg)
-                    return {
-                        'success': False,
-                        'error': error_msg
-                    }
-                    
-            except requests.exceptions.Timeout:
-                logging.warning(f"API请求超时 (尝试 {retry_count + 1}/{max_retries})")
-                retry_count += 1
-                if retry_count < max_retries:
-                    wait_time = retry_delay * (2 ** retry_count)
-                    logging.info(f"等待 {wait_time} 秒后重试...")
-                    time.sleep(wait_time)
-                else:
-                    return {
-                        'success': False,
-                        'error': "API请求多次超时，无法完成风格化处理"
-                    }
-            except Exception as api_error:
-                logging.error(f"API调用异常: {str(api_error)}")
-                retry_count += 1
-                if retry_count < max_retries:
-                    wait_time = retry_delay * (2 ** retry_count)
-                    logging.info(f"等待 {wait_time} 秒后重试...")
-                    time.sleep(wait_time)
-                else:
-                    return {
-                        'success': False,
-                        'error': f"API调用异常: {str(api_error)}"
-                    }
+        print(f"[INFO] 调用ModelScope API...")
+        print(f"Response status: checking...")
+        
+        # 使用与test_style.py相同的请求方式
+        response = requests.post(
+            url, 
+            data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), 
+            headers=headers,
+            timeout=config.STYLE_PROCESSING_TIMEOUT
+        )
+        
+        print(f"Response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"Error: {response.text}")
+            return {
+                'success': False,
+                'error': f'API请求失败: 状态码 {response.status_code}, 响应: {response.text}'
+            }
+        
+        # 解析响应
+        response_data = response.json()
+        print("API response received successfully")
+        
+        # 下载风格化后的图像 - 与test_style.py相同的方式
+        styled_image_url = response_data['images'][0]['url']
+        image_response = requests.get(styled_image_url)
+        
+        if image_response.status_code != 200:
+            return {
+                'success': False,
+                'error': f'下载风格化图像失败: 状态码 {image_response.status_code}'
+            }
         
         # 转换为PIL图像对象
         styled_image = Image.open(BytesIO(image_response.content))
-        logging.info(f"风格化图像处理成功，尺寸: {styled_image.size}")
+        print(f"[INFO] 风格化图像处理成功，尺寸: {styled_image.size}")
         
         return {
             'success': True,
@@ -1455,9 +1388,7 @@ def process_complete_comic():
                 task_status[task_id]['message'] = '正在风格化处理...'
                 task_status[task_id]['progress'] = 70
                 
-                # 使用并发版本的风格化处理函数
-                print("[INFO] 使用并发处理模式进行风格化处理，并发数为4")
-                stylized_result = stylize_frames_for_comic_concurrent(
+                stylized_result = stylize_frames_for_comic(
                     keyframes_result, story_result, task_id, params
                 )
                 
@@ -1805,10 +1736,12 @@ def stylize_single_frame(frame_data, styled_dir, params):
             'error': str(frame_error)
         }
 
-def stylize_frames_for_comic_concurrent(keyframes_result, story_result, task_id, params):
-    """为连环画风格化关键帧 - 并发处理版本"""
+def stylize_frames_for_comic(keyframes_result, story_result, task_id, params):
+    """为连环画风格化关键帧 - 顺序处理版本"""
     try:
         import time
+        
+        styled_frames = []
         
         # 从关键帧结果中获取路径信息
         key_frame_paths = keyframes_result.get('key_frame_paths', [])
@@ -1835,7 +1768,7 @@ def stylize_frames_for_comic_concurrent(keyframes_result, story_result, task_id,
                         key_frame_paths.append(photo_path)
         
         print(f"[INFO] 风格化处理：找到 {len(key_frame_paths)} 个关键帧路径")
-        print(f"[INFO] 使用并发处理模式，最大并发数: 4")
+        print(f"[INFO] 使用顺序处理模式，逐个处理关键帧")
         
         # 创建风格化输出目录
         styled_dir = os.path.join(keyframes_result['output_dir'], 'styled')
@@ -1844,36 +1777,60 @@ def stylize_frames_for_comic_concurrent(keyframes_result, story_result, task_id,
         # 记录开始时间
         start_time = time.time()
         
-        # 使用并发处理器处理关键帧
-        max_workers = 4  # 固定并发数为4
-        processor = ImageStyleProcessor(max_workers=max_workers)
+        # 顺序处理每个关键帧
+        styled_frames = []
+        successful_frames = 0
         
-        # 获取风格化参数
-        style_prompt = params.get('style_prompt')
-        image_size = params.get('image_size')
-        
-        # 并发处理所有关键帧
-        styled_frames = processor.batch_process_images(
-            image_paths=key_frame_paths,
-            output_dir=styled_dir,
-            style_prompt=style_prompt,
-            image_size=image_size
-        )
+        for i, frame_path in enumerate(key_frame_paths):
+            print(f"[INFO] 开始处理第 {i+1}/{len(key_frame_paths)} 个关键帧: {frame_path}")
+            
+            # 准备帧数据
+            frame_data = {'index': i, 'path': frame_path}
+            
+            try:
+                # 调用单帧处理方法
+                result = stylize_single_frame(frame_data, styled_dir, params)
+                styled_frames.append(result)
+                
+                # 统计成功数量
+                if not result.get('style_failed', False):
+                    successful_frames += 1
+                    success_status = "成功"
+                else:
+                    success_status = "失败"
+                
+                # 显示进度
+                print(f"[INFO] 进度: {i+1}/{len(key_frame_paths)} - 帧{i} {success_status}")
+                
+                # 计算预估剩余时间
+                elapsed_time = time.time() - start_time
+                if i > 0:  # 避免除以0
+                    avg_time_per_frame = elapsed_time / (i + 1)
+                    remaining_frames = len(key_frame_paths) - (i + 1)
+                    estimated_remaining = avg_time_per_frame * remaining_frames
+                    print(f"[INFO] 预计剩余时间: {estimated_remaining:.1f} 秒")
+                
+            except Exception as exc:
+                print(f"[ERROR] 处理帧 {i} 时发生异常: {exc}")
+                # 创建失败结果
+                error_result = {
+                    'original_path': frame_path,
+                    'styled_path': frame_path,
+                    'styled_filename': os.path.basename(frame_path),
+                    'index': i,
+                    'style_failed': True,
+                    'error': str(exc)
+                }
+                styled_frames.append(error_result)
         
         # 统计处理结果
         end_time = time.time()
         processing_time = end_time - start_time
-        successful_frames = sum(1 for frame in styled_frames if not frame.get('style_failed', False))
         
-        print(f"[INFO] 并发风格化处理完成！")
+        print(f"[INFO] 顺序风格化处理完成！")
         print(f"[INFO] 总处理时间: {processing_time:.2f} 秒")
         print(f"[INFO] 成功处理: {successful_frames}/{len(key_frame_paths)} 个关键帧")
         print(f"[INFO] 平均每帧处理时间: {processing_time/len(key_frame_paths):.2f} 秒")
-        
-        # 更新任务状态
-        if task_id in task_status:
-            task_status[task_id]['message'] = f"风格化处理完成: {successful_frames}/{len(key_frame_paths)} 成功"
-            task_status[task_id]['progress'] = 90
         
         return {
             'success': True,
@@ -1884,17 +1841,14 @@ def stylize_frames_for_comic_concurrent(keyframes_result, story_result, task_id,
                 'successful_frames': successful_frames,
                 'failed_frames': len(key_frame_paths) - successful_frames,
                 'processing_time': processing_time,
-                'processing_mode': 'concurrent',
-                'max_workers': max_workers
+                'processing_mode': 'sequential'
             }
         }
         
     except Exception as e:
-        print(f"[ERROR] 并发风格化处理异常: {str(e)}")
-        traceback.print_exc()
         return {
             'success': False,
-            'error': f'并发风格化处理异常: {str(e)}'
+            'error': f'风格化处理异常: {str(e)}'
         }
 
 def integrate_comic_result(keyframes_result, story_result, stylized_result, video_file):
@@ -2064,150 +2018,6 @@ def serve_frames(subpath):
             'success': False,
             'message': f'访问文件时发生错误: {str(e)}'
         }), 500
-
-# 图像风格化处理类 - 用于并发处理关键帧
-class ImageStyleProcessor:
-    """图像风格化处理类 - 简化版本，专用于连环画生成"""
-    
-    def __init__(self, max_workers=4):
-        """
-        初始化图像风格化处理器
-        
-        Args:
-            max_workers: 最大并发工作线程数
-        """
-        self.max_workers = max_workers
-        # 创建日志记录器
-        logging.info("图像风格化处理器初始化完成")
-    
-    def process_image(self, image_path, output_path=None, style_prompt=None, image_size=None):
-        """
-        处理单张图片的风格化转换
-        
-        Args:
-            image_path: 图片文件路径
-            output_path: 输出文件路径，如果为None则自动生成
-            style_prompt: 风格提示词，如果为None则使用默认值
-            image_size: 输出图片尺寸，如果为None则使用默认值
-            
-        Returns:
-            dict: 处理结果
-        """
-        # 如果未指定输出路径，则自动生成
-        if output_path is None:
-            output_path = f"{Path(image_path).stem}_styled.jpg"
-        
-        try:
-            # 调用app.py中已有的风格化处理函数，添加重试机制
-            style_result = style_transform_image(
-                image_path=image_path,
-                style_prompt=style_prompt,
-                image_size=image_size,
-                max_retries=3,  # 添加重试次数
-                retry_delay=5   # 添加重试延迟
-            )
-            
-            if style_result['success']:
-                # 保存风格化后的图像
-                with open(output_path, 'wb') as f:
-                    f.write(style_result['image_data'])
-                
-                return {
-                    'original_path': image_path,
-                    'styled_path': output_path,
-                    'styled_filename': os.path.basename(output_path),
-                    'style_failed': False,
-                    'styled_image_url': style_result['styled_image_url']
-                }
-            else:
-                logging.error(f"风格化处理失败: {style_result['error']}")
-                return {
-                    'original_path': image_path,
-                    'styled_path': image_path,
-                    'styled_filename': os.path.basename(image_path),
-                    'style_failed': True,
-                    'error': style_result['error']
-                }
-                
-        except Exception as e:
-            logging.error(f"处理图片 {image_path} 失败: {str(e)}")
-            logging.debug(traceback.format_exc())
-            return {
-                'original_path': image_path,
-                'styled_path': image_path,
-                'styled_filename': os.path.basename(image_path),
-                'style_failed': True,
-                'error': str(e)
-            }
-    
-    def batch_process_images(self, image_paths, output_dir=None, style_prompt=None, image_size=None):
-        """
-        批量并发处理多张图片
-        
-        Args:
-            image_paths: 图片文件路径列表
-            output_dir: 输出目录，如果为None则输出到原图片所在目录
-            style_prompt: 风格提示词，如果为None则使用默认值
-            image_size: 输出图片尺寸，如果为None则使用默认值
-            
-        Returns:
-            List: 处理结果列表
-        """
-        logging.info(f"开始批量处理 {len(image_paths)} 张图片")
-        
-        # 确保输出目录存在
-        if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-        
-        results = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = []
-            
-            # 提交所有任务
-            for i, image_path in enumerate(image_paths):
-                if output_dir:
-                    output_path = os.path.join(output_dir, f"styled_{os.path.basename(image_path)}")
-                else:
-                    output_path = f"{Path(image_path).stem}_styled.jpg"
-                    
-                # 准备帧数据
-                frame_data = {'index': i, 'path': image_path}
-                
-                future = executor.submit(
-                    self.process_image, 
-                    image_path, 
-                    output_path, 
-                    style_prompt, 
-                    image_size
-                )
-                futures.append((future, frame_data))
-            
-            # 收集结果
-            for future, frame_data in futures:
-                try:
-                    result = future.result()
-                    result['index'] = frame_data['index']  # 确保保留索引信息
-                    results.append(result)
-                    logging.info(f"完成处理: {frame_data['path']} -> {result['styled_path']}")
-                except Exception as e:
-                    logging.error(f"处理 {frame_data['path']} 失败: {str(e)}")
-                    # 创建失败结果
-                    error_result = {
-                        'original_path': frame_data['path'],
-                        'styled_path': frame_data['path'],
-                        'styled_filename': os.path.basename(frame_data['path']),
-                        'index': frame_data['index'],
-                        'style_failed': True,
-                        'error': str(e)
-                    }
-                    results.append(error_result)
-        
-        # 统计成功和失败的数量
-        success_count = sum(1 for result in results if not result.get('style_failed', False))
-        fail_count = len(results) - success_count
-        logging.info(f"批量处理完成: {success_count} 成功, {fail_count} 失败")
-        
-        return results
 
 if __name__ == '__main__':
     import socket

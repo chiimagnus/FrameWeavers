@@ -487,6 +487,7 @@ curl -X POST "http://localhost:5001/api/generate/story" \
   "task_id": "550e8400-e29b-41d4-a716-446655440000",
   "story_result": {
     "success": true,
+    "story_title": "勇敢者的冒险传说",
     "overall_theme": "一段关于勇气与成长的冒险之旅",
     "final_narrations": [
       {

@@ -153,8 +153,8 @@ class DiversityFrameExtractor:
             
             # 初始化OpenAI客户端
             client = OpenAI(
-                base_url=OPENAI_BASE_URL,
-                api_key=OPENAI_API_KEY
+                base_url="https://api.ppinfra.com/v3/openai",
+                api_key="sk_5F9-39FKSyVcakGuymqzg6J8rCHfqgnp8GDfp1vN62M"
             )
             
             # 读取并编码图像
@@ -488,7 +488,7 @@ class DiversityFrameExtractor:
                 }
                 
                 headers = {
-                    "Authorization": "Bearer sk_j9k4G5X8mMpeERYdbU7DIcKN8eTZcyiCFEo0mzhrNtk",
+                    "Authorization": "Bearer sk_5F9-39FKSyVcakGuymqzg6J8rCHfqgnp8GDfp1vN62M",
                     "Content-Type": "application/json"
                 }
                 
