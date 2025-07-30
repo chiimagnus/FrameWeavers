@@ -25,9 +25,11 @@ LOG_LEVEL = "INFO"
 ENABLE_FALLBACK = True
 FALLBACK_DELAY = 2.0  # 秒
 
-# ImgBB图床API配置
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "c0e8f3e6f8a0c6ce9c2c7e3f1b8f4c9e")  # 请替换为实际的API密钥
-IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY
+
+# 图床API配置
+IMGBB_API_KEY=os.getenv("IMGBB_API_KEY", "your-imgbb-api-key-here")
+IMGBB_UPLOAD_URL=os.getenv("IMGBB_UPLOAD_URL", "https://tuchuan.zeabur.app/api/upload")
+
 
 # ModelScope风格化处理API配置
 MODELSCOPE_API_URL = "https://api-inference.modelscope.cn/v1/images/generations"

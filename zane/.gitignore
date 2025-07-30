@@ -3,6 +3,7 @@
 .env.local
 .env.production
 .env.staging
+config.py
 
 # Python
 __pycache__/
